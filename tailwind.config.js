@@ -1,0 +1,73 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary": "#ffc0a1",
+        "tertiary-container": "#ff9862",
+        "on-tertiary-fixed": "#341100",
+        "on-surface-variant": "#bacac3",
+        "tertiary-fixed-dim": "#ffb692",
+        "on-tertiary": "#552000",
+        "primary-container": "#00c9a7",
+        "inverse-primary": "#006b58",
+        "on-primary-container": "#004e40",
+        "on-secondary-fixed-variant": "#004f58",
+        "on-secondary-container": "#002f35",
+        "on-background": "#dbe1ff",
+        "inverse-surface": "#dbe1ff",
+        "inverse-on-surface": "#1f2e5a",
+        "on-error": "#690005",
+        "surface-container-highest": "#24325f",
+        "surface-container": "#0c1c49",
+        "secondary-fixed-dim": "#66d6e7",
+        "primary-fixed-dim": "#38debb",
+        "surface-tint": "#38debb",
+        "surface-container-high": "#182753",
+        "error": "#ffb4ab",
+        "on-secondary": "#00363d",
+        "primary": "#44e5c2",
+        "surface-bright": "#293764",
+        "on-surface": "#dbe1ff",
+        "error-container": "#93000a",
+        "surface-container-lowest": "#000b2f",
+        "on-primary-fixed-variant": "#005142",
+        "outline-variant": "#3c4a45",
+        "surface-variant": "#24325f",
+        "on-tertiary-fixed-variant": "#793100",
+        "surface-container-low": "#071844",
+        "tertiary-fixed": "#ffdbcb",
+        "surface-dim": "#000f3b",
+        "secondary-container": "#1b9faf",
+        "on-primary-fixed": "#002019",
+        "on-error-container": "#ffdad6",
+        "primary-fixed": "#5ffbd6",
+        "secondary": "#66d6e7",
+        "on-secondary-fixed": "#001f24",
+        "on-tertiary-container": "#762f00",
+        "secondary-fixed": "#97f0ff",
+        "background": "#000f3b",
+        "on-primary": "#00382d",
+        "outline": "#85948e",
+        "surface": "#000f3b"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      fontFamily: {
+        "headline": ["Epilogue", "sans-serif"],
+        "body": ["Manrope", "sans-serif"],
+        "label": ["Space Grotesk", "sans-serif"]
+      }
+    },
+  },
+  plugins: [],
+}

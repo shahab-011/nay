@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+
+# Backend lives in its own repo — exclude from frontend
+nyaya-backend/
+
+# Claude Code memory files
+.claude/
 
 # Editor directories and files
 .vscode/*

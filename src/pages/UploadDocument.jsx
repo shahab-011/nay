@@ -1,159 +1,453 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import { uploadDocument, uploadTextOnly } from '../api/documents.api';
+import { usePrivacy } from '../context/PrivacyContext';
 
+const DOC_TYPES = [
+  'Contract', 'NDA', 'MoU', 'Rent Agreement',
+  'Offer Letter', 'Will', 'Property Deed', 'Other',
+];
+
+const JURISDICTIONS = [
+  'Not detected', 'India', 'Maharashtra', 'Delhi', 'Karnataka',
+  'Tamil Nadu', 'West Bengal', 'Gujarat', 'Rajasthan', 'Kerala',
+  'Andhra Pradesh', 'Telangana', 'Uttar Pradesh', 'Bihar',
+  'Punjab', 'Haryana', 'Goa',
+];
+
+const ACCEPT       = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp';
+const IMAGE_EXTS   = ['jpg', 'jpeg', 'png', 'webp'];
+const TEXT_EXTS    = ['pdf', 'doc', 'docx'];
+
+function getExt(filename) {
+  return filename.split('.').pop().toLowerCase();
+}
+
+/* ── browser-side extraction ──────────────────────────────────────── */
+async function extractPdfInBrowser(file, onProgress) {
+  const pdfjsLib = await import('pdfjs-dist');
+
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url,
+    ).href;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(' ') + '\n';
+    onProgress(Math.round((i / pdf.numPages) * 85));
+  }
+  return text.trim();
+}
+
+async function extractDocxInBrowser(file, onProgress) {
+  const mammoth     = (await import('mammoth')).default;
+  const arrayBuffer = await file.arrayBuffer();
+  const result      = await mammoth.extractRawText({ arrayBuffer });
+  onProgress(85);
+  return result.value.trim();
+}
+
+/* ── component ─────────────────────────────────────────────────────── */
 export default function UploadDocument() {
+  const navigate     = useNavigate();
+  const fileInputRef = useRef(null);
+  const { isPrivate, togglePrivacy } = usePrivacy();
+
+  const [tab,          setTab]          = useState('file');
+  const [file,         setFile]         = useState(null);
+  const [dragging,     setDragging]     = useState(false);
+
+  const [pastedText,   setPastedText]   = useState('');
+  const [textFileName, setTextFileName] = useState('');
+
+  const [docType,      setDocType]      = useState('Other');
+  const [jurisdiction, setJurisdiction] = useState('Not detected');
+
+  const [progress,    setProgress]    = useState(0);
+  const [progressMsg, setProgressMsg] = useState('');
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState('');
+
+  /* ── derived ──────────────────────────────────────────────────── */
+  const fileExt            = file ? getExt(file.name) : '';
+  const isImageFile        = IMAGE_EXTS.includes(fileExt);
+  const isTextableFile     = TEXT_EXTS.includes(fileExt);
+  const willExtractLocally = isPrivate && tab === 'file' && isTextableFile;
+
+  /* ── drag & drop ─────────────────────────────────────────────── */
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) setFile(dropped);
+  };
+
+  /* ── upload ───────────────────────────────────────────────────── */
+  const handleFileUpload = async () => {
+    if (!file) return setError('Please select a file first.');
+    setError('');
+    setLoading(true);
+    setProgress(0);
+
+    try {
+      if (willExtractLocally) {
+        setProgressMsg('Reading file locally…');
+        setProgress(5);
+
+        let extractedText = '';
+        if (fileExt === 'pdf') {
+          extractedText = await extractPdfInBrowser(file, setProgress);
+        } else {
+          extractedText = await extractDocxInBrowser(file, setProgress);
+        }
+
+        if (!extractedText || extractedText.length < 30) {
+          return setError(
+            fileExt === 'pdf'
+              ? 'No readable text found. This may be a scanned PDF — try uploading it as an image instead.'
+              : 'Could not extract text from this document. Try the Paste Text tab.'
+          );
+        }
+
+        setProgressMsg('Securing metadata…');
+        setProgress(90);
+        const res = await uploadTextOnly(file.name, extractedText, docType, jurisdiction, true);
+        setProgress(100);
+        navigate('/analysis/' + res.data.data.document._id);
+
+      } else {
+        if (isPrivate && isImageFile) {
+          setProgressMsg('Sending image for OCR…');
+        }
+        const formData = new FormData();
+        formData.append('document',     file);
+        formData.append('docType',      docType);
+        formData.append('isPrivate',    isPrivate);
+        formData.append('jurisdiction', jurisdiction);
+
+        const res = await uploadDocument(formData, (pct) => {
+          setProgress(pct);
+          setProgressMsg(`Uploading ${pct}%…`);
+        });
+        navigate('/analysis/' + res.data.data.document._id);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Upload failed. Please try again.');
+    } finally {
+      setLoading(false);
+      setProgress(0);
+      setProgressMsg('');
+    }
+  };
+
+  const handleTextUpload = async () => {
+    if (!pastedText.trim())   return setError('Please paste your document text.');
+    if (!textFileName.trim()) return setError('Please enter a document name.');
+    setError('');
+    setLoading(true);
+    try {
+      const res = await uploadTextOnly(
+        textFileName.trim(), pastedText.trim(), docType, jurisdiction, isPrivate
+      );
+      navigate('/analysis/' + res.data.data.document._id);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Upload failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = () => tab === 'file' ? handleFileUpload() : handleTextUpload();
+
+  const canSubmit =
+    !loading &&
+    (tab === 'file'
+      ? !!file
+      : pastedText.trim().length > 0 && textFileName.trim().length > 0);
+
   return (
     <>
-      <Header title="Upload Document">
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full border border-primary/20">
-          <span className="material-symbols-outlined text-primary text-sm" data-icon="security" style={{fontVariationSettings: "'FILL' 1"}}>security</span>
-          <span className="text-primary text-[11px] font-bold tracking-wider uppercase font-label">Privacy Mode</span>
-        </div>
-      </Header>
-      
+      <Header title="Upload Document" />
+
       <div className="max-w-6xl mx-auto p-10">
-        {/* Header Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-headline font-extrabold tracking-tight text-white mb-4">Secure Document Intake</h1>
+        <div className="mb-10">
+          <h1 className="text-4xl font-headline font-extrabold tracking-tight text-white mb-3">
+            Secure Document Intake
+          </h1>
           <p className="text-on-surface-variant max-w-2xl text-lg leading-relaxed">
-            Upload your legal documents for hyper-accurate AI analysis. All processing is encrypted and handled locally within your browser session.
+            Upload a file or paste text for AI-powered legal analysis. All processing is encrypted end-to-end.
           </p>
         </div>
-        
-        {/* Bento Layout */}
+
+        {/* Tab switcher */}
+        <div className="flex gap-2 mb-8 bg-surface-container-low rounded-xl p-1 w-fit border border-white/5">
+          {['file', 'text'].map((t) => (
+            <button
+              key={t}
+              onClick={() => { setTab(t); setError(''); }}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold font-headline transition-all ${
+                tab === t
+                  ? 'bg-primary text-on-primary shadow-md'
+                  : 'text-on-surface-variant hover:text-white'
+              }`}
+            >
+              {t === 'file' ? '📄 Upload File' : '📋 Paste Text'}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Upload & Config */}
-          <div className="lg:col-span-7 space-y-8">
-            {/* Upload Zone */}
-            <div className="group relative bg-surface-container-low rounded-2xl p-12 border-2 border-dashed border-outline-variant hover:border-primary/50 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden">
-              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative z-10">
-                <div className="w-20 h-20 bg-surface-container rounded-2xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 transition-transform mx-auto">
-                  <span className="material-symbols-outlined text-primary text-4xl" data-icon="upload_file">upload_file</span>
+          {/* ── Left Column ─────────────────────────────────────── */}
+          <div className="lg:col-span-7 space-y-6">
+
+            {tab === 'file' ? (
+              <>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`relative rounded-2xl p-12 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
+                    dragging
+                      ? 'border-primary bg-primary/10 scale-[1.01]'
+                      : 'border-outline-variant hover:border-primary/50 bg-surface-container-low'
+                  }`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept={ACCEPT}
+                    onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
+                  />
+                  <div className="w-20 h-20 bg-surface-container rounded-2xl flex items-center justify-center mb-6 shadow-xl mx-auto">
+                    <span className="material-symbols-outlined text-primary text-4xl">upload_file</span>
+                  </div>
+
+                  {file ? (
+                    <>
+                      <p className="text-xl font-headline font-bold text-primary mb-1 truncate max-w-[80%]">
+                        {file.name}
+                      </p>
+                      <p className="text-sm text-on-surface-variant">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                      {isPrivate && (
+                        <div className={`mt-4 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border ${
+                          willExtractLocally
+                            ? 'bg-primary/10 text-primary border-primary/20'
+                            : 'bg-secondary/10 text-secondary border-secondary/20'
+                        }`}>
+                          <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {willExtractLocally ? 'shield_lock' : 'info'}
+                          </span>
+                          {willExtractLocally
+                            ? 'Text extracted in your browser — file never leaves your device'
+                            : 'Image OCR requires server processing — sent securely'}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-headline font-bold text-white mb-2">
+                        {dragging ? 'Drop it!' : 'Drop your file here'}
+                      </h3>
+                      <p className="text-on-surface-variant font-body text-sm">
+                        PDF, DOCX, DOC, JPG, PNG, WEBP — max 50 MB
+                      </p>
+                    </>
+                  )}
+
+                  <div className="mt-6 px-6 py-2.5 bg-surface-container-high text-on-surface rounded-lg font-medium border border-outline-variant text-sm">
+                    {file ? 'Change File' : 'Browse Files'}
+                  </div>
+
+                  {loading && progress > 0 && (
+                    <div className="w-full mt-6 space-y-2">
+                      <div className="flex justify-between text-xs text-on-surface-variant">
+                        <span>{progressMsg}</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="w-full bg-surface-container-highest rounded-full h-2">
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-xl font-headline font-bold text-white mb-2">Drop your file here</h3>
-                <p className="text-on-surface-variant font-body">Support for PDF, DOCX, and TXT (Max 50MB)</p>
-                <div className="mt-8 flex justify-center gap-3">
-                  <button className="px-6 py-2.5 bg-surface-container-high text-on-surface rounded-lg font-medium border border-outline-variant hover:bg-surface-container-highest transition-colors">
-                    Browse Files
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Dropdowns Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-label text-on-surface-variant ml-1">Document Type</label>
-                <div className="relative">
-                  <select className="w-full bg-surface-container-low border-b border-outline-variant/20 focus:border-primary focus:ring-0 text-on-surface py-3 px-4 rounded-t-xl appearance-none cursor-pointer">
-                    <option>Service Agreement</option>
-                    <option>Non-Disclosure Agreement (NDA)</option>
-                    <option>Employment Contract</option>
-                    <option>Lease Deed</option>
-                    <option>Consultancy Agreement</option>
-                  </select>
-                  <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" data-icon="expand_more">expand_more</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-label text-on-surface-variant ml-1">Jurisdiction</label>
-                <div className="relative">
-                  <select className="w-full bg-surface-container-low border-b border-outline-variant/20 focus:border-primary focus:ring-0 text-on-surface py-3 px-4 rounded-t-xl appearance-none cursor-pointer">
-                    <option>Central / Union Laws</option>
-                    <option>Maharashtra</option>
-                    <option>Delhi NCR</option>
-                    <option>Karnataka</option>
-                    <option>Tamil Nadu</option>
-                  </select>
-                  <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" data-icon="location_on">location_on</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Right Column: Status & Options */}
-          <div className="lg:col-span-5 space-y-8">
-            {/* Privacy Card */}
-            <div className="bg-surface-container-low rounded-2xl p-6 border border-primary/30 shadow-[0_0_20px_rgba(68,229,194,0.05)]">
-              <div className="flex items-start gap-4">
-                <div className="mt-1">
-                  <span className="material-symbols-outlined text-primary" data-icon="shield_lock" style={{fontVariationSettings: "'FILL' 1"}}>shield_lock</span>
+
+                {/* Pipeline steps when file selected */}
+                {file && (
+                  <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                    {[
+                      { icon: 'folder',                                          label: 'File selected'                                    },
+                      { icon: willExtractLocally ? 'computer' : 'cloud_upload', label: willExtractLocally ? 'Extracted locally' : 'Server OCR' },
+                      { icon: 'psychology',                                      label: 'AI analysis'                                       },
+                    ].map(({ icon, label }, i) => (
+                      <div key={label} className={`rounded-xl p-3 border ${i === 0 ? 'border-primary/20 bg-primary/5 text-primary' : 'border-white/5 text-on-surface-variant'}`}>
+                        <span className="material-symbols-outlined text-xl block mb-1">{icon}</span>
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-label text-on-surface-variant mb-2 block uppercase tracking-wider">
+                    Document Name
+                  </label>
+                  <input
+                    type="text"
+                    value={textFileName}
+                    onChange={(e) => setTextFileName(e.target.value)}
+                    placeholder="e.g. Rental_Agreement_2024.txt"
+                    className="w-full bg-surface-container border-b border-outline-variant/30 focus:border-primary text-white py-3 px-4 rounded-t-xl outline-none transition-colors"
+                  />
                 </div>
                 <div>
-                  <h4 className="font-headline font-bold text-white mb-1">Privacy Mode Active</h4>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">
-                    Your data never leaves this machine. We use on-device vectorization and confidential computing to ensure 100% data sovereignty.
+                  <label className="text-sm font-label text-on-surface-variant mb-2 block uppercase tracking-wider">
+                    Document Text
+                  </label>
+                  <textarea
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                    placeholder="Paste the full text of your legal document here…"
+                    rows={14}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 focus:border-primary text-white py-3 px-4 rounded-xl outline-none transition-colors resize-none font-mono text-sm leading-relaxed"
+                  />
+                  <p className="text-xs text-on-surface-variant mt-1 text-right">
+                    {pastedText.length.toLocaleString()} characters
                   </p>
                 </div>
               </div>
-            </div>
-            
-            {/* Analysis Options */}
-            <div className="bg-surface-container-high rounded-2xl p-8 border border-white/5">
-              <h4 className="font-headline font-bold text-white mb-6">Analysis Configuration</h4>
-              <div className="space-y-5">
-                <div className="flex items-center justify-between group">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Risk Detection</span>
-                    <span className="text-[12px] text-on-surface-variant">Flag unfavorable clauses & liabilities</span>
-                  </div>
-                  <div className="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
-                    <div className="absolute right-1 top-1 w-4 h-4 bg-on-primary rounded-full"></div>
-                  </div>
+            )}
+
+            {/* Dropdowns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-label text-on-surface-variant block uppercase tracking-wider">
+                  Document Type
+                </label>
+                <div className="relative">
+                  <select
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    className="w-full bg-surface-container-low border-b border-outline-variant/20 focus:border-primary text-on-surface py-3 px-4 rounded-t-xl appearance-none cursor-pointer outline-none"
+                  >
+                    {DOC_TYPES.map((t) => <option key={t}>{t}</option>)}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+                    expand_more
+                  </span>
                 </div>
-                <div className="flex items-center justify-between group">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Plain Language Summary</span>
-                    <span className="text-[12px] text-on-surface-variant">Translate legalese into simple English</span>
-                  </div>
-                  <div className="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
-                    <div className="absolute right-1 top-1 w-4 h-4 bg-on-primary rounded-full"></div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between group opacity-50">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Compliance Check</span>
-                    <span className="text-[12px] text-on-surface-variant">Cross-ref with latest IPC/BNS updates</span>
-                  </div>
-                  <div className="w-12 h-6 bg-surface-container-highest rounded-full relative cursor-pointer border border-outline-variant">
-                    <div className="absolute left-1 top-1 w-4 h-4 bg-outline rounded-full"></div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between group">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-white">Auto-Redaction</span>
-                    <span className="text-[12px] text-on-surface-variant">Mask PII before analysis</span>
-                  </div>
-                  <div className="w-12 h-6 bg-surface-container-highest rounded-full relative cursor-pointer border border-outline-variant">
-                    <div className="absolute left-1 top-1 w-4 h-4 bg-outline rounded-full"></div>
-                  </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-label text-on-surface-variant block uppercase tracking-wider">
+                  Jurisdiction
+                </label>
+                <div className="relative">
+                  <select
+                    value={jurisdiction}
+                    onChange={(e) => setJurisdiction(e.target.value)}
+                    className="w-full bg-surface-container-low border-b border-outline-variant/20 focus:border-primary text-on-surface py-3 px-4 rounded-t-xl appearance-none cursor-pointer outline-none"
+                  >
+                    {JURISDICTIONS.map((j) => <option key={j}>{j}</option>)}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+                    location_on
+                  </span>
                 </div>
               </div>
             </div>
-            
-            {/* Primary Action */}
-            <button className="w-full h-16 bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-extrabold text-lg rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-              <span className="material-symbols-outlined" data-icon="bolt" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span>
-              Analyze Document
+          </div>
+
+          {/* ── Right Column ────────────────────────────────────── */}
+          <div className="lg:col-span-5 space-y-6">
+
+            {/* Analysis options */}
+            <div className="bg-surface-container-high rounded-2xl p-8 border border-white/5">
+              <h4 className="font-headline font-bold text-white mb-6">Analysis Includes</h4>
+              <div className="space-y-4">
+                {[
+                  ['Risk Detection',         'Flag unfavorable clauses & liabilities'],
+                  ['Plain Language Summary', 'Translate legalese into simple English'],
+                  ['Compliance Check',       'Indian law mandatory clause check'],
+                  ['Jurisdiction Detection', 'Auto-detect applicable Indian state law'],
+                ].map(([title, sub]) => (
+                  <div key={title} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{title}</p>
+                      <p className="text-[12px] text-on-surface-variant">{sub}</p>
+                    </div>
+                    <div className="w-12 h-6 bg-primary rounded-full relative flex-shrink-0">
+                      <div className="absolute right-1 top-1 w-4 h-4 bg-on-primary rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-3 bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm">
+                <span className="material-symbols-outlined text-base flex-shrink-0 mt-0.5">error</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`w-full h-16 font-headline font-extrabold text-lg rounded-2xl transition-all flex items-center justify-center gap-3 ${
+                canSubmit
+                  ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-surface-container-high text-on-surface-variant cursor-not-allowed'
+              }`}
+            >
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                  {progressMsg || 'Processing…'}
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    bolt
+                  </span>
+                  Analyze Document
+                </>
+              )}
             </button>
           </div>
         </div>
-        
-        {/* Trust Badges / Footer Info */}
-        <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-40 grayscale">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" data-icon="verified_user">verified_user</span>
-            <span className="text-xs font-label font-bold tracking-widest uppercase">ISO 27001 Certified</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" data-icon="lock">lock</span>
-            <span className="text-xs font-label font-bold tracking-widest uppercase">AES-256 Encrypted</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" data-icon="cloud_off">cloud_off</span>
-            <span className="text-xs font-label font-bold tracking-widest uppercase">Offline First Architecture</span>
-          </div>
+
+        {/* Trust badges */}
+        <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-30">
+          {[
+            ['verified_user', 'ISO 27001 Certified'],
+            ['lock',          'AES-256 Encrypted'],
+            ['cloud_off',     'Offline-First for PDFs'],
+          ].map(([icon, label]) => (
+            <div key={label} className="flex items-center gap-2">
+              <span className="material-symbols-outlined">{icon}</span>
+              <span className="text-xs font-label font-bold tracking-widest uppercase">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </>

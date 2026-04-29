@@ -1,279 +1,413 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import { getDocuments } from '../api/documents.api';
+import { getAlerts } from '../api/alerts.api';
+import { ContractStatusBadge } from '../utils/contractStatus';
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'yesterday';
+  if (d < 7)  return `${d}d ago`;
+  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+function healthColor(score) {
+  if (score >= 75) return 'text-primary';
+  if (score >= 50) return 'text-secondary';
+  return 'text-error';
+}
+
+function riskBadgeStyle(level) {
+  if (level === 'critical') return 'bg-error/20 text-error';
+  if (level === 'high')     return 'bg-error/10 text-error';
+  if (level === 'medium')   return 'bg-secondary/10 text-secondary';
+  return 'bg-surface-container text-on-surface-variant';
+}
+
+const TYPE_ICON = {
+  expiry:     'schedule',
+  compliance: 'gavel',
+  risk:       'warning',
+  general:    'info',
+};
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [docs,   setDocs]   = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([getDocuments(), getAlerts()])
+      .then(([dRes, aRes]) => {
+        setDocs(dRes.data.data.documents   || []);
+        setAlerts(aRes.data.data.alerts    || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  /* ── derived stats ───────────────────────────────────────────── */
+  const totalDocs    = docs.length;
+  const analyzedDocs = docs.filter((d) => d.status === 'analyzed');
+  const avgHealth    = analyzedDocs.length
+    ? Math.round(analyzedDocs.reduce((s, d) => s + (d.healthScore || 0), 0) / analyzedDocs.length)
+    : 0;
+  const risksFound    = docs.reduce((sum, d) => sum + (d.riskCount || 0), 0);
+  const expiringSoon  = docs.filter((d) => {
+    if (!d.expiryDate) return false;
+    const days = Math.floor((new Date(d.expiryDate) - Date.now()) / 86400000);
+    return days >= 0 && days <= 30;
+  }).length;
+  const unreadAlerts  = alerts.filter((a) => !a.isRead).length;
+
+  const riskCounts = {
+    high:   docs.filter((d) => d.riskLevel === 'high').length,
+    medium: docs.filter((d) => d.riskLevel === 'medium').length,
+    low:    docs.filter((d) => d.riskLevel === 'low' || !d.riskLevel).length,
+  };
+
+  const recentDocs = [...docs]
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+    .slice(0, 4);
+
+  const recentAlerts = [...alerts]
+    .filter((a) => !a.isRead)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 4);
+
   return (
     <>
       <Header title="Dashboard Overview">
-        <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors" data-icon="security">security</span>
+        <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">security</span>
       </Header>
-      
-      {/* Dashboard Body */}
+
       <div className="p-8 space-y-8">
-        {/* 4 Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Stat Card 1 */}
-          <div className="bg-surface-container-low rounded-xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="material-symbols-outlined text-6xl" data-icon="folder_open">folder_open</span>
-            </div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Total Documents</div>
-            <div className="text-4xl font-bold font-[Space_Grotesk] text-primary-container">1,284</div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-primary">
-              <span className="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
-              <span>12% from last month</span>
-            </div>
-          </div>
-          
-          {/* Stat Card 2 */}
-          <div className="bg-surface-container-low rounded-xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="material-symbols-outlined text-6xl" data-icon="verified_user">verified_user</span>
-            </div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Health Score</div>
-            <div className="text-4xl font-bold font-[Space_Grotesk] text-on-surface">94.2<span className="text-xl text-slate-500">%</span></div>
-            <div className="mt-4 w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-primary to-primary-container h-full w-[94%]"></div>
-            </div>
-          </div>
 
-          {/* Stat Card 3 */}
-          <div className="bg-surface-container-low rounded-xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="material-symbols-outlined text-6xl" data-icon="gavel">gavel</span>
-            </div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Risks Found</div>
-            <div className="text-4xl font-bold font-[Space_Grotesk] text-error">28</div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-error">
-              <span className="material-symbols-outlined text-sm" data-icon="report">report</span>
-              <span>4 High priority items</span>
-            </div>
-          </div>
-
-          {/* Stat Card 4 */}
-          <div className="bg-surface-container-low rounded-xl p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <span className="material-symbols-outlined text-6xl" data-icon="alarm_on">alarm_on</span>
-            </div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Expiring Soon</div>
-            <div className="text-4xl font-bold font-[Space_Grotesk] text-tertiary-container">09</div>
-            <div className="mt-4 flex items-center gap-2 text-xs text-tertiary-container">
-              <span className="material-symbols-outlined text-sm" data-icon="calendar_month">calendar_month</span>
-              <span>Next 30 days</span>
-            </div>
-          </div>
+        {/* ── Greeting ─────────────────────────────────────────── */}
+        <div>
+          <h1 className="text-3xl font-headline font-extrabold tracking-tight text-white">
+            Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}.
+          </h1>
+          <p className="text-on-surface-variant text-sm mt-1">
+            {loading ? 'Loading your legal portfolio…' : `You have ${totalDocs} document${totalDocs !== 1 ? 's' : ''} and ${unreadAlerts} unread alert${unreadAlerts !== 1 ? 's' : ''}.`}
+          </p>
         </div>
 
-        {/* 2-Column Middle */}
+        {/* ── 4 Stat Cards ────────────────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            icon="folder_open"
+            label="Total Documents"
+            value={loading ? '—' : totalDocs.toLocaleString()}
+            sub={analyzedDocs.length > 0 ? `${analyzedDocs.length} analyzed` : 'None analyzed yet'}
+            subColor="text-primary"
+            subIcon="check_circle"
+            loading={loading}
+          />
+          <StatCard
+            icon="verified_user"
+            label="Avg Health Score"
+            value={loading ? '—' : avgHealth ? `${avgHealth}%` : '—'}
+            sub={avgHealth >= 75 ? 'Portfolio healthy' : avgHealth > 0 ? 'Needs attention' : 'No analyses yet'}
+            subColor={avgHealth >= 75 ? 'text-primary' : avgHealth > 0 ? 'text-secondary' : 'text-on-surface-variant'}
+            subIcon={avgHealth >= 75 ? 'trending_up' : 'trending_flat'}
+            loading={loading}
+            progressBar={avgHealth}
+          />
+          <StatCard
+            icon="warning"
+            label="Risks Found"
+            value={loading ? '—' : risksFound}
+            sub={risksFound > 0 ? 'Across all documents' : 'No risks detected'}
+            subColor={risksFound > 0 ? 'text-error' : 'text-primary'}
+            subIcon={risksFound > 0 ? 'report' : 'check_circle'}
+            loading={loading}
+          />
+          <StatCard
+            icon="alarm_on"
+            label="Expiring Soon"
+            value={loading ? '—' : expiringSoon}
+            sub={expiringSoon > 0 ? 'Within 30 days' : 'Nothing expiring soon'}
+            subColor={expiringSoon > 0 ? 'text-secondary' : 'text-primary'}
+            subIcon="calendar_month"
+            loading={loading}
+          />
+        </div>
+
+        {/* ── Middle row ───────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Documents List */}
+
+          {/* Recent Documents */}
           <div className="lg:col-span-2 bg-surface-container rounded-xl p-8">
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex justify-between items-end mb-6">
               <div>
-                <h2 className="text-xl font-bold font-[Epilogue] tracking-tight">Recent Documents</h2>
-                <p className="text-slate-500 text-sm">Latest legal filings and analysis reports</p>
+                <h2 className="text-xl font-bold font-headline tracking-tight">Recent Documents</h2>
+                <p className="text-on-surface-variant text-sm">Latest uploads and analyses</p>
               </div>
-              <button className="text-primary-container text-sm font-semibold hover:underline">View All</button>
+              <button
+                onClick={() => navigate('/documents')}
+                className="text-primary text-sm font-semibold hover:underline"
+              >
+                View All
+              </button>
             </div>
-            <div className="space-y-4">
-              {/* Doc Item */}
-              <div className="group flex items-center justify-between p-4 bg-surface-container-high rounded-xl hover:bg-surface-container-highest transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#000b2f] flex items-center justify-center text-primary-container">
-                    <span className="material-symbols-outlined" data-icon="article">article</span>
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm">Employment_Contract_V4.pdf</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-400 font-[Space_Grotesk]">Labor Law</span>
-                      <span className="text-[10px] text-slate-500">Modified 2h ago</span>
+
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="h-16 bg-surface-container-high rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : recentDocs.length === 0 ? (
+              <div className="text-center py-12 space-y-3">
+                <span className="material-symbols-outlined text-4xl block opacity-20">folder_open</span>
+                <p className="text-on-surface-variant text-sm">No documents yet.</p>
+                <button
+                  onClick={() => navigate('/upload')}
+                  className="text-primary text-sm font-semibold hover:underline"
+                >
+                  Upload your first document →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentDocs.map((doc) => (
+                  <div
+                    key={doc._id}
+                    onClick={() => navigate(`/analysis/${doc._id}`)}
+                    className="group flex items-center justify-between p-4 bg-surface-container-high rounded-xl hover:bg-surface-container-highest transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                          description
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-on-surface truncate">{doc.originalName}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <ContractStatusBadge doc={doc} size="xs" />
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-on-surface-variant">{doc.docType}</span>
+                          <span className="text-[10px] text-on-surface-variant">{timeAgo(doc.updatedAt || doc.createdAt)}</span>
+                          {doc.riskLevel && doc.riskLevel !== 'low' && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${riskBadgeStyle(doc.riskLevel)}`}>
+                              {doc.riskLevel}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0 ml-3">
+                      {doc.healthScore > 0 && (
+                        <div className="text-right">
+                          <div className="text-[10px] text-on-surface-variant uppercase tracking-tighter">Health</div>
+                          <div className={`font-headline font-bold text-sm ${healthColor(doc.healthScore)}`}>
+                            {doc.healthScore}%
+                          </div>
+                        </div>
+                      )}
+                      <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">
+                        chevron_right
+                      </span>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <div className="text-xs text-slate-500 uppercase tracking-tighter">Health</div>
-                    <div className="font-[Space_Grotesk] text-primary font-bold">98%</div>
-                  </div>
-                  <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
-                </div>
+                ))}
               </div>
-              {/* Doc Item */}
-              <div className="group flex items-center justify-between p-4 bg-surface-container-high rounded-xl hover:bg-surface-container-highest transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#000b2f] flex items-center justify-center text-tertiary-container">
-                    <span className="material-symbols-outlined" data-icon="gavel">gavel</span>
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm">NDA_Reliance_Industries.docx</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-400 font-[Space_Grotesk]">NDA</span>
-                      <span className="text-[10px] text-slate-500">Modified 5h ago</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <div className="text-xs text-slate-500 uppercase tracking-tighter">Health</div>
-                    <div className="font-[Space_Grotesk] text-tertiary-container font-bold">64%</div>
-                  </div>
-                  <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
-                </div>
-              </div>
-              {/* Doc Item */}
-              <div className="group flex items-center justify-between p-4 bg-surface-container-high rounded-xl hover:bg-surface-container-highest transition-all duration-200 cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#000b2f] flex items-center justify-center text-primary-container">
-                    <span className="material-symbols-outlined" data-icon="description">description</span>
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm">Lease_Agreement_CyberCity.pdf</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-slate-400 font-[Space_Grotesk]">Real Estate</span>
-                      <span className="text-[10px] text-slate-500">Modified 1d ago</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <div className="text-xs text-slate-500 uppercase tracking-tighter">Health</div>
-                    <div className="font-[Space_Grotesk] text-primary font-bold">82%</div>
-                  </div>
-                  <span className="material-symbols-outlined text-slate-600 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Risk Summary Panel */}
+          {/* Risk Summary */}
           <div className="bg-surface-container rounded-xl p-8">
-            <h2 className="text-xl font-bold font-[Epilogue] tracking-tight mb-2">Risk Summary</h2>
-            <p className="text-slate-500 text-sm mb-8">Active exposure across portfolio</p>
-            <div className="space-y-6">
-              <div className="p-4 rounded-xl border-l-4 border-error bg-error/5">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-error uppercase tracking-widest">Critical Severity</span>
-                  <span className="font-[Space_Grotesk] font-bold text-error">04</span>
-                </div>
-                <p className="text-sm text-slate-200">Indemnity clauses exceeding liability caps found in 4 SaaS agreements.</p>
+            <h2 className="text-xl font-bold font-headline tracking-tight mb-1">Risk Summary</h2>
+            <p className="text-on-surface-variant text-sm mb-6">Exposure across your portfolio</p>
+
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="h-20 bg-surface-container-high rounded-xl animate-pulse" />
+                ))}
               </div>
-              <div className="p-4 rounded-xl border-l-4 border-tertiary-container bg-tertiary-container/5">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-tertiary-container uppercase tracking-widest">Medium Severity</span>
-                  <span className="font-[Space_Grotesk] font-bold text-tertiary-container">12</span>
-                </div>
-                <p className="text-sm text-slate-200">Non-compete durations exceed local regulatory guidelines in Delhi region.</p>
+            ) : totalDocs === 0 ? (
+              <div className="text-center py-10 text-on-surface-variant text-sm">
+                Upload documents to see risk breakdown.
               </div>
-              <div className="p-4 rounded-xl border-l-4 border-primary bg-primary/5">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-primary uppercase tracking-widest">Low Severity</span>
-                  <span className="font-[Space_Grotesk] font-bold text-primary">22</span>
-                </div>
-                <p className="text-sm text-slate-200">Missing electronic signature timestamps on 22 historical documents.</p>
+            ) : (
+              <div className="space-y-4">
+                {[
+                  { label: 'High',   count: riskCounts.high,   border: 'border-error',     bg: 'bg-error/5',     color: 'text-error'     },
+                  { label: 'Medium', count: riskCounts.medium, border: 'border-secondary', bg: 'bg-secondary/5', color: 'text-secondary' },
+                  { label: 'Low',    count: riskCounts.low,    border: 'border-primary',   bg: 'bg-primary/5',   color: 'text-primary'   },
+                ].map(({ label, count, border, bg, color }) => (
+                  <div key={label} className={`p-4 rounded-xl border-l-4 ${border} ${bg}`}>
+                    <div className="flex justify-between items-center">
+                      <span className={`text-xs font-bold uppercase tracking-widest ${color}`}>{label} Severity</span>
+                      <span className={`font-headline font-bold text-lg ${color}`}>{String(count).padStart(2, '0')}</span>
+                    </div>
+                    <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${color.replace('text-', 'bg-')}`}
+                        style={{ width: totalDocs > 0 ? `${Math.round((count / totalDocs) * 100)}%` : '0%' }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-            <button className="w-full mt-8 py-3 rounded-lg border border-outline-variant/30 text-sm font-semibold hover:bg-white/5 transition-colors">
-              Generate Risk Report
+            )}
+
+            <button
+              onClick={() => navigate('/documents')}
+              className="w-full mt-6 py-3 rounded-lg border border-outline-variant/30 text-sm font-semibold hover:bg-white/5 transition-colors text-on-surface-variant"
+            >
+              View All Documents
             </button>
           </div>
         </div>
 
-        {/* Bottom Row */}
+        {/* ── Bottom row ───────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-12">
-          {/* Compliance Status Panel */}
+
+          {/* Recent Alerts */}
           <div className="bg-surface-container-low rounded-xl p-8 border border-white/5">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-lg font-bold font-[Epilogue] tracking-tight">Compliance Tracking</h3>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                <span className="text-[10px] text-primary font-bold uppercase">Live Audit</span>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-bold font-headline tracking-tight">Recent Alerts</h3>
+                <p className="text-on-surface-variant text-sm">Unread notifications</p>
               </div>
+              {unreadAlerts > 0 && (
+                <span className="bg-primary/20 text-primary text-xs px-3 py-1 rounded-full font-bold font-label">
+                  {unreadAlerts} UNREAD
+                </span>
+              )}
             </div>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-[Space_Grotesk] mb-1">
-                  <span className="text-slate-400">GDPR Compliance</span>
-                  <span className="text-primary">88%</span>
-                </div>
-                <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full w-[88%]"></div>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
-                  <span className="material-symbols-outlined text-sm" data-icon="check_circle" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>
-                  <span>12 of 14 controls passed</span>
-                </div>
+
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="h-14 bg-surface-container rounded-xl animate-pulse" />
+                ))}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-surface-container-high p-4 rounded-lg flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Data Privacy</span>
-                  <span className="px-2 py-1 bg-primary/20 text-primary text-[10px] rounded font-bold uppercase">Pass</span>
-                </div>
-                <div className="bg-surface-container-high p-4 rounded-lg flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Anti-Bribery</span>
-                  <span className="px-2 py-1 bg-tertiary-container/20 text-tertiary-container text-[10px] rounded font-bold uppercase">Warn</span>
-                </div>
-                <div className="bg-surface-container-high p-4 rounded-lg flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Labor Laws</span>
-                  <span className="px-2 py-1 bg-primary/20 text-primary text-[10px] rounded font-bold uppercase">Pass</span>
-                </div>
-                <div className="bg-surface-container-high p-4 rounded-lg flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Intellectual Prop.</span>
-                  <span className="px-2 py-1 bg-error/20 text-error text-[10px] rounded font-bold uppercase">Fail</span>
-                </div>
+            ) : recentAlerts.length === 0 ? (
+              <div className="text-center py-10 space-y-2">
+                <span className="material-symbols-outlined text-4xl block opacity-20">notifications_off</span>
+                <p className="text-on-surface-variant text-sm">No unread alerts. You're all caught up.</p>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                {recentAlerts.map((alert) => (
+                  <div
+                    key={alert._id}
+                    onClick={() => navigate('/alerts')}
+                    className="flex items-start gap-3 p-4 bg-surface-container rounded-xl hover:bg-surface-container-high transition-all cursor-pointer"
+                  >
+                    <span
+                      className="material-symbols-outlined text-primary text-lg flex-shrink-0 mt-0.5"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      {TYPE_ICON[alert.alertType] || 'info'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-on-surface leading-snug line-clamp-2">{alert.message}</p>
+                      <p className="text-[11px] text-on-surface-variant mt-1">{timeAgo(alert.createdAt)}</p>
+                    </div>
+                  </div>
+                ))}
+                <button
+                  onClick={() => navigate('/alerts')}
+                  className="w-full text-center text-primary text-sm font-semibold hover:underline pt-2"
+                >
+                  View all alerts →
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Upcoming Deadlines Timeline */}
+          {/* Quick Actions */}
           <div className="bg-surface-container-low rounded-xl p-8 border border-white/5">
-            <h3 className="text-lg font-bold font-[Epilogue] tracking-tight mb-8">Upcoming Legal Deadlines</h3>
-            <div className="relative space-y-8 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-white/10">
-              {/* Deadline Item */}
-              <div className="relative pl-8 group">
-                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-primary-container border-4 border-[#000f3b] z-10"></div>
-                <div className="flex justify-between items-start">
+            <h3 className="text-lg font-bold font-headline tracking-tight mb-2">Quick Actions</h3>
+            <p className="text-on-surface-variant text-sm mb-6">Jump straight into your workflow</p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: 'upload_file',    label: 'Upload Document',  sub: 'Add a new file',          path: '/upload'    },
+                { icon: 'compare_arrows', label: 'Compare Docs',     sub: 'Side-by-side diff',       path: '/compare'   },
+                { icon: 'psychology',     label: 'Ask AI',           sub: 'Chat about a document',   path: '/ask'       },
+                { icon: 'folder_open',    label: 'My Documents',     sub: 'Browse your library',     path: '/documents' },
+              ].map(({ icon, label, sub, path }) => (
+                <button
+                  key={label}
+                  onClick={() => navigate(path)}
+                  className="flex flex-col items-start gap-2 p-5 bg-surface-container rounded-xl border border-white/5 hover:border-primary/30 hover:bg-surface-container-high transition-all text-left group"
+                >
+                  <span
+                    className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-2xl"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {icon}
+                  </span>
                   <div>
-                    <div className="font-bold text-sm">Lease Renewal: Cyber Hub Phase 2</div>
-                    <div className="text-xs text-slate-500 mt-1">Real Estate | Regional Office</div>
+                    <p className="text-sm font-semibold text-on-surface">{label}</p>
+                    <p className="text-[11px] text-on-surface-variant">{sub}</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-primary font-[Space_Grotesk]">Nov 12, 2023</div>
-                    <div className="text-[10px] text-slate-500 uppercase mt-0.5">In 4 Days</div>
-                  </div>
-                </div>
-              </div>
-              {/* Deadline Item */}
-              <div className="relative pl-8 group">
-                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-tertiary-container border-4 border-[#000f3b] z-10"></div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-bold text-sm">Regulatory Filing: SEBI Compliance</div>
-                    <div className="text-xs text-slate-500 mt-1">Corporate Law | Annual Disclosure</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-tertiary-container font-[Space_Grotesk]">Nov 28, 2023</div>
-                    <div className="text-[10px] text-slate-500 uppercase mt-0.5">In 20 Days</div>
-                  </div>
-                </div>
-              </div>
-              {/* Deadline Item */}
-              <div className="relative pl-8 group">
-                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-slate-700 border-4 border-[#000f3b] z-10"></div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-bold text-sm">Contract Expiry: AWS Enterprise Support</div>
-                    <div className="text-xs text-slate-500 mt-1">Vendor Mgmt | Tech Services</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-slate-400 font-[Space_Grotesk]">Dec 15, 2023</div>
-                    <div className="text-[10px] text-slate-500 uppercase mt-0.5">In 37 Days</div>
-                  </div>
-                </div>
-              </div>
+                </button>
+              ))}
             </div>
+
+            {/* Portfolio health bar */}
+            {analyzedDocs.length > 0 && (
+              <div className="mt-6 p-4 bg-surface-container rounded-xl border border-white/5">
+                <div className="flex justify-between text-xs mb-2">
+                  <span className="text-on-surface-variant font-label uppercase tracking-wider">Portfolio Health</span>
+                  <span className={`font-bold ${healthColor(avgHealth)}`}>{avgHealth}%</span>
+                </div>
+                <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-primary-container transition-all duration-700"
+                    style={{ width: `${avgHealth}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-on-surface-variant mt-2">
+                  Based on {analyzedDocs.length} analyzed document{analyzedDocs.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+/* ── StatCard ──────────────────────────────────────────────────────── */
+function StatCard({ icon, label, value, sub, subColor, subIcon, loading, progressBar }) {
+  return (
+    <div className="bg-surface-container-low rounded-xl p-6 relative overflow-hidden group border border-white/5">
+      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+        <span className="material-symbols-outlined text-6xl">{icon}</span>
+      </div>
+      <div className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1 font-label">{label}</div>
+      <div className={`text-4xl font-bold font-headline ${loading ? 'text-on-surface-variant animate-pulse' : 'text-on-surface'}`}>
+        {value}
+      </div>
+      {progressBar !== undefined && progressBar > 0 && (
+        <div className="mt-3 mb-1 w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+          <div className="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all duration-700" style={{ width: `${progressBar}%` }} />
+        </div>
+      )}
+      <div className={`mt-3 flex items-center gap-2 text-xs font-semibold ${subColor}`}>
+        <span className="material-symbols-outlined text-sm">{subIcon}</span>
+        <span>{sub}</span>
+      </div>
+    </div>
   );
 }

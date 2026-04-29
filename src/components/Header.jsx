@@ -1,32 +1,84 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { usePrivacy } from '../context/PrivacyContext';
+import { useAlertCount } from '../context/AlertContext';
 
 export default function Header({ title, children }) {
+  const navigate = useNavigate();
+  const { user }  = useAuth();
+  const { isPrivate, togglePrivacy } = usePrivacy();
+  const { unreadCount } = useAlertCount();
+
+  const initials = user?.name
+    ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+
   return (
-    <header className="fixed top-0 right-0 w-[calc(100%-220px)] h-16 z-40 bg-[#000f3b]/50 backdrop-blur-md flex justify-between items-center px-8">
+    <header className="fixed top-0 right-0 w-[calc(100%-220px)] h-16 z-40 bg-[#000f3b]/50 backdrop-blur-md flex justify-between items-center px-8 border-b border-white/5">
       <div className="flex items-center gap-4">
         <h2 className="font-headline text-lg font-semibold text-on-surface">{title}</h2>
       </div>
-      <div className="flex items-center gap-6">
+
+      <div className="flex items-center gap-4">
+        {/* Page-specific actions passed as children */}
         {children}
-        <div className="flex items-center gap-4 text-slate-400">
-          <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors" data-icon="dark_mode">dark_mode</span>
-          <div className="relative">
-            <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors" data-icon="notifications">notifications</span>
-            <span className="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
-          </div>
+
+        {/* Global privacy toggle */}
+        <button
+          onClick={togglePrivacy}
+          title={isPrivate ? 'Privacy Mode — click to switch to Cloud' : 'Cloud Mode — click to enable Privacy'}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold font-label tracking-wider uppercase transition-all ${
+            isPrivate
+              ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
+              : 'bg-surface-container border-outline-variant/30 text-on-surface-variant hover:text-white hover:border-primary/30'
+          }`}
+        >
+          <span
+            className="material-symbols-outlined text-sm"
+            style={{ fontVariationSettings: isPrivate ? "'FILL' 1" : "'FILL' 0" }}
+          >
+            {isPrivate ? 'shield_lock' : 'cloud'}
+          </span>
+          {isPrivate ? 'Private' : 'Cloud'}
+        </button>
+
+        {/* Notification bell */}
+        <div className="relative">
+          <span
+            onClick={() => navigate('/alerts')}
+            className="material-symbols-outlined text-slate-400 hover:text-primary cursor-pointer transition-colors"
+          >
+            notifications
+          </span>
+          {unreadCount > 0 ? (
+            <span className="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1 py-px rounded-full min-w-[16px] text-center leading-none">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          ) : (
+            <span className="absolute top-0 right-0 w-2 h-2 bg-primary/30 rounded-full" />
+          )}
         </div>
-        <div className="h-6 w-px bg-white/10 mx-2"></div>
-        <div className="flex items-center gap-3">
+
+        <div className="h-6 w-px bg-white/10" />
+
+        {/* User avatar + name */}
+        <button
+          onClick={() => navigate('/profile')}
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        >
           <div className="text-right hidden sm:block">
-            <div className="text-xs font-bold text-on-surface">Adv. Vikram Singh</div>
-            <div className="text-[10px] text-slate-500 uppercase tracking-widest">Senior Partner</div>
+            <div className="text-xs font-bold text-on-surface leading-tight">
+              {user?.name || '—'}
+            </div>
+            <div className="text-[10px] text-slate-500 capitalize tracking-widest">
+              {user?.role || 'user'}
+            </div>
           </div>
-          <img 
-            className="w-10 h-10 rounded-full border-2 border-primary-container/20" 
-            alt="User Profile" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE-C7yh6QUM1VU-2MoEEwTYMXFyeUIGJ_aqicLRsk-9kouEjunR6YRi4z1qB5SUO1Pnf4xMQbqiIPRRwJXxQPE_dFg9zafJHJSQqYUBQSngb8YyFOyjYeDnHKHiwr62czyEUS8vojJWrumc196tHI5mNyO_wlnTZIvfYEGxZae0hfFE3S_j0o-HdkFHw8rnD8SPgly1twVM9MVpDxU5xKi2H7d6Ws2ZJm8aymYxBKQwmqa7NZS88hVea29WLEjJH_1Knyh-CckRwM"
-          />
-        </div>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border-2 border-primary/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-primary font-headline">{initials}</span>
+          </div>
+        </button>
       </div>
     </header>
   );

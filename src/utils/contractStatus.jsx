@@ -1,17 +1,5 @@
 import React from 'react';
 
-/**
- * Computes the lifecycle/contract status for a document.
- * This is the single source of truth — import from here in every page.
- *
- * Priority order:
- *   1. status = uploaded | processing  → Pending Review (purple)
- *   2. status = error                  → Error (red)
- *   3. expiryDate missing              → Active (teal)
- *   4. daysLeft < 0                    → Expired (red)
- *   5. daysLeft 0–30                   → Expiring Soon (amber)
- *   6. daysLeft > 30                   → Active (teal)
- */
 export function getContractStatus(doc) {
   if (doc.status === 'uploaded' || doc.status === 'processing') return 'pending';
   if (doc.status === 'error') return 'error';
@@ -22,7 +10,6 @@ export function getContractStatus(doc) {
   return 'active';
 }
 
-/** Number of days until expiryDate (negative = already expired). Returns null if no date. */
 export function daysUntilExpiry(doc) {
   if (!doc.expiryDate) return null;
   return Math.floor((new Date(doc.expiryDate) - Date.now()) / 86400000);
@@ -72,7 +59,6 @@ export const CONTRACT_STATUS = {
   },
 };
 
-/** Renders an inline contract status badge (span). */
 export function ContractStatusBadge({ doc, size = 'sm' }) {
   const key = getContractStatus(doc);
   const s   = CONTRACT_STATUS[key] || CONTRACT_STATUS.active;

@@ -766,7 +766,7 @@ export default function Analysis() {
                   { key: 'termination',    label: 'Termination Clause',   desc: 'How the agreement can be ended by either party' },
                   { key: 'payment',        label: 'Payment Terms',         desc: 'Payment amounts, schedules, and conditions' },
                   { key: 'confidentiality',label: 'Confidentiality Clause',desc: 'Protection of sensitive or proprietary information' },
-                  { key: 'jurisdiction',   label: 'Jurisdiction / Governing Law', desc: 'Which state or country's law applies' },
+                  { key: 'jurisdiction',   label: 'Jurisdiction / Governing Law', desc: "Which state or country's law applies" },
                   { key: 'liability',      label: 'Liability Clause',      desc: 'Who is responsible if something goes wrong' },
                   { key: 'indemnity',      label: 'Indemnity Clause',      desc: 'Who covers costs if a third party makes a claim' },
                 ].map(({ key, label, desc }) => {

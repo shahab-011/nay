@@ -14,8 +14,13 @@ const GREEN   = [22, 163, 74];
 const riskRGB    = (lvl) => lvl === 'high' ? RED : lvl === 'medium' ? AMBER : GREEN;
 const healthRGB  = (s)   => s >= 80 ? GREEN : s >= 60 ? AMBER : RED;
 
-// jsPDF helvetica only covers Latin-1; replace ₹ and other non-Latin-1 chars
-const pdfSafe = (t) => String(t ?? '').replace(/₹/g, 'Rs.').replace(/[^\x00-\xFF]/g, '');
+// jsPDF helvetica only covers Latin-1; replace known symbols and strip the rest
+const pdfSafe = (t) => String(t ?? '')
+  .replace(/₹/g, 'Rs.')
+  .replace(/–|—/g, '-')
+  .replace(/[‘’]/g, "'")
+  .replace(/[“”]/g, '"')
+  .replace(/[^\x00-\xFF]/g, '');
 
 /* ── constants ─────────────────────────────────────────────────── */
 const MANDATORY_KEYS = [
@@ -239,8 +244,8 @@ export function generateAnalysisReport(doc, analysis) {
     bodyStyles:          { textColor: DARK, fontSize: 8.5, cellPadding: 2.8, overflow: 'linebreak' },
     alternateRowStyles:  { fillColor: LGRAY },
     columnStyles: {
-      0: { cellWidth: 8,   halign: 'center', fontSize: 10 },
-      1: { cellWidth: 144 },
+      0: { cellWidth: 12,  halign: 'center', fontStyle: 'bold', fontSize: 8 },
+      1: { cellWidth: 140 },
       2: { cellWidth: 22,  halign: 'center', fontStyle: 'bold', fontSize: 8 },
     },
     didParseCell: (data) => {
@@ -248,7 +253,7 @@ export function generateAnalysisReport(doc, analysis) {
       const row     = allRows[data.row.index];
       const passing = row[1];
       if (data.column.index === 0) {
-        data.cell.text    = [passing ? '✓' : '✗'];
+        data.cell.text    = [passing ? 'OK' : 'NO'];
         data.cell.styles.textColor = passing ? GREEN : RED;
       }
       if (data.column.index === 2) {

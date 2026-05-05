@@ -137,8 +137,10 @@ export function generateAnalysisReport(doc, analysis) {
   pdf.setFontSize(9);
   pdf.setTextColor(40, 50, 65);
   const summaryLines = pdf.splitTextToSize(analysis.summary || 'No summary available.', CW);
+  const summaryH = summaryLines.length * 5.5;
+  y = pageBreakGuard(pdf, y, summaryH + 15, M, PH);
   pdf.text(summaryLines, M, y);
-  y += summaryLines.length * 4.8 + 10;
+  y += summaryH + 10;
 
   /* ── 5. Clauses table ─────────────────────────────────────────── */
   const clauses = analysis.clauses || [];
@@ -156,12 +158,12 @@ export function generateAnalysisReport(doc, analysis) {
         (c.riskLevel || 'low').toUpperCase(),
       ]),
       headStyles:           { fillColor: DARK, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles:           { textColor: DARK, fontSize: 8, cellPadding: 2.5 },
+      bodyStyles:           { textColor: DARK, fontSize: 8, cellPadding: 2.5, overflow: 'linebreak' },
       alternateRowStyles:   { fillColor: LGRAY },
       columnStyles: {
         0: { cellWidth: 40, fontStyle: 'bold' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 16, halign: 'center', fontStyle: 'bold' },
+        1: { cellWidth: 'auto', overflow: 'linebreak' },
+        2: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
       },
       didParseCell: (data) => {
         if (data.section === 'body' && data.column.index === 2) {
@@ -190,13 +192,13 @@ export function generateAnalysisReport(doc, analysis) {
         r.recommendation || '—',
       ]),
       headStyles:          { fillColor: DARK, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
-      bodyStyles:          { textColor: DARK, fontSize: 8, cellPadding: 2.5 },
+      bodyStyles:          { textColor: DARK, fontSize: 8, cellPadding: 2.5, overflow: 'linebreak' },
       alternateRowStyles:  { fillColor: LGRAY },
       columnStyles: {
-        0: { cellWidth: 38, fontStyle: 'bold' },
+        0: { cellWidth: 36, fontStyle: 'bold', overflow: 'linebreak' },
         1: { cellWidth: 14, halign: 'center', fontStyle: 'bold' },
-        2: { cellWidth: 'auto' },
-        3: { cellWidth: 52 },
+        2: { cellWidth: 'auto', overflow: 'linebreak' },
+        3: { cellWidth: 50, overflow: 'linebreak' },
       },
       didParseCell: (data) => {
         if (data.section === 'body' && data.column.index === 1) {
@@ -231,11 +233,11 @@ export function generateAnalysisReport(doc, analysis) {
     head: [['', 'Check Item', 'Status']],
     body: allRows.map(([, , label, status]) => ['', label, status]),
     headStyles:          { fillColor: DARK, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
-    bodyStyles:          { textColor: DARK, fontSize: 8.5, cellPadding: 2.8 },
+    bodyStyles:          { textColor: DARK, fontSize: 8.5, cellPadding: 2.8, overflow: 'linebreak' },
     alternateRowStyles:  { fillColor: LGRAY },
     columnStyles: {
       0: { cellWidth: 8,  halign: 'center', fontSize: 10 },
-      1: { cellWidth: 'auto' },
+      1: { cellWidth: 'auto', overflow: 'linebreak' },
       2: { cellWidth: 22, halign: 'center', fontStyle: 'bold', fontSize: 8 },
     },
     didParseCell: (data) => {

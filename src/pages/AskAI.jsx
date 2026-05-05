@@ -48,6 +48,69 @@ const fmtTime = (ts) =>
     ? new Date(ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     : 'Just now';
 
+/* ── AI response text formatter ───────────────────────────────────── */
+function parseBold(str) {
+  const parts = str.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={i} className="text-white font-semibold">{p.slice(2, -2)}</strong>
+      : p
+  );
+}
+
+function MessageContent({ text }) {
+  if (!text) return null;
+  const lines  = text.split('\n');
+  const output = [];
+  let listBuf  = [];
+  let k        = 0;
+
+  const flushList = () => {
+    if (!listBuf.length) return;
+    output.push(
+      <ul key={k++} className="space-y-2 my-2">
+        {listBuf.map((item, i) => (
+          <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-on-surface/90">
+            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+            <span>{parseBold(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    listBuf = [];
+  };
+
+  lines.forEach((raw, i) => {
+    const line = raw.trim();
+    if (!line) {
+      flushList();
+      if (i > 0 && i < lines.length - 1) output.push(<div key={k++} className="h-1.5" />);
+    } else if (line.startsWith('* ') || line.startsWith('- ')) {
+      listBuf.push(line.slice(2));
+    } else if (/^\d+\.\s/.test(line)) {
+      flushList();
+      output.push(
+        <div key={k++} className="flex items-start gap-2.5 my-1 text-sm leading-relaxed text-on-surface/90">
+          <span className="text-primary font-bold tabular-nums shrink-0 mt-0.5">{line.match(/^\d+/)[0]}.</span>
+          <span>{parseBold(line.replace(/^\d+\.\s/, ''))}</span>
+        </div>
+      );
+    } else if (line.startsWith('⚠')) {
+      flushList();
+      output.push(
+        <p key={k++} className="text-[11px] text-on-surface-variant/50 italic mt-4 pt-3 border-t border-white/5">{line}</p>
+      );
+    } else {
+      flushList();
+      output.push(
+        <p key={k++} className="text-sm leading-relaxed text-on-surface/90 my-0.5">{parseBold(line)}</p>
+      );
+    }
+  });
+  flushList();
+  return <div className="space-y-0.5">{output}</div>;
+}
+
 /* ── component ────────────────────────────────────────────────────── */
 export default function AskAI() {
   const [searchParams]  = useSearchParams();
@@ -530,7 +593,7 @@ export default function AskAI() {
         {docId && loading && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>
-            <p className="text-on-surface-variant">Loading chat history…</p>
+            <p className="text-on-surface-variant text-sm">Loading chat…</p>
           </div>
         )}
 
@@ -539,174 +602,176 @@ export default function AskAI() {
           <>
             {/* Document info bar */}
             {selectedDoc && (
-              <div className="px-8 py-2 border-b border-white/5 bg-surface-container/30 flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary text-sm">description</span>
-                <span className="text-sm font-label text-on-surface-variant truncate">
-                  {selectedDoc.originalName}
+              <div className="px-6 py-2.5 border-b border-white/[0.06] bg-surface-container/20 backdrop-blur flex items-center gap-3 shrink-0">
+                <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-[14px]">description</span>
+                </div>
+                <span className="text-sm font-medium text-on-surface/80 truncate flex-1">
+                  {selectedDoc.originalName?.replace(/\.[^.]+$/, '')}
                 </span>
-                {selectedDoc.docType && (
-                  <span className="text-[10px] bg-surface-container-high px-2 py-0.5 rounded-full font-label text-on-surface-variant border border-white/5">
+                {selectedDoc.docType && selectedDoc.docType !== 'Other' && (
+                  <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-label border border-primary/15 shrink-0">
                     {selectedDoc.docType}
                   </span>
                 )}
-                <span className="ml-auto text-[10px] text-on-surface-variant font-label uppercase tracking-wider">
-                  {messages.length} message{messages.length !== 1 ? 's' : ''}
+                <span className="text-[10px] text-on-surface-variant/40 font-label shrink-0">
+                  {messages.length} msg{messages.length !== 1 ? 's' : ''}
                 </span>
               </div>
             )}
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6 max-w-4xl mx-auto w-full">
+            <div className="flex-1 overflow-y-auto no-scrollbar py-8">
+              <div className="max-w-3xl mx-auto px-6 space-y-6">
 
-              {/* Welcome message */}
-              {messages.length === 0 && !sending && (
-                <div className="flex gap-5 items-start">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shrink-0 shadow-lg">
-                    <span className="material-symbols-outlined text-on-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                  </div>
-                  <div className="bg-surface-container-low p-6 rounded-2xl rounded-tl-none border border-outline-variant/5 shadow-sm max-w-[85%]">
-                    <p className="text-on-surface leading-relaxed font-body">
-                      Hello! I've loaded{' '}
-                      <span className="text-primary font-semibold">{selectedDoc?.originalName}</span>.
-                      Ask me anything about this document — I'll answer in plain English and always tell you where the information comes from.
-                    </p>
-                    <p className="text-xs text-on-surface-variant mt-3 italic">
-                      ⚠ AI-generated — verify with a qualified lawyer
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Message history */}
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`flex gap-5 items-start ${msg.role === 'user' ? 'justify-end' : ''}`}
-                >
-                  {/* AI avatar */}
-                  {msg.role === 'assistant' && (
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shrink-0 shadow-lg">
-                      <span className="material-symbols-outlined text-on-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                {/* Welcome */}
+                {messages.length === 0 && !sending && (
+                  <div className="flex gap-4 items-start">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(68,229,194,0.35)]">
+                      <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                     </div>
-                  )}
+                    <div className="bg-surface-container-low border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[88%] shadow-sm">
+                      <p className="text-sm text-on-surface/90 leading-relaxed">
+                        Hello! I've loaded{' '}
+                        <span className="text-primary font-semibold">{selectedDoc?.originalName?.replace(/\.[^.]+$/, '')}</span>.
+                        Ask me anything — clause meanings, risks, obligations, payment terms. I'll answer in plain English.
+                      </p>
+                      <p className="text-[11px] text-on-surface-variant/40 mt-3 italic">⚠ AI-generated — verify with a qualified lawyer</p>
+                    </div>
+                  </div>
+                )}
 
-                  <div className={`flex flex-col gap-1.5 max-w-[85%] ${msg.role === 'user' ? 'items-end' : ''}`}>
-                    {msg.role === 'user' ? (
-                      <div className="bg-primary px-6 py-4 rounded-2xl rounded-tr-none shadow-[0_4px_20px_rgba(68,229,194,0.2)]">
-                        <p className="text-on-primary font-medium font-body whitespace-pre-wrap">{msg.content}</p>
-                      </div>
-                    ) : (
-                      <div className="bg-surface-container-low p-6 rounded-2xl rounded-tl-none border border-outline-variant/5 shadow-sm">
-                        <p className="text-on-surface leading-relaxed font-body whitespace-pre-wrap">{msg.content}</p>
+                {/* Message history */}
+                {messages.map((msg, i) => (
+                  <div key={i} className={`flex gap-4 items-end ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+
+                    {/* AI avatar */}
+                    {msg.role === 'assistant' && (
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 self-start shadow-[0_0_12px_rgba(68,229,194,0.25)]">
+                        <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                       </div>
                     )}
 
-                    <div className={`flex items-center gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                      <span className="text-[10px] font-label text-on-surface-variant/50 uppercase tracking-widest">
-                        {msg.role === 'user' ? 'You' : 'Nyaya AI'} · {fmtTime(msg.timestamp)}
-                      </span>
-                      {msg.role === 'assistant' && (
-                        <button
-                          onClick={() => copyMsg(msg.content)}
-                          className="text-[10px] font-label text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1"
-                        >
-                          <span className="material-symbols-outlined text-[13px]">content_copy</span>
-                          Copy
-                        </button>
+                    <div className={`flex flex-col gap-1.5 max-w-[88%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      {msg.role === 'user' ? (
+                        /* User bubble */
+                        <div className="bg-primary px-5 py-3.5 rounded-2xl rounded-br-sm shadow-[0_4px_24px_rgba(68,229,194,0.18)]">
+                          <p className="text-[#001a12] font-medium text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                      ) : (
+                        /* AI bubble */
+                        <div className="bg-surface-container-low border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
+                          <MessageContent text={msg.content} />
+                        </div>
                       )}
+
+                      {/* Meta row */}
+                      <div className={`flex items-center gap-2.5 px-1 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-[10px] text-on-surface-variant/35 font-label tabular-nums">
+                          {msg.role === 'user' ? 'You' : 'Nyaya AI'} · {fmtTime(msg.timestamp)}
+                        </span>
+                        {msg.role === 'assistant' && (
+                          <button
+                            onClick={() => copyMsg(msg.content)}
+                            title="Copy response"
+                            className="text-on-surface-variant/30 hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* User avatar */}
+                    {msg.role === 'user' && (
+                      <div className="w-9 h-9 rounded-xl bg-surface-container-high border border-white/10 flex items-center justify-center shrink-0 self-start text-primary font-bold text-sm">
+                        {user?.name?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Typing indicator */}
+                {sending && (
+                  <div className="flex gap-4 items-end">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(68,229,194,0.25)]">
+                      <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                    </div>
+                    <div className="bg-surface-container-low border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
+                      <div className="flex items-center gap-1.5">
+                        {[0, 1, 2].map((j) => (
+                          <span
+                            key={j}
+                            className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: `${j * 0.18}s`, animationDuration: '0.9s' }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  {/* User avatar */}
-                  {msg.role === 'user' && (
-                    <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0 border border-outline-variant/20 text-primary font-bold text-sm flex-shrink-0">
-                      {user?.name?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {/* Typing indicator */}
-              {sending && (
-                <div className="flex gap-5 items-start">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shrink-0 shadow-lg">
-                    <span className="material-symbols-outlined text-on-primary animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                {/* Error */}
+                {error && (
+                  <div className="flex items-center gap-3 bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm">
+                    <span className="material-symbols-outlined text-base shrink-0">error</span>
+                    {error}
                   </div>
-                  <div className="bg-surface-container-low px-6 py-5 rounded-2xl rounded-tl-none border border-outline-variant/5 shadow-sm">
-                    <div className="flex items-center gap-1.5">
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Error */}
-              {error && (
-                <div className="flex items-center gap-3 bg-error/10 border border-error/20 text-error px-5 py-3 rounded-xl text-sm max-w-2xl mx-auto">
-                  <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
-                  {error}
-                </div>
-              )}
-
-              <div ref={bottomRef} />
+                <div ref={bottomRef} />
+              </div>
             </div>
 
             {/* ── Input area ──────────────────────────────────────── */}
-            <div className="bg-[#000b2f]/60 backdrop-blur-2xl border-t border-white/5 px-8 py-6">
-              <div className="max-w-4xl mx-auto w-full">
+            <div className="shrink-0 bg-surface/80 backdrop-blur-2xl border-t border-white/[0.06] px-6 pt-4 pb-5">
+              <div className="max-w-3xl mx-auto w-full">
 
-                {/* Quick suggestion chips */}
+                {/* Suggestion chips */}
                 {messages.length === 0 && (
-                  <div className="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
+                  <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-0.5">
                     {SUGGESTIONS.map(({ icon, text }) => (
                       <button
                         key={text}
                         onClick={() => setQuestion(text)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/10 text-xs font-medium text-on-surface-variant transition-all whitespace-nowrap shrink-0"
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container border border-white/[0.07] hover:border-primary/30 hover:bg-primary/5 text-[11px] font-medium text-on-surface-variant hover:text-primary transition-all whitespace-nowrap shrink-0"
                       >
-                        <span className="material-symbols-outlined text-[15px] text-primary">{icon}</span>
+                        <span className="material-symbols-outlined text-[13px] text-primary">{icon}</span>
                         {text}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* Textarea + send */}
+                {/* Input box */}
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
-                  <div className="relative bg-surface-container-low border border-outline-variant/20 rounded-2xl p-2 flex flex-col focus-within:border-primary/40 transition-colors">
+                  <div className="absolute -inset-px bg-primary/20 blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl pointer-events-none" />
+                  <div className="relative flex items-end gap-3 bg-surface-container border border-white/[0.08] rounded-2xl px-4 pt-3 pb-3 focus-within:border-primary/35 transition-all duration-200">
                     <textarea
                       ref={textareaRef}
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      disabled={sending || !docId}
+                      disabled={sending}
                       rows={1}
-                      placeholder={docId ? 'Ask anything about your document… (Ctrl+Enter to send)' : 'Select a document first'}
-                      className="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 px-4 pt-4 pb-2 resize-none font-body outline-none overflow-hidden disabled:opacity-50"
+                      placeholder="Ask anything about your document…"
+                      className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/30 resize-none outline-none overflow-hidden leading-relaxed pt-0.5"
                     />
-                    <div className="flex justify-between items-center px-4 py-2 border-t border-white/5">
-                      <p className="text-[10px] text-on-surface-variant/40 font-label">
-                        Ctrl+Enter to send
-                      </p>
-                      <button
-                        onClick={handleSend}
-                        disabled={!question.trim() || !docId || sending}
-                        className="bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-2 rounded-xl font-bold font-headline flex items-center gap-2 hover:shadow-[0_0_20px_rgba(68,229,194,0.3)] transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
-                      >
-                        {sending ? (
-                          <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                        ) : (
-                          <span className="material-symbols-outlined text-[18px]">send</span>
-                        )}
-                        {sending ? 'Thinking…' : 'Send'}
-                      </button>
+                    <button
+                      onClick={handleSend}
+                      disabled={!question.trim() || sending}
+                      className="shrink-0 w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-[#001a12] hover:shadow-[0_0_16px_rgba(68,229,194,0.4)] transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:shadow-none"
+                    >
+                      {sending
+                        ? <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                        : <span className="material-symbols-outlined text-[18px]">send</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <p className="mt-2 text-center text-[10px] text-on-surface-variant/25 font-label">
+                  Ctrl+Enter to send · AI-generated — always verify with a qualified lawyer</p>
                     </div>
                   </div>
                 </div>

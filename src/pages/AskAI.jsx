@@ -307,200 +307,222 @@ export default function AskAI() {
 
         {/* ── Document Picker ────────────────────────────────────── */}
         {!docId && (
-          <div className="flex-1 overflow-y-auto px-6 py-10 max-w-5xl mx-auto w-full">
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <div className="px-8 py-10 max-w-5xl mx-auto w-full">
 
-            {/* Heading */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
-                <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-              </div>
-              <h2 className="text-2xl font-headline font-bold text-white mb-1">Ask AI About a Document</h2>
-              <p className="text-on-surface-variant text-sm">Choose an existing document or upload a new one to start chatting.</p>
-            </div>
-
-            {/* Tab toggle */}
-            <div className="flex items-center gap-2 bg-surface-container-low rounded-xl p-1 mb-6 max-w-sm mx-auto">
-              {[
-                { key: 'existing', icon: 'folder_open',  label: 'My Documents' },
-                { key: 'upload',   icon: 'upload_file',  label: 'Upload New'   },
-              ].map(({ key, icon, label }) => (
-                <button
-                  key={key}
-                  onClick={() => { setPickerTab(key); setUploadError(''); setUploadFile(null); setUploadProgress(0); setUploadMsg(''); }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                    pickerTab === key
-                      ? 'bg-primary text-on-primary shadow'
-                      : 'text-on-surface-variant hover:text-on-surface'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px]">{icon}</span>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* ── Tab: existing documents ── */}
-            {pickerTab === 'existing' && (
-              <>
-                {/* Search */}
-                <div className="relative mb-5">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-                  <input
-                    value={docSearch}
-                    onChange={(e) => setDocSearch(e.target.value)}
-                    placeholder="Search documents…"
-                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl pl-11 pr-4 py-3 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors"
-                  />
+              {/* Heading */}
+              <div className="flex flex-col items-center text-center mb-10">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(68,229,194,0.15)]">
+                  <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                 </div>
-
-                {docs.length === 0 ? (
-                  <div className="text-center py-16">
-                    <span className="material-symbols-outlined text-5xl text-on-surface-variant/30">folder_open</span>
-                    <p className="text-on-surface-variant mt-3">No documents uploaded yet.</p>
-                    <button
-                      onClick={() => setPickerTab('upload')}
-                      className="mt-4 px-5 py-2.5 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
-                    >
-                      Upload your first document
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {docs
-                      .filter((d) =>
-                        !docSearch ||
-                        d.originalName.toLowerCase().includes(docSearch.toLowerCase()) ||
-                        d.docType?.toLowerCase().includes(docSearch.toLowerCase())
-                      )
-                      .map((doc) => {
-                        const health =
-                          (doc.healthScore || 0) >= 80 ? { color: 'text-primary',  bar: 'bg-primary'  }
-                          : (doc.healthScore || 0) >= 50 ? { color: 'text-amber-400', bar: 'bg-amber-400' }
-                          : { color: 'text-error',   bar: 'bg-error'   };
-                        return (
-                          <button
-                            key={doc._id}
-                            onClick={() => {
-                              setDocId(doc._id);
-                              navigate(`/ask?docId=${doc._id}`, { replace: true });
-                            }}
-                            className="text-left bg-surface-container-low hover:bg-surface-container border border-outline-variant/10 hover:border-primary/30 rounded-2xl p-5 transition-all group"
-                          >
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined text-primary text-lg">description</span>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate" title={doc.originalName}>
-                                  {doc.originalName}
-                                </p>
-                                <p className="text-[11px] text-on-surface-variant mt-0.5">
-                                  {doc.docType || 'Document'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {doc.status === 'analyzed' && (
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="flex-1 h-1 bg-outline-variant/20 rounded-full overflow-hidden">
-                                  <div className={`h-full rounded-full ${health.bar}`} style={{ width: `${doc.healthScore || 0}%` }} />
-                                </div>
-                                <span className={`text-[11px] font-bold ${health.color}`}>{doc.healthScore || 0}</span>
-                              </div>
-                            )}
-
-                            <div className="flex items-center justify-between">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                doc.status === 'analyzed'
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'bg-outline-variant/20 text-on-surface-variant'
-                              }`}>
-                                {doc.status === 'analyzed' ? 'Analyzed' : 'Not analyzed'}
-                              </span>
-                              <span className="text-[10px] text-on-surface-variant">
-                                {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* ── Tab: upload new ── */}
-            {pickerTab === 'upload' && (
-              <div className="max-w-lg mx-auto">
-                {uploadProgress > 0 ? (
-                  /* Progress view */
-                  <div className="bg-surface-container-low rounded-2xl p-8 border border-outline-variant/10 text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                      {uploadProgress === 100
-                        ? <span className="material-symbols-outlined text-3xl text-primary">check_circle</span>
-                        : <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
-                      }
-                    </div>
-                    <p className="font-semibold text-on-surface mb-1">{uploadFile?.name}</p>
-                    <p className="text-sm text-on-surface-variant mb-5">{uploadMsg}</p>
-                    <div className="w-full bg-outline-variant/20 rounded-full h-2 mb-2">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-primary font-bold">{uploadProgress}%</p>
-                    {uploadError && (
-                      <p className="mt-4 text-sm text-error">{uploadError}</p>
-                    )}
-                  </div>
-                ) : (
-                  /* Drop zone */
-                  <div
-                    onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
-                    onDragLeave={() => setUploadDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setUploadDragging(false);
-                      const f = e.dataTransfer.files[0];
-                      if (f) handleUploadFile(f);
-                    }}
-                    onClick={() => uploadInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
-                      uploadDragging
-                        ? 'border-primary bg-primary/10'
-                        : 'border-outline-variant/30 hover:border-primary/40 hover:bg-primary/5'
-                    }`}
-                  >
-                    <input
-                      ref={uploadInputRef}
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="hidden"
-                      onChange={(e) => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); }}
-                    />
-                    <span className="material-symbols-outlined text-5xl text-primary/60 mb-4 block">upload_file</span>
-                    <p className="font-bold text-on-surface mb-1">Drop your document here</p>
-                    <p className="text-sm text-on-surface-variant mb-4">or click to browse</p>
-                    <span className="text-xs bg-surface-container-high px-3 py-1.5 rounded-full text-on-surface-variant border border-outline-variant/10">
-                      PDF, DOC, DOCX supported
-                    </span>
-
-                    {uploadError && (
-                      <p className="mt-5 text-sm text-error flex items-center justify-center gap-2">
-                        <span className="material-symbols-outlined text-base">error</span>
-                        {uploadError}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <p className="mt-4 text-center text-[11px] text-on-surface-variant/50">
-                  <span className="material-symbols-outlined text-[13px] align-middle mr-1">lock</span>
-                  Text is extracted in your browser. The raw file never leaves your device.
+                <h2 className="text-3xl font-headline font-extrabold text-white mb-2 tracking-tight">Ask AI About a Document</h2>
+                <p className="text-on-surface-variant text-sm max-w-md">
+                  Choose an existing document or upload a new one — get instant AI answers in plain English.
                 </p>
               </div>
-            )}
+
+              {/* Tab toggle */}
+              <div className="flex items-center gap-1 bg-surface-container rounded-2xl p-1.5 mb-8 max-w-xs mx-auto border border-white/5 shadow-inner">
+                {[
+                  { key: 'existing', icon: 'folder_open', label: 'My Documents' },
+                  { key: 'upload',   icon: 'upload_file', label: 'Upload New'   },
+                ].map(({ key, icon, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => { setPickerTab(key); setUploadError(''); setUploadFile(null); setUploadProgress(0); setUploadMsg(''); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                      pickerTab === key
+                        ? 'bg-primary text-on-primary shadow-[0_2px_12px_rgba(68,229,194,0.3)]'
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[17px]">{icon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Tab: existing documents ── */}
+              {pickerTab === 'existing' && (
+                <>
+                  {/* Search */}
+                  <div className="relative mb-6">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                    <input
+                      value={docSearch}
+                      onChange={(e) => setDocSearch(e.target.value)}
+                      placeholder="Search by name or type…"
+                      className="w-full bg-surface-container border border-white/5 rounded-xl pl-11 pr-4 py-3.5 text-sm text-on-surface outline-none focus:border-primary/40 transition-colors placeholder:text-on-surface-variant/40"
+                    />
+                  </div>
+
+                  {docs.length === 0 ? (
+                    <div className="text-center py-20 flex flex-col items-center gap-4">
+                      <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center">
+                        <span className="material-symbols-outlined text-4xl text-on-surface-variant/30">folder_open</span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-on-surface mb-1">No documents yet</p>
+                        <p className="text-sm text-on-surface-variant">Upload your first document to get started.</p>
+                      </div>
+                      <button
+                        onClick={() => setPickerTab('upload')}
+                        className="mt-2 px-6 py-3 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                        Upload a Document
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {docs
+                        .filter((d) =>
+                          !docSearch ||
+                          d.originalName.toLowerCase().includes(docSearch.toLowerCase()) ||
+                          d.docType?.toLowerCase().includes(docSearch.toLowerCase())
+                        )
+                        .map((doc) => {
+                          const score = doc.healthScore || 0;
+                          const health =
+                            score >= 80 ? { color: 'text-primary',   bar: 'bg-primary',   glow: 'shadow-primary/20'   }
+                            : score >= 50 ? { color: 'text-amber-400', bar: 'bg-amber-400', glow: 'shadow-amber-400/20' }
+                            :               { color: 'text-error',     bar: 'bg-error',     glow: 'shadow-error/20'     };
+                          const analyzed = doc.status === 'analyzed';
+                          return (
+                            <button
+                              key={doc._id}
+                              onClick={() => {
+                                setDocId(doc._id);
+                                navigate(`/ask?docId=${doc._id}`, { replace: true });
+                              }}
+                              className="text-left bg-surface-container-low hover:bg-surface-container border border-white/5 hover:border-primary/25 rounded-2xl p-5 transition-all duration-200 group hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
+                            >
+                              {/* Icon + name */}
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                                  <span className="material-symbols-outlined text-primary text-xl">description</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate leading-tight" title={doc.originalName}>
+                                    {doc.originalName.replace(/\.[^.]+$/, '')}
+                                  </p>
+                                  <p className="text-[11px] text-on-surface-variant/70 mt-0.5 font-label">
+                                    {doc.docType && doc.docType !== 'Other' ? doc.docType : doc.fileType?.toUpperCase() || 'Document'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Health bar */}
+                              {analyzed ? (
+                                <div className="flex items-center gap-2.5 mb-4">
+                                  <div className="flex-1 h-1.5 bg-outline-variant/15 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${health.bar} transition-all`}
+                                      style={{ width: `${score}%` }}
+                                    />
+                                  </div>
+                                  <span className={`text-[11px] font-extrabold font-label tabular-nums ${health.color}`}>{score}</span>
+                                </div>
+                              ) : (
+                                <div className="h-[26px] mb-4 flex items-center">
+                                  <span className="text-[11px] text-on-surface-variant/50 font-label italic">Not yet analyzed</span>
+                                </div>
+                              )}
+
+                              {/* Footer */}
+                              <div className="flex items-center justify-between">
+                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full font-label ${
+                                  analyzed
+                                    ? 'bg-primary/10 text-primary border border-primary/15'
+                                    : 'bg-outline-variant/10 text-on-surface-variant border border-white/5'
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${analyzed ? 'bg-primary' : 'bg-on-surface-variant/40'}`} />
+                                  {analyzed ? 'Ready to chat' : 'Upload only'}
+                                </span>
+                                <span className="text-[10px] text-on-surface-variant/50 font-label">
+                                  {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ── Tab: upload new ── */}
+              {pickerTab === 'upload' && (
+                <div className="max-w-md mx-auto">
+                  {uploadProgress > 0 ? (
+                    <div className="bg-surface-container-low rounded-2xl p-10 border border-white/5 text-center">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
+                        {uploadProgress === 100
+                          ? <span className="material-symbols-outlined text-3xl text-primary">check_circle</span>
+                          : <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
+                        }
+                      </div>
+                      <p className="font-semibold text-on-surface mb-1 truncate">{uploadFile?.name}</p>
+                      <p className="text-sm text-on-surface-variant mb-6">{uploadMsg}</p>
+                      <div className="w-full bg-outline-variant/15 rounded-full h-1.5 mb-2 overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all duration-500"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-primary font-bold">{uploadProgress}%</p>
+                      {uploadError && <p className="mt-4 text-sm text-error">{uploadError}</p>}
+                    </div>
+                  ) : (
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
+                      onDragLeave={() => setUploadDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setUploadDragging(false);
+                        const f = e.dataTransfer.files[0];
+                        if (f) handleUploadFile(f);
+                      }}
+                      onClick={() => uploadInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-14 text-center cursor-pointer transition-all duration-200 ${
+                        uploadDragging
+                          ? 'border-primary bg-primary/10 scale-[1.01]'
+                          : 'border-outline-variant/20 hover:border-primary/40 hover:bg-primary/5'
+                      }`}
+                    >
+                      <input
+                        ref={uploadInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                        onChange={(e) => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); }}
+                      />
+                      <span className="material-symbols-outlined text-6xl text-primary/40 mb-5 block">upload_file</span>
+                      <p className="font-bold text-on-surface text-lg mb-1">Drop your document here</p>
+                      <p className="text-sm text-on-surface-variant mb-5">or click to browse files</p>
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        {['PDF', 'DOC', 'DOCX'].map((ext) => (
+                          <span key={ext} className="text-[11px] bg-surface-container px-3 py-1 rounded-full text-on-surface-variant border border-white/5 font-label font-bold">
+                            {ext}
+                          </span>
+                        ))}
+                      </div>
+                      {uploadError && (
+                        <p className="mt-5 text-sm text-error flex items-center justify-center gap-1.5">
+                          <span className="material-symbols-outlined text-base">error</span>
+                          {uploadError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <div className="mt-5 flex items-center justify-center gap-2 text-[11px] text-on-surface-variant/40 font-label">
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Text extracted in your browser — raw file never leaves your device
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         )}
 

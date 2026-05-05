@@ -1,10 +1,39 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
-import { askAI, getChatHistory, clearChatHistory } from '../api/analysis.api';
-import { getDocuments, getDocument, getTextPreview } from '../api/documents.api';
+import { askAI, getChatHistory, clearChatHistory, analyzeDocument } from '../api/analysis.api';
+import { getDocuments, getDocument, getTextPreview, uploadTextOnly } from '../api/documents.api';
 import { useAuth } from '../context/AuthContext';
 import ConsentPanel from '../components/ConsentPanel';
+
+/* ── browser PDF extraction (same as UploadDocument) ──────────────── */
+async function extractPdfInBrowser(file, onProgress) {
+  const pdfjsLib = await import('pdfjs-dist');
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url,
+    ).href;
+  }
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map((item) => item.str).join(' ') + '\n';
+    onProgress(Math.round((i / pdf.numPages) * 80));
+  }
+  return text.trim();
+}
+
+async function extractDocxInBrowser(file, onProgress) {
+  const mammoth     = (await import('mammoth')).default;
+  const arrayBuffer = await file.arrayBuffer();
+  const result      = await mammoth.extractRawText({ arrayBuffer });
+  onProgress(80);
+  return result.value.trim();
+}
 
 const SUGGESTIONS = [
   { icon: 'handshake',    text: 'What are my obligations?' },
@@ -30,6 +59,16 @@ export default function AskAI() {
   const [docs,        setDocs]        = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [docId,       setDocId]       = useState(paramDocId || '');
+  const [pickerTab,   setPickerTab]   = useState('existing'); // 'existing' | 'upload'
+  const [docSearch,   setDocSearch]   = useState('');
+
+  /* inline upload state */
+  const [uploadFile,     setUploadFile]     = useState(null);
+  const [uploadDragging, setUploadDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadMsg,      setUploadMsg]      = useState('');
+  const [uploadError,    setUploadError]    = useState('');
+  const uploadInputRef = useRef(null);
 
   /* chat */
   const [messages,  setMessages]  = useState([]);
@@ -171,6 +210,47 @@ export default function AskAI() {
     }
   };
 
+  /* ── inline upload ────────────────────────────────────────────── */
+  const handleUploadFile = async (file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'doc', 'docx'].includes(ext)) {
+      setUploadError('Only PDF, DOC, and DOCX files are supported.');
+      return;
+    }
+    setUploadFile(file);
+    setUploadError('');
+    setUploadProgress(5);
+    setUploadMsg('Extracting text from document…');
+    try {
+      let text = '';
+      if (ext === 'pdf') {
+        text = await extractPdfInBrowser(file, setUploadProgress);
+      } else {
+        text = await extractDocxInBrowser(file, setUploadProgress);
+      }
+      setUploadProgress(85);
+      setUploadMsg('Uploading to NyayaAI…');
+      const upRes = await uploadTextOnly(file.name, text, 'Other', 'Not detected', true);
+      const newDocId = upRes.data.data.document._id;
+      setUploadProgress(90);
+      setUploadMsg('Running AI analysis…');
+      await analyzeDocument(newDocId);
+      setUploadProgress(100);
+      setUploadMsg('Done! Starting chat…');
+      // refresh docs list then open chat
+      const docsRes = await getDocuments();
+      setDocs(docsRes.data.data.documents || []);
+      setDocId(newDocId);
+      navigate(`/ask?docId=${newDocId}`, { replace: true });
+    } catch (err) {
+      setUploadError(err.response?.data?.message || 'Upload failed. Please try again.');
+      setUploadProgress(0);
+      setUploadMsg('');
+      setUploadFile(null);
+    }
+  };
+
   /* ── copy message ─────────────────────────────────────────────── */
   const copyMsg = (text) => navigator.clipboard.writeText(text).catch(() => {});
 
@@ -225,24 +305,202 @@ export default function AskAI() {
 
       <div className="flex flex-col h-[calc(100vh-64px)] bg-surface">
 
-        {/* ── No doc selected ───────────────────────────────────── */}
+        {/* ── Document Picker ────────────────────────────────────── */}
         {!docId && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+          <div className="flex-1 overflow-y-auto px-6 py-10 max-w-5xl mx-auto w-full">
+
+            {/* Heading */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+              </div>
+              <h2 className="text-2xl font-headline font-bold text-white mb-1">Ask AI About a Document</h2>
+              <p className="text-on-surface-variant text-sm">Choose an existing document or upload a new one to start chatting.</p>
             </div>
-            <div>
-              <h2 className="text-2xl font-headline font-bold text-white mb-2">Ask AI About Your Documents</h2>
-              <p className="text-on-surface-variant max-w-md">
-                Select a document from the dropdown above to start a conversation. Ask anything — clause meanings, risks, obligations, deadlines.
-              </p>
+
+            {/* Tab toggle */}
+            <div className="flex items-center gap-2 bg-surface-container-low rounded-xl p-1 mb-6 max-w-sm mx-auto">
+              {[
+                { key: 'existing', icon: 'folder_open',  label: 'My Documents' },
+                { key: 'upload',   icon: 'upload_file',  label: 'Upload New'   },
+              ].map(({ key, icon, label }) => (
+                <button
+                  key={key}
+                  onClick={() => { setPickerTab(key); setUploadError(''); setUploadFile(null); setUploadProgress(0); setUploadMsg(''); }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                    pickerTab === key
+                      ? 'bg-primary text-on-primary shadow'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">{icon}</span>
+                  {label}
+                </button>
+              ))}
             </div>
-            <button
-              onClick={() => navigate('/documents')}
-              className="px-6 py-3 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
-            >
-              Go to My Documents
-            </button>
+
+            {/* ── Tab: existing documents ── */}
+            {pickerTab === 'existing' && (
+              <>
+                {/* Search */}
+                <div className="relative mb-5">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                  <input
+                    value={docSearch}
+                    onChange={(e) => setDocSearch(e.target.value)}
+                    placeholder="Search documents…"
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl pl-11 pr-4 py-3 text-sm text-on-surface outline-none focus:border-primary/50 transition-colors"
+                  />
+                </div>
+
+                {docs.length === 0 ? (
+                  <div className="text-center py-16">
+                    <span className="material-symbols-outlined text-5xl text-on-surface-variant/30">folder_open</span>
+                    <p className="text-on-surface-variant mt-3">No documents uploaded yet.</p>
+                    <button
+                      onClick={() => setPickerTab('upload')}
+                      className="mt-4 px-5 py-2.5 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
+                    >
+                      Upload your first document
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {docs
+                      .filter((d) =>
+                        !docSearch ||
+                        d.originalName.toLowerCase().includes(docSearch.toLowerCase()) ||
+                        d.docType?.toLowerCase().includes(docSearch.toLowerCase())
+                      )
+                      .map((doc) => {
+                        const health =
+                          (doc.healthScore || 0) >= 80 ? { color: 'text-primary',  bar: 'bg-primary'  }
+                          : (doc.healthScore || 0) >= 50 ? { color: 'text-amber-400', bar: 'bg-amber-400' }
+                          : { color: 'text-error',   bar: 'bg-error'   };
+                        return (
+                          <button
+                            key={doc._id}
+                            onClick={() => {
+                              setDocId(doc._id);
+                              navigate(`/ask?docId=${doc._id}`, { replace: true });
+                            }}
+                            className="text-left bg-surface-container-low hover:bg-surface-container border border-outline-variant/10 hover:border-primary/30 rounded-2xl p-5 transition-all group"
+                          >
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="material-symbols-outlined text-primary text-lg">description</span>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate" title={doc.originalName}>
+                                  {doc.originalName}
+                                </p>
+                                <p className="text-[11px] text-on-surface-variant mt-0.5">
+                                  {doc.docType || 'Document'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {doc.status === 'analyzed' && (
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="flex-1 h-1 bg-outline-variant/20 rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${health.bar}`} style={{ width: `${doc.healthScore || 0}%` }} />
+                                </div>
+                                <span className={`text-[11px] font-bold ${health.color}`}>{doc.healthScore || 0}</span>
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                doc.status === 'analyzed'
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'bg-outline-variant/20 text-on-surface-variant'
+                              }`}>
+                                {doc.status === 'analyzed' ? 'Analyzed' : 'Not analyzed'}
+                              </span>
+                              <span className="text-[10px] text-on-surface-variant">
+                                {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Tab: upload new ── */}
+            {pickerTab === 'upload' && (
+              <div className="max-w-lg mx-auto">
+                {uploadProgress > 0 ? (
+                  /* Progress view */
+                  <div className="bg-surface-container-low rounded-2xl p-8 border border-outline-variant/10 text-center">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                      {uploadProgress === 100
+                        ? <span className="material-symbols-outlined text-3xl text-primary">check_circle</span>
+                        : <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
+                      }
+                    </div>
+                    <p className="font-semibold text-on-surface mb-1">{uploadFile?.name}</p>
+                    <p className="text-sm text-on-surface-variant mb-5">{uploadMsg}</p>
+                    <div className="w-full bg-outline-variant/20 rounded-full h-2 mb-2">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-primary font-bold">{uploadProgress}%</p>
+                    {uploadError && (
+                      <p className="mt-4 text-sm text-error">{uploadError}</p>
+                    )}
+                  </div>
+                ) : (
+                  /* Drop zone */
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
+                    onDragLeave={() => setUploadDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setUploadDragging(false);
+                      const f = e.dataTransfer.files[0];
+                      if (f) handleUploadFile(f);
+                    }}
+                    onClick={() => uploadInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
+                      uploadDragging
+                        ? 'border-primary bg-primary/10'
+                        : 'border-outline-variant/30 hover:border-primary/40 hover:bg-primary/5'
+                    }`}
+                  >
+                    <input
+                      ref={uploadInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={(e) => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); }}
+                    />
+                    <span className="material-symbols-outlined text-5xl text-primary/60 mb-4 block">upload_file</span>
+                    <p className="font-bold text-on-surface mb-1">Drop your document here</p>
+                    <p className="text-sm text-on-surface-variant mb-4">or click to browse</p>
+                    <span className="text-xs bg-surface-container-high px-3 py-1.5 rounded-full text-on-surface-variant border border-outline-variant/10">
+                      PDF, DOC, DOCX supported
+                    </span>
+
+                    {uploadError && (
+                      <p className="mt-5 text-sm text-error flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-base">error</span>
+                        {uploadError}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <p className="mt-4 text-center text-[11px] text-on-surface-variant/50">
+                  <span className="material-symbols-outlined text-[13px] align-middle mr-1">lock</span>
+                  Text is extracted in your browser. The raw file never leaves your device.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

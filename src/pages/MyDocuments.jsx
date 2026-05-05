@@ -237,7 +237,11 @@ export default function MyDocuments() {
                     const isDeleting = deletingId === doc._id;
 
                     return (
-                      <tr key={doc._id} className={`hover:bg-white/5 transition-colors group ${isDeleting ? 'opacity-40' : ''}`}>
+                      <tr
+                        key={doc._id}
+                        onClick={() => navigate(`/analysis/${doc._id}`)}
+                        className={`hover:bg-white/5 transition-colors group cursor-pointer ${isDeleting ? 'opacity-40' : ''}`}
+                      >
                         {/* Document name */}
                         <td className="py-5 px-6">
                           <div className="flex items-center gap-4">
@@ -309,7 +313,7 @@ export default function MyDocuments() {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-5 px-6 text-right">
+                        <td className="py-5 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                           {confirmId === doc._id ? (
                             <div className="flex items-center justify-end gap-2">
                               <span className="text-xs text-on-surface-variant">Delete?</span>

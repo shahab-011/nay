@@ -771,13 +771,7 @@ export default function AskAI() {
                 </div>
 
                 <p className="mt-2 text-center text-[10px] text-on-surface-variant/25 font-label">
-                  Ctrl+Enter to send · AI-generated — always verify with a qualified lawyer</p>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="mt-3 text-center text-[10px] font-label text-on-surface-variant/40 uppercase tracking-widest">
-                  ⚠ AI-generated responses — always verify with a qualified lawyer
+                  Ctrl+Enter to send · AI-generated — always verify with a qualified lawyer
                 </p>
               </div>
             </div>

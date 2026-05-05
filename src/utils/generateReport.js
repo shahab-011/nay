@@ -14,6 +14,9 @@ const GREEN   = [22, 163, 74];
 const riskRGB    = (lvl) => lvl === 'high' ? RED : lvl === 'medium' ? AMBER : GREEN;
 const healthRGB  = (s)   => s >= 80 ? GREEN : s >= 60 ? AMBER : RED;
 
+// jsPDF helvetica only covers Latin-1; replace ₹ and other non-Latin-1 chars
+const pdfSafe = (t) => String(t ?? '').replace(/₹/g, 'Rs.').replace(/[^\x00-\xFF]/g, '');
+
 /* ── constants ─────────────────────────────────────────────────── */
 const MANDATORY_KEYS = [
   'termination', 'payment', 'confidentiality',
@@ -66,7 +69,7 @@ export function generateAnalysisReport(doc, analysis) {
   pdf.setTextColor(...DARK);
   pdf.setFontSize(17);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(title, M, y);
+  pdf.text(pdfSafe(title), M, y);
   y += 7;
 
   const metaParts = [
@@ -136,7 +139,7 @@ export function generateAnalysisReport(doc, analysis) {
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9);
   pdf.setTextColor(40, 50, 65);
-  const summaryLines = pdf.splitTextToSize(analysis.summary || 'No summary available.', CW);
+  const summaryLines = pdf.splitTextToSize(pdfSafe(analysis.summary || 'No summary available.'), CW);
   const summaryH = summaryLines.length * 5.5;
   y = pageBreakGuard(pdf, y, summaryH + 15, M, PH);
   pdf.text(summaryLines, M, y);
@@ -153,8 +156,8 @@ export function generateAnalysisReport(doc, analysis) {
       margin: { left: M, right: M },
       head: [['Clause Type', 'Plain English Summary', 'Risk']],
       body: clauses.map((c) => [
-        c.type || '—',
-        c.plainEnglish || '—',
+        pdfSafe(c.type || '—'),
+        pdfSafe(c.plainEnglish || '—'),
         (c.riskLevel || 'low').toUpperCase(),
       ]),
       headStyles:           { fillColor: DARK, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
@@ -162,7 +165,7 @@ export function generateAnalysisReport(doc, analysis) {
       alternateRowStyles:   { fillColor: LGRAY },
       columnStyles: {
         0: { cellWidth: 40, fontStyle: 'bold' },
-        1: { cellWidth: 'auto', overflow: 'linebreak' },
+        1: { cellWidth: 116 },
         2: { cellWidth: 18, halign: 'center', fontStyle: 'bold' },
       },
       didParseCell: (data) => {
@@ -186,19 +189,19 @@ export function generateAnalysisReport(doc, analysis) {
       margin: { left: M, right: M },
       head: [['Title', 'Sev.', 'Description', 'Recommendation']],
       body: risks.map((r) => [
-        r.title       || '—',
+        pdfSafe(r.title       || '—'),
         (r.severity   || 'low').toUpperCase(),
-        r.description || '—',
-        r.recommendation || '—',
+        pdfSafe(r.description || '—'),
+        pdfSafe(r.recommendation || '—'),
       ]),
       headStyles:          { fillColor: DARK, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
       bodyStyles:          { textColor: DARK, fontSize: 8, cellPadding: 2.5, overflow: 'linebreak' },
       alternateRowStyles:  { fillColor: LGRAY },
       columnStyles: {
-        0: { cellWidth: 36, fontStyle: 'bold', overflow: 'linebreak' },
+        0: { cellWidth: 36, fontStyle: 'bold' },
         1: { cellWidth: 14, halign: 'center', fontStyle: 'bold' },
-        2: { cellWidth: 'auto', overflow: 'linebreak' },
-        3: { cellWidth: 50, overflow: 'linebreak' },
+        2: { cellWidth: 74 },
+        3: { cellWidth: 50 },
       },
       didParseCell: (data) => {
         if (data.section === 'body' && data.column.index === 1) {
@@ -236,9 +239,9 @@ export function generateAnalysisReport(doc, analysis) {
     bodyStyles:          { textColor: DARK, fontSize: 8.5, cellPadding: 2.8, overflow: 'linebreak' },
     alternateRowStyles:  { fillColor: LGRAY },
     columnStyles: {
-      0: { cellWidth: 8,  halign: 'center', fontSize: 10 },
-      1: { cellWidth: 'auto', overflow: 'linebreak' },
-      2: { cellWidth: 22, halign: 'center', fontStyle: 'bold', fontSize: 8 },
+      0: { cellWidth: 8,   halign: 'center', fontSize: 10 },
+      1: { cellWidth: 144 },
+      2: { cellWidth: 22,  halign: 'center', fontStyle: 'bold', fontSize: 8 },
     },
     didParseCell: (data) => {
       if (data.section !== 'body') return;

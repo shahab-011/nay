@@ -417,18 +417,21 @@ export default function Analysis() {
             </div>
             <div className="text-on-surface-variant leading-relaxed text-base mb-4 font-body flex-1 space-y-4 overflow-y-auto max-h-[480px] custom-scrollbar pr-1">
               {analysis?.summary
-                ? analysis.summary.split('\n').map((line, i) => {
-                    const sectionMatch = line.match(/^([A-Z][A-Z\s&]+):\s*(.*)/);
-                    if (sectionMatch) {
-                      return (
-                        <div key={i}>
-                          <span className="text-xs font-bold uppercase tracking-widest text-primary-container block mb-1">{sectionMatch[1]}</span>
-                          {sectionMatch[2] && <p className="text-sm leading-relaxed">{sectionMatch[2]}</p>}
-                        </div>
-                      );
-                    }
-                    if (line.trim() === '') return null;
-                    return <p key={i} className="text-sm leading-relaxed">{line}</p>;
+                ? analysis.summary.split('|||').map((section, i) => {
+                    const trimmed = section.trim();
+                    if (!trimmed) return null;
+                    const colonIdx = trimmed.indexOf(':');
+                    const heading = colonIdx !== -1 ? trimmed.slice(0, colonIdx).trim() : null;
+                    const body = colonIdx !== -1 ? trimmed.slice(colonIdx + 1).trim() : trimmed;
+                    const isHeading = heading && /^[A-Z][A-Z\s&]+$/.test(heading);
+                    return (
+                      <div key={i} className={i > 0 ? 'pt-2 border-t border-white/5' : ''}>
+                        {isHeading && (
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-primary-container block mb-1.5">{heading}</span>
+                        )}
+                        <p className="text-sm leading-relaxed">{isHeading ? body : trimmed}</p>
+                      </div>
+                    );
                   })
                 : <p className="text-sm">No summary available.</p>}
             </div>

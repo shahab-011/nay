@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Compare Documents',  icon: 'compare_arrows',  path: '/compare'   },
   { name: 'Contract Lifecycle', icon: 'history_edu',     path: '/lifecycle' },
   { name: 'Alerts',             icon: 'notifications',   path: '/alerts',   badge: true },
+  { name: 'Client Links',       icon: 'handshake',       path: '/client-links', lawyerOnly: false },
 ];
 
 const bottomItems = [
@@ -44,27 +45,31 @@ export default function Sidebar() {
 
       {/* Nav items */}
       <nav className="flex-1 px-3 space-y-1 mt-2 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 group ${
-                isActive
-                  ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10 active:scale-[0.98]'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-              }`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-            <span className="text-sm font-medium font-headline tracking-tight flex-1">{item.name}</span>
-            {item.badge && unread > 0 && (
-              <span className="bg-primary text-on-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
-                {unread > 9 ? '9+' : unread}
-              </span>
-            )}
-          </NavLink>
-        ))}
+        {navItems
+          // Lawyers see Client Links under Legal Pro — hide it from their main nav
+          .filter(item => !(isLawyer && item.path === '/client-links'))
+          .map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 group ${
+                  isActive
+                    ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10 active:scale-[0.98]'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                }`
+              }
+            >
+              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+              <span className="text-sm font-medium font-headline tracking-tight flex-1">{item.name}</span>
+              {item.badge && unread > 0 && (
+                <span className="bg-primary text-on-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </NavLink>
+          ))
+        }
 
         {/* Lawyer-only section */}
         {isLawyer && (
@@ -74,21 +79,27 @@ export default function Sidebar() {
                 Legal Pro
               </span>
             </div>
-            <NavLink
-              to="/lawyer"
-              className={({ isActive }) =>
-                `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
-                    : 'text-slate-200 hover:text-white hover:bg-white/5'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                account_balance
-              </span>
-              <span className="text-sm font-medium font-headline tracking-tight flex-1">Lawyer Dashboard</span>
-            </NavLink>
+            {[
+              { name: 'Lawyer Dashboard', icon: 'account_balance', path: '/lawyer'        },
+              { name: 'Client Links',     icon: 'handshake',       path: '/client-links'  },
+            ].map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
+                      : 'text-slate-200 hover:text-white hover:bg-white/5'
+                  }`
+                }
+              >
+                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {item.icon}
+                </span>
+                <span className="text-sm font-medium font-headline tracking-tight flex-1">{item.name}</span>
+              </NavLink>
+            ))}
           </div>
         )}
       </nav>

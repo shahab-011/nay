@@ -13,6 +13,7 @@ import AskAI from './pages/AskAI';
 import Alerts from './pages/Alerts';
 import Profile from './pages/Profile';
 import LawyerDashboard from './pages/LawyerDashboard';
+import ClientLinks from './pages/ClientLinks';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PrivacyProvider } from './context/PrivacyContext';
@@ -57,7 +58,8 @@ function App() {
                 <Route path="/compare"   element={<PrivateRoute><CompareDocuments /></PrivateRoute>} />
                 <Route path="/lifecycle" element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
                 <Route path="/alerts"    element={<PrivateRoute><Alerts /></PrivateRoute>} />
-                <Route path="/profile"   element={<PrivateRoute><Profile /></PrivateRoute>} />
+                <Route path="/profile"      element={<PrivateRoute><Profile /></PrivateRoute>} />
+                <Route path="/client-links" element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
 
                 {/* Lawyer-only routes — redirect regular users to / */}
                 <Route

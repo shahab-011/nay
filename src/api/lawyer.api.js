@@ -15,8 +15,10 @@ export const getClients = () => api.get('/lawyer/clients');
 
 /* ── Client linking — client (user) side ───────────────────────────── */
 export const getLinkRequests    = ()        => api.get('/lawyer/link-requests');
+export const getMyLinks         = ()        => api.get('/lawyer/my-links');
 export const acceptLinkRequest  = (linkId)  => api.patch(`/lawyer/link-requests/${linkId}/accept`);
 export const rejectLinkRequest  = (linkId)  => api.patch(`/lawyer/link-requests/${linkId}/reject`);
+export const clientUnlink       = (linkId)  => api.patch(`/lawyer/my-links/${linkId}/unlink`);
 export const shareDocument      = (linkId, documentId) =>
   api.post('/lawyer/share-document',   { linkId, documentId });
 export const unshareDocument    = (linkId, documentId) =>

@@ -12,8 +12,8 @@ export const getMe = () =>
 export const updatePassword = (currentPassword, newPassword) =>
   api.put('/auth/update-password', { currentPassword, newPassword });
 
-export const updateProfile = (name) =>
-  api.put('/auth/update-profile', { name });
+export const updateProfile = (updates) =>
+  api.put('/auth/update-profile', updates);
 
 export const getUserStats = () =>
   api.get('/auth/stats');

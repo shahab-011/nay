@@ -299,13 +299,16 @@ export default function Profile() {
   const currentAvatarId = user?.avatarUrl || 'av0';
 
   const handleSaveAvatar = async (id) => {
+    const previous = user?.avatarUrl || 'av0';
+    // Optimistic update — close picker and show new avatar immediately
+    setShowPicker(false);
+    updateUser({ avatarUrl: id });
     setAvatarSaving(true);
     try {
-      const res = await updateProfile({ avatarUrl: id });
-      updateUser({ avatarUrl: res.data.data.user.avatarUrl });
-      setShowPicker(false);
+      await updateProfile({ avatarUrl: id });
     } catch {
-      // silently fail — picker stays open
+      // Revert to previous avatar if backend call fails
+      updateUser({ avatarUrl: previous });
     } finally {
       setAvatarSaving(false);
     }

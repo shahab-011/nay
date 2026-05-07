@@ -192,15 +192,15 @@ export default function Profile() {
       <div className="p-8 pb-24 space-y-8 max-w-6xl">
 
         {/* ── Hero Card ───────────────────────────────────────── */}
-        <div className="relative rounded-2xl overflow-hidden border border-white/5">
-          {/* Banner gradient */}
-          <div className="h-28 bg-gradient-to-r from-[#0a1628] via-[#0d2040] to-[#003d30] relative">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(0,201,167,0.15),transparent_70%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(0,151,167,0.1),transparent_70%)]" />
+        <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-surface-container-low">
+          {/* Banner — pure CSS top area, no separate div so no divider line */}
+          <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-r from-[#0a1628] via-[#0d2040] to-[#003d30] pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(0,201,167,0.18),transparent_70%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(0,151,167,0.12),transparent_70%)]" />
           </div>
 
-          {/* Profile info */}
-          <div className="bg-surface-container-low px-8 pb-7">
+          {/* Profile info — sits on top of the absolute banner */}
+          <div className="relative px-8 pb-7 pt-28">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5 -mt-12 mb-5">
               {/* Avatar */}
               <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center border-4 border-surface-container-low shadow-xl flex-shrink-0`}>

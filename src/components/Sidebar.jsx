@@ -14,10 +14,6 @@ const navItems = [
   { name: 'Alerts',             icon: 'notifications',   path: '/alerts',   badge: true },
 ];
 
-const lawyerNavItems = [
-  { name: 'Lawyer Dashboard', icon: 'account_balance', path: '/lawyer' },
-];
-
 const bottomItems = [
   { name: 'Profile',     icon: 'account_circle', path: '/profile' },
   { name: 'Help Center', icon: 'help',            path: '#'        },
@@ -72,31 +68,28 @@ export default function Sidebar() {
 
         {/* Lawyer-only section */}
         {isLawyer && (
-          <>
-            <div className="px-4 pt-5 pb-2">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/60">
+          <div className="pt-3">
+            <div className="px-4 pb-2">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Legal Pro
               </span>
             </div>
-            {lawyerNavItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 border ${
-                    isActive
-                      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10 border-[#00C9A7]/20'
-                      : 'text-[#00C9A7]/80 bg-[#00C9A7]/5 border-[#00C9A7]/10 hover:bg-[#00C9A7]/10 hover:text-[#00C9A7]'
-                  }`
-                }
-              >
-                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  {item.icon}
-                </span>
-                <span className="text-sm font-semibold font-headline tracking-tight flex-1">{item.name}</span>
-              </NavLink>
-            ))}
-          </>
+            <NavLink
+              to="/lawyer"
+              className={({ isActive }) =>
+                `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
+                    : 'text-slate-200 hover:text-white hover:bg-white/5'
+                }`
+              }
+            >
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                account_balance
+              </span>
+              <span className="text-sm font-medium font-headline tracking-tight flex-1">Lawyer Dashboard</span>
+            </NavLink>
+          </div>
         )}
       </nav>
 

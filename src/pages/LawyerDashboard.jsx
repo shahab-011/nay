@@ -230,7 +230,20 @@ export default function LawyerDashboard() {
           <div className="space-y-4">
             <h2 className="text-sm font-label text-on-surface-variant uppercase tracking-widest">Recent Cases</h2>
             {recent.length === 0 ? (
-              <EmptyState icon="folder_open" text="No cases yet" sub="Create your first case to get started." />
+              <div className="text-center py-16 space-y-4 bg-surface-container-low rounded-2xl border border-white/5">
+                <span className="material-symbols-outlined text-5xl block opacity-20 text-primary">folder_open</span>
+                <div>
+                  <p className="text-white/60 font-headline font-bold text-lg">No cases yet</p>
+                  <p className="text-sm text-on-surface-variant mt-1">Create your first case to start managing client work.</p>
+                </div>
+                <button
+                  onClick={openCreate}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+                >
+                  <span className="material-symbols-outlined text-lg">add</span>
+                  Create First Case
+                </button>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recent.map((c) => (
@@ -238,12 +251,14 @@ export default function LawyerDashboard() {
                 ))}
               </div>
             )}
-            <button
-              onClick={() => setTab('cases')}
-              className="text-sm text-primary font-semibold hover:underline"
-            >
-              View all cases →
-            </button>
+            {recent.length > 0 && (
+              <button
+                onClick={() => setTab('cases')}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                View all cases →
+              </button>
+            )}
           </div>
         )}
 

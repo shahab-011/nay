@@ -4,8 +4,43 @@ import { AuthContext } from '../context/AuthContext';
 import { updatePassword, updateProfile, getUserStats, deleteAccount } from '../api/auth.api';
 import { useNavigate } from 'react-router-dom';
 
-/* ─── Avatar SVG designs ──────────────────────────────────────────── */
+/* ─── Image resize helper (Canvas API) ───────────────────────────── */
+function resizeImage(file, maxPx = 220) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) return reject(new Error('Not an image'));
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const w = Math.round(img.width  * ratio);
+      const h = Math.round(img.height * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width  = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+    img.src = url;
+  });
+}
+
+/* ─── Avatar display (SVG preset OR uploaded photo) ──────────────── */
 function AvatarSVG({ id, size = 96 }) {
+  // Uploaded photo stored as base64 data URL
+  if (id && id.startsWith('data:image/')) {
+    return (
+      <img
+        src={id}
+        alt="Profile"
+        width={size}
+        height={size}
+        style={{ width: size, height: size, objectFit: 'cover', display: 'block' }}
+      />
+    );
+  }
+
   const s = size;
   const designs = {
     av0: ( // Balance — Scales of Justice (default)
@@ -173,32 +208,100 @@ function formatRelative(d) {
 
 /* ─── Avatar Picker Modal ─────────────────────────────────────────── */
 function AvatarPicker({ current, onSave, onClose, saving }) {
-  const [selected, setSelected] = useState(current || 'av0');
+  const [selected, setSelected]       = useState(current || 'av0');
+  const [uploadError, setUploadError] = useState('');
+  const [uploading, setUploading]     = useState(false);
+  const fileRef = React.useRef(null);
+
+  const isPhoto    = selected && selected.startsWith('data:image/');
+  const previewMeta = AVATAR_META.find(a => a.id === selected);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError('');
+    setUploading(true);
+    try {
+      const dataUrl = await resizeImage(file, 220);
+      setSelected(dataUrl);
+    } catch (err) {
+      setUploadError(err.message || 'Could not process image. Try a different file.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative bg-[#0e1a2e] border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl"
+        className="relative bg-[#0e1a2e] border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-bold font-headline text-on-surface">Choose Avatar</h2>
-            <p className="text-xs text-on-surface-variant mt-0.5">6 unique designs crafted for NyayaAI</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">Pick a preset or upload your own photo</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-on-surface-variant transition-colors">
             <span className="material-symbols-outlined text-base">close</span>
           </button>
         </div>
 
+        {/* Upload your photo */}
+        <div className="mb-6">
+          <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Your Photo</div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="w-full flex items-center gap-3 px-5 py-4 rounded-xl border-2 border-dashed border-white/15 hover:border-primary/50 hover:bg-primary/5 transition-all text-left group disabled:opacity-60"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+              {uploading
+                ? <span className="material-symbols-outlined text-primary text-xl animate-spin">progress_activity</span>
+                : <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>add_photo_alternate</span>
+              }
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-on-surface">{uploading ? 'Processing…' : 'Upload a photo'}</div>
+              <div className="text-[11px] text-on-surface-variant mt-0.5">JPG, PNG, WEBP · auto-resized to 220×220 px</div>
+            </div>
+            {isPhoto && (
+              <div className="ml-auto w-10 h-10 rounded-full overflow-hidden border-2 border-primary/50 flex-shrink-0">
+                <AvatarSVG id={selected} size={40} />
+              </div>
+            )}
+          </button>
+          {uploadError && (
+            <p className="text-xs text-error mt-2 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm">error</span>{uploadError}
+            </p>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-white/8" />
+          <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Or choose a preset</span>
+          <div className="flex-1 h-px bg-white/8" />
+        </div>
+
         {/* Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-7">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {AVATAR_META.map(({ id, label, desc }) => (
             <button
               key={id}
               onClick={() => setSelected(id)}
-              className={`relative flex flex-col items-center gap-2.5 p-4 rounded-xl border-2 transition-all group ${
+              className={`relative flex flex-col items-center gap-2.5 p-4 rounded-xl border-2 transition-all ${
                 selected === id
                   ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(0,201,167,0.2)]'
                   : 'border-white/8 bg-white/3 hover:border-primary/40 hover:bg-white/5'
@@ -209,16 +312,14 @@ function AvatarPicker({ current, onSave, onClose, saving }) {
                   <span className="material-symbols-outlined text-[11px] text-on-primary">check</span>
                 </div>
               )}
-              <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 shadow-lg">
-                <AvatarSVG id={id} size={64} />
+              <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 shadow-lg">
+                <AvatarSVG id={id} size={56} />
               </div>
               <div className="text-center">
                 <div className="text-xs font-bold text-on-surface">{label}</div>
                 <div className="text-[10px] text-on-surface-variant mt-0.5">{desc}</div>
               </div>
-              {id === 'av0' && (
-                <span className="text-[9px] font-bold text-primary/70 uppercase tracking-wider">Default</span>
-              )}
+              {id === 'av0' && <span className="text-[9px] font-bold text-primary/70 uppercase tracking-wider">Default</span>}
             </button>
           ))}
         </div>
@@ -230,8 +331,12 @@ function AvatarPicker({ current, onSave, onClose, saving }) {
           </div>
           <div>
             <div className="text-xs text-on-surface-variant">Preview</div>
-            <div className="text-sm font-bold text-on-surface mt-0.5">{AVATAR_META.find(a => a.id === selected)?.label}</div>
-            <div className="text-[11px] text-on-surface-variant">{AVATAR_META.find(a => a.id === selected)?.desc}</div>
+            <div className="text-sm font-bold text-on-surface mt-0.5">
+              {isPhoto ? 'Your Photo' : (previewMeta?.label || 'Avatar')}
+            </div>
+            <div className="text-[11px] text-on-surface-variant">
+              {isPhoto ? 'Custom uploaded image' : (previewMeta?.desc || '')}
+            </div>
           </div>
         </div>
 
@@ -242,11 +347,13 @@ function AvatarPicker({ current, onSave, onClose, saving }) {
           </button>
           <button
             onClick={() => onSave(selected)}
-            disabled={saving}
+            disabled={saving || uploading}
             className="flex-1 py-3 rounded-xl bg-primary-container text-on-primary-container text-sm font-bold hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,201,167,0.2)]"
           >
-            {saving ? <span className="material-symbols-outlined text-base animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-base">check_circle</span>}
-            {saving ? 'Saving…' : 'Apply Avatar'}
+            {saving
+              ? <><span className="material-symbols-outlined text-base animate-spin">progress_activity</span>Saving…</>
+              : <><span className="material-symbols-outlined text-base">check_circle</span>Apply Avatar</>
+            }
           </button>
         </div>
       </div>
@@ -439,8 +546,12 @@ export default function Profile() {
               onClick={() => setShowPicker(true)}
               className="flex items-center gap-2 text-xs text-on-surface-variant hover:text-primary transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">palette</span>
-              Change avatar — {AVATAR_META.find(a => a.id === currentAvatarId)?.label} selected
+              <span className="material-symbols-outlined text-sm">
+                {currentAvatarId?.startsWith('data:image/') ? 'photo_camera' : 'palette'}
+              </span>
+              {currentAvatarId?.startsWith('data:image/')
+                ? 'Custom photo — click to change'
+                : `${AVATAR_META.find(a => a.id === currentAvatarId)?.label || 'Balance'} avatar — click to change or upload photo`}
             </button>
           </div>
         </div>

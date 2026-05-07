@@ -70,11 +70,11 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {/* Lawyer-only section — hidden for regular users */}
+        {/* Lawyer-only section */}
         {isLawyer && (
           <>
-            <div className="px-4 pt-4 pb-1">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/50">
+            <div className="px-4 pt-5 pb-2">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/60">
                 Legal Pro
               </span>
             </div>
@@ -83,17 +83,17 @@ export default function Sidebar() {
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 ${
+                  `flex items-center gap-3 py-3 px-4 rounded-lg transition-all duration-200 border ${
                     isActive
-                      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10 active:scale-[0.98]'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10 border-[#00C9A7]/20'
+                      : 'text-[#00C9A7]/80 bg-[#00C9A7]/5 border-[#00C9A7]/10 hover:bg-[#00C9A7]/10 hover:text-[#00C9A7]'
                   }`
                 }
               >
                 <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                   {item.icon}
                 </span>
-                <span className="text-sm font-medium font-headline tracking-tight flex-1">{item.name}</span>
+                <span className="text-sm font-semibold font-headline tracking-tight flex-1">{item.name}</span>
               </NavLink>
             ))}
           </>

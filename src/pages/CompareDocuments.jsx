@@ -314,10 +314,19 @@ export default function CompareDocuments() {
     setConsentOpen(false); setResult(null); setComparing(true); setFilter('All');
     try {
       const res = await compareDocuments(docAId, docBId);
-      setResult(res.data.data.comparison);
-      setHistory((prev) => [res.data.data.comparison, ...prev]);
+      const comparison = res.data.data.comparison;
+      if (
+        comparison?.summary?.includes('encountered an error') ||
+        comparison?.recommendation?.includes('Unable to complete comparison')
+      ) {
+        setError('AI comparison failed. Please try again in a few seconds.');
+      } else {
+        setResult(comparison);
+        setHistory((prev) => [comparison, ...prev]);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Comparison failed. Please try again.');
+      const msg = err.response?.data?.message || err.message || 'Comparison failed.';
+      setError(`AI comparison failed: ${msg}`);
     } finally { setComparing(false); }
   };
 

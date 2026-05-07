@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useAlertCount } from '../context/AlertContext';
+import AvatarDisplay from './AvatarDisplay';
 
 export default function Header({ title, children }) {
   const navigate = useNavigate();
@@ -10,9 +11,6 @@ export default function Header({ title, children }) {
   const { isPrivate, togglePrivacy } = usePrivacy();
   const { unreadCount } = useAlertCount();
 
-  const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
 
   return (
     <header className="fixed top-0 right-0 w-[calc(100%-220px)] h-16 z-40 bg-[#000f3b]/50 backdrop-blur-md flex justify-between items-center px-8 border-b border-white/5">
@@ -75,9 +73,7 @@ export default function Header({ title, children }) {
               {user?.role || 'user'}
             </div>
           </div>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 border-2 border-primary/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-primary font-headline">{initials}</span>
-          </div>
+          <AvatarDisplay user={user} size={36} className="border-2 border-primary/20" />
         </button>
       </div>
     </header>

@@ -415,9 +415,23 @@ export default function Analysis() {
                 {new Date(analysis?.analyzedAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             </div>
-            <p className="text-on-surface-variant leading-relaxed text-base mb-4 font-body flex-1">
-              {analysis?.summary || 'No summary available.'}
-            </p>
+            <div className="text-on-surface-variant leading-relaxed text-base mb-4 font-body flex-1 space-y-4 overflow-y-auto max-h-[480px] custom-scrollbar pr-1">
+              {analysis?.summary
+                ? analysis.summary.split('\n').map((line, i) => {
+                    const sectionMatch = line.match(/^([A-Z][A-Z\s&]+):\s*(.*)/);
+                    if (sectionMatch) {
+                      return (
+                        <div key={i}>
+                          <span className="text-xs font-bold uppercase tracking-widest text-primary-container block mb-1">{sectionMatch[1]}</span>
+                          {sectionMatch[2] && <p className="text-sm leading-relaxed">{sectionMatch[2]}</p>}
+                        </div>
+                      );
+                    }
+                    if (line.trim() === '') return null;
+                    return <p key={i} className="text-sm leading-relaxed">{line}</p>;
+                  })
+                : <p className="text-sm">No summary available.</p>}
+            </div>
 
             {/* Low-confidence global warning */}
             {(analysis?.confidenceScore ?? 100) < 60 && (

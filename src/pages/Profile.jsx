@@ -197,7 +197,6 @@ export default function Profile() {
           <div className="h-28 bg-gradient-to-r from-[#0a1628] via-[#0d2040] to-[#003d30] relative">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(0,201,167,0.15),transparent_70%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(0,151,167,0.1),transparent_70%)]" />
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
           </div>
 
           {/* Profile info */}

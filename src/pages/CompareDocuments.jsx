@@ -334,6 +334,11 @@ export default function CompareDocuments() {
   const modifications = result?.modifications || [];
   const totalChanges  = additions.length + removals.length + modifications.length;
 
+  const isErrorResult = result && (
+    result.summary?.includes('encountered an error') ||
+    result.recommendation?.includes('Unable to complete comparison')
+  );
+
   const docA = docs.find((d) => d._id === (result?.docAId?._id || result?.docAId || docAId));
   const docB = docs.find((d) => d._id === (result?.docBId?._id || result?.docBId || docBId));
   const canCompare = docAId && docBId && docAId !== docBId && !comparing;
@@ -414,8 +419,29 @@ export default function CompareDocuments() {
           </div>
         )}
 
+        {/* ── Error result (bad saved comparison) ────────────────── */}
+        {result && isErrorResult && !comparing && (
+          <div className="flex flex-col items-center gap-5 py-20 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-error/10 border border-error/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-error text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-white font-semibold">AI comparison failed</p>
+              <p className="text-sm text-on-surface-variant max-w-sm">
+                The AI could not complete this comparison. Please try running it again — the issue has been fixed.
+              </p>
+            </div>
+            <button
+              onClick={() => { setResult(null); setError(''); }}
+              className="px-6 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
         {/* ── Results ────────────────────────────────────────────── */}
-        {result && !comparing && (
+        {result && !isErrorResult && !comparing && (
           <div className="space-y-6">
 
             {/* ── 1. Stats + Risk Change row ─────────────────────── */}
@@ -683,7 +709,7 @@ export default function CompareDocuments() {
         )}
 
         {/* ── Empty state ─────────────────────────────────────────── */}
-        {!result && !comparing && (
+        {!result && !comparing && !error && (
           <div className="text-center py-24">
             <div className="inline-flex flex-col items-center gap-5">
               <div className="relative">

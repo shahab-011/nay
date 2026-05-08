@@ -92,7 +92,7 @@ export default function Dashboard() {
         <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">security</span>
       </Header>
 
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-8">
 
         {/* ── Greeting ─────────────────────────────────────────── */}
         <div>

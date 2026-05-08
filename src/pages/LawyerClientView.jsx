@@ -94,7 +94,7 @@ export default function LawyerClientView() {
         </button>
       </Header>
 
-      <div className="p-8 pb-24 max-w-5xl space-y-8">
+      <div className="p-4 md:p-8 pb-24 max-w-5xl space-y-8">
 
         {/* ── Client profile card ── */}
         <div className="bg-surface-container-low rounded-2xl border border-white/5 p-6">

@@ -22,6 +22,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { PrivacyProvider } from './context/PrivacyContext';
 import { AlertProvider } from './context/AlertContext';
 import { SocketProvider } from './context/SocketContext';
+import { MobileMenuProvider } from './context/MobileMenuContext';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();

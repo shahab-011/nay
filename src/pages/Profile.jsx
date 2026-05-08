@@ -344,7 +344,7 @@ export default function Profile() {
         />
       )}
 
-      <div className="p-8 pb-24 space-y-8 max-w-6xl">
+      <div className="p-4 md:p-8 pb-24 space-y-8 max-w-6xl">
 
         {/* ── Hero Card ─────────────────────────────────────── */}
         <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-surface-container-low">

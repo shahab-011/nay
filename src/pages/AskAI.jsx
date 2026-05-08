@@ -371,7 +371,7 @@ export default function AskAI() {
         {/* ── Document Picker ────────────────────────────────────── */}
         {!docId && (
           <div className="flex-1 overflow-y-auto no-scrollbar">
-            <div className="px-8 py-10 max-w-5xl mx-auto w-full">
+            <div className="px-4 md:px-8 py-6 md:py-10 max-w-5xl mx-auto w-full">
 
               {/* Heading */}
               <div className="flex flex-col items-center text-center mb-10">

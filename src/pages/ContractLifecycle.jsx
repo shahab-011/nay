@@ -238,7 +238,7 @@ export default function ContractLifecycle() {
     <>
       <Header title="Contract Lifecycle" />
 
-      <div className="p-8 bg-surface min-h-[calc(100vh-64px)] space-y-8">
+      <div className="p-4 md:p-8 bg-surface min-h-[calc(100vh-64px)] space-y-8">
 
         {/* ── Urgent expiry banner ─────────────────────────────── */}
         {!loading && urgentDocs.length > 0 && (

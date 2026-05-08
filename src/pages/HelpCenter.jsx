@@ -142,7 +142,7 @@ export default function HelpCenter() {
     <>
       <Header title="Help Center" />
 
-      <div className="p-8 pb-24 max-w-4xl space-y-10">
+      <div className="p-4 md:p-8 pb-24 max-w-4xl space-y-10">
 
         {/* ── Hero ── */}
         <div className="relative bg-surface-container-low rounded-3xl border border-white/5 p-10 overflow-hidden">

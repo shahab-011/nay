@@ -138,7 +138,7 @@ export default function ClientLinks() {
   return (
     <>
       <Header title="Client Links" />
-      <div className="p-8 pb-24 space-y-8 max-w-5xl">
+      <div className="p-4 md:p-8 pb-24 space-y-8 max-w-5xl">
         {isLawyer ? <LawyerView /> : <ClientView />}
       </div>
     </>

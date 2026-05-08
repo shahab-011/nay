@@ -116,7 +116,7 @@ export default function MyDocuments() {
         </button>
       </Header>
 
-      <div className="p-10 max-w-[1400px] mx-auto min-h-[calc(100vh-64px)]">
+      <div className="p-4 md:p-10 max-w-[1400px] mx-auto min-h-[calc(100vh-64px)]">
         {/* Page header */}
         <div className="mb-10">
           <h2 className="text-4xl font-extrabold tracking-tight mb-2">Legal Repository</h2>

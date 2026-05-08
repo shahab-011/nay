@@ -102,7 +102,7 @@ export default function LawyerDocView() {
         </button>
       </Header>
 
-      <div className="p-8 pb-24 max-w-6xl space-y-6">
+      <div className="p-4 md:p-8 pb-24 max-w-6xl space-y-6">
 
         {/* Read-only notice */}
         <div className="flex items-center gap-2.5 px-4 py-2.5 bg-primary/5 border border-primary/15 rounded-xl w-fit">

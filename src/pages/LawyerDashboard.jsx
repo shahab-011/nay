@@ -231,7 +231,7 @@ export default function LawyerDashboard() {
         </button>
       </Header>
 
-      <div className="p-8 pb-24 space-y-8 max-w-6xl">
+      <div className="p-4 md:p-8 pb-24 space-y-8 max-w-6xl">
 
         {/* ── Hero greeting ── */}
         <div className="flex items-end justify-between flex-wrap gap-4">

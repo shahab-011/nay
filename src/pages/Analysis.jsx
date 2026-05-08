@@ -347,7 +347,7 @@ export default function Analysis() {
         </div>
       </Header>
 
-      <div className="p-8 min-h-[calc(100vh-64px)] pb-24">
+      <div className="p-4 md:p-8 min-h-[calc(100vh-64px)] pb-24">
         {/* Breadcrumb */}
         <nav className="flex gap-2 text-[10px] font-label text-on-surface-variant mb-4 tracking-widest uppercase">
           <Link to="/documents" className="hover:text-primary transition-colors">Repository</Link>

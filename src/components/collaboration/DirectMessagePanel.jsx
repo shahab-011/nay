@@ -96,11 +96,7 @@ export default function DirectMessagePanel({ linkId, otherName, onClose }) {
   /* ── 5. Send via WebSocket ────────────────────────────────────────── */
   const handleSend = useCallback((e) => {
     e?.preventDefault();
-    if (!text.trim() || sending) return;
-    if (!isConnected || !socket) {
-      setError('Not connected — please wait a moment and try again.');
-      return;
-    }
+    if (!text.trim() || sending || !socket) return;
     setSending(true);
     socket.emit('send-message', { linkId, text: text.trim() });
     setText('');
@@ -246,7 +242,7 @@ export default function DirectMessagePanel({ linkId, otherName, onClose }) {
             />
             <button
               type="submit"
-              disabled={!text.trim() || sending || !isConnected}
+              disabled={!text.trim() || sending || !socket}
               className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-primary text-on-primary hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
             >
               <span

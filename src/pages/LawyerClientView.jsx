@@ -42,8 +42,10 @@ export default function LawyerClientView() {
       ]);
       setLink(linkRes.data.data.link);
       setDocs(docsRes.data.data.documents || []);
-    } catch {
-      setError('Failed to load client data. Please go back and try again.');
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Unknown error';
+      setError(`Failed to load client data: ${msg}`);
+      console.error('LawyerClientView load error:', err.response?.status, msg);
     } finally {
       setLoading(false);
     }

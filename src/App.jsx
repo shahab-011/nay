@@ -14,6 +14,7 @@ import Alerts from './pages/Alerts';
 import Profile from './pages/Profile';
 import LawyerDashboard from './pages/LawyerDashboard';
 import LawyerClientView from './pages/LawyerClientView';
+import HelpCenter from './pages/HelpCenter';
 import LawyerDocView from './pages/LawyerDocView';
 import ClientLinks from './pages/ClientLinks';
 
@@ -62,6 +63,7 @@ function App() {
                 <Route path="/alerts"    element={<PrivateRoute><Alerts /></PrivateRoute>} />
                 <Route path="/profile"      element={<PrivateRoute><Profile /></PrivateRoute>} />
                 <Route path="/client-links" element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
+                <Route path="/help"         element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
 
                 {/* Lawyer-only routes — redirect regular users to / */}
                 <Route

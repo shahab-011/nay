@@ -24,6 +24,11 @@ export const shareDocument      = (linkId, documentId) =>
 export const unshareDocument    = (linkId, documentId) =>
   api.post('/lawyer/unshare-document', { linkId, documentId });
 
+/* ── Client view page (lawyer sees full doc analysis) ───────────────── */
+export const getClientLink        = (linkId)        => api.get(`/lawyer/links/${linkId}`);
+export const getLinkDocuments     = (linkId)        => api.get(`/lawyer/links/${linkId}/documents`);
+export const getClientDocAnalysis = (linkId, docId) => api.get(`/lawyer/links/${linkId}/documents/${docId}/analysis`);
+
 /* ── Cases CRUD ─────────────────────────────────────────────────────── */
 export const getCases   = (status)     =>
   api.get('/lawyer/cases', { params: status ? { status } : {} });

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -149,6 +150,7 @@ export default function ClientLinks() {
 ══════════════════════════════════════════════════════════════════════ */
 
 function LawyerView() {
+  const navigate            = useNavigate();
   const [tab, setTab]       = useState('clients');
   const [links, setLinks]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -263,6 +265,7 @@ function LawyerView() {
                   link={link}
                   onUnlink={() => handleUnlink(link._id)}
                   onViewDocs={() => openDocs(link)}
+                  onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
                 />
               ))
           }
@@ -456,7 +459,7 @@ function ClientView() {
 
 /* ── Shared sub-components ─────────────────────────────────────────── */
 
-function LawyerClientCard({ link, onUnlink, onViewDocs }) {
+function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
   const client  = link.clientId || {};
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
@@ -468,10 +471,15 @@ function LawyerClientCard({ link, onUnlink, onViewDocs }) {
           <span className="text-lg font-bold text-primary font-headline">{initial}</span>
         </div>
 
-        {/* Info */}
+        {/* Info — clicking the name navigates to the client view page */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <span className="font-bold text-on-surface font-headline text-base">{client.name || link.clientEmail}</span>
+            <button
+              onClick={onViewClient}
+              className="font-bold text-on-surface font-headline text-base hover:text-primary transition-colors text-left"
+            >
+              {client.name || link.clientEmail}
+            </button>
             <StatusBadge status={link.status} />
             {client.plan === 'pro' && (
               <span className="text-[10px] font-bold text-primary/80 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">PRO</span>
@@ -496,13 +504,13 @@ function LawyerClientCard({ link, onUnlink, onViewDocs }) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-col gap-2 flex-shrink-0">
           <button
-            onClick={onViewDocs}
+            onClick={onViewClient}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">folder_open</span>
-            Shared Docs
+            <span className="material-symbols-outlined text-sm">analytics</span>
+            View Documents
           </button>
           <button
             onClick={onUnlink}

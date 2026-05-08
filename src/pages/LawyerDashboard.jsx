@@ -339,6 +339,7 @@ export default function LawyerDashboard() {
                   onViewDocs={() => openDocs(link)}
                   onNewCase={() => setCaseModal({ mode: 'create', defaultLink: link })}
                   onUnlink={() => handleUnlink(link._id)}
+                  onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
                 />
               ))}
 
@@ -467,6 +468,7 @@ export default function LawyerDashboard() {
                       onViewDocs={() => openDocs(link)}
                       onNewCase={() => setCaseModal({ mode: 'create', defaultLink: link })}
                       onUnlink={() => handleUnlink(link._id)}
+                      onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
                     />
                   ))}
                 </div>
@@ -589,7 +591,7 @@ export default function LawyerDashboard() {
 ══════════════════════════════════════════════════════════════════════ */
 
 /* Compact — used in Overview */
-function ClientCard({ link, onViewDocs, onNewCase, onUnlink }) {
+function ClientCard({ link, onViewDocs, onNewCase, onUnlink, onViewClient }) {
   const client  = link.clientId || {};
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
@@ -601,7 +603,9 @@ function ClientCard({ link, onViewDocs, onNewCase, onUnlink }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-bold text-on-surface text-sm font-headline truncate">{client.name || link.clientEmail}</span>
+            <button onClick={onViewClient} className="font-bold text-on-surface text-sm font-headline truncate hover:text-primary transition-colors text-left">
+              {client.name || link.clientEmail}
+            </button>
             {client.plan === 'pro' && <span className="text-[9px] font-bold text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">PRO</span>}
           </div>
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
@@ -616,9 +620,9 @@ function ClientCard({ link, onViewDocs, onNewCase, onUnlink }) {
           </div>
         </div>
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={onViewDocs} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors">
-            <span className="material-symbols-outlined text-[13px]">folder_open</span>
-            Docs
+          <button onClick={onViewClient} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-bold hover:bg-primary/20 transition-colors">
+            <span className="material-symbols-outlined text-[13px]">analytics</span>
+            View
           </button>
           <button onClick={onNewCase} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant text-[11px] font-bold hover:text-primary hover:bg-primary/10 transition-colors border border-white/5">
             <span className="material-symbols-outlined text-[13px]">add</span>
@@ -631,7 +635,7 @@ function ClientCard({ link, onViewDocs, onNewCase, onUnlink }) {
 }
 
 /* Full — used in Clients tab */
-function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink }) {
+function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink, onViewClient }) {
   const client  = link.clientId || {};
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
@@ -646,7 +650,9 @@ function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink }) {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <span className="font-bold text-on-surface font-headline text-base">{client.name || link.clientEmail}</span>
+            <button onClick={onViewClient} className="font-bold text-on-surface font-headline text-base hover:text-primary transition-colors text-left">
+              {client.name || link.clientEmail}
+            </button>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />Linked
             </span>
@@ -671,8 +677,8 @@ function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink }) {
 
         {/* Actions */}
         <div className="flex flex-col gap-2 flex-shrink-0">
-          <button onClick={onViewDocs} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors">
-            <span className="material-symbols-outlined text-sm">folder_open</span>View Docs
+          <button onClick={onViewClient} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors">
+            <span className="material-symbols-outlined text-sm">analytics</span>View Documents
           </button>
           <button onClick={onNewCase} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container text-on-surface-variant border border-white/10 text-xs font-bold hover:text-primary hover:border-primary/20 transition-colors">
             <span className="material-symbols-outlined text-sm">add</span>New Case

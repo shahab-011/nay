@@ -312,11 +312,12 @@ function LawyerView() {
 ══════════════════════════════════════════════════════════════════════ */
 
 function ClientView() {
-  const [tab,      setTab]      = useState('lawyers');
-  const [allLinks, setAllLinks] = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState('');
-  const [shareModal, setShareModal] = useState(null); // link object
+  const [tab,         setTab]         = useState('lawyers');
+  const [allLinks,    setAllLinks]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState('');
+  const [actionError, setActionError] = useState('');
+  const [shareModal,  setShareModal]  = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -333,17 +334,28 @@ function ClientView() {
   const pending  = allLinks.filter(l => l.status === 'pending');
 
   const handleAccept = async (linkId) => {
+    setActionError('');
     const prev = allLinks;
     setAllLinks(l => l.map(x => x._id === linkId ? { ...x, status: 'accepted' } : x));
-    try { await apiAccept(linkId); load(); }
-    catch { setAllLinks(prev); }
+    try {
+      await apiAccept(linkId);
+      setTab('lawyers');
+      load();
+    } catch (err) {
+      setAllLinks(prev);
+      setActionError(err.response?.data?.message || 'Failed to accept request. Please try again.');
+    }
   };
 
   const handleReject = async (linkId) => {
+    setActionError('');
     const prev = allLinks;
     setAllLinks(l => l.map(x => x._id === linkId ? { ...x, status: 'rejected' } : x));
     try { await apiReject(linkId); }
-    catch { setAllLinks(prev); }
+    catch (err) {
+      setAllLinks(prev);
+      setActionError(err.response?.data?.message || 'Failed to reject request. Please try again.');
+    }
   };
 
   const handleUnlink = async (linkId) => {
@@ -372,6 +384,15 @@ function ClientView() {
       )}
 
       {error && <ErrorBanner msg={error} onRetry={load} />}
+      {actionError && (
+        <div className="flex items-center gap-2 bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm">
+          <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
+          {actionError}
+          <button onClick={() => setActionError('')} className="ml-auto text-error/60 hover:text-error transition-colors">
+            <span className="material-symbols-outlined text-base">close</span>
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <TabBar

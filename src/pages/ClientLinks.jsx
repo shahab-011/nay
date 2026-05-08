@@ -15,6 +15,7 @@ import {
   unshareDocument as apiUnshare,
 } from '../api/lawyer.api';
 import { getDocuments } from '../api/documents.api';
+import DirectMessagePanel from '../components/collaboration/DirectMessagePanel';
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
 
@@ -165,6 +166,9 @@ function LawyerView() {
   // Shared-docs viewer modal
   const [docsModal, setDocsModal] = useState(null); // { link, docs[], loading, error }
 
+  // Direct messaging panel
+  const [msgPanel, setMsgPanel] = useState(null); // { linkId, otherName }
+
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
@@ -266,6 +270,7 @@ function LawyerView() {
                   onUnlink={() => handleUnlink(link._id)}
                   onViewDocs={() => openDocs(link)}
                   onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
+                  onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.clientId?.name || link.clientEmail })}
                 />
               ))
           }
@@ -306,6 +311,14 @@ function LawyerView() {
           onClose={() => setDocsModal(null)}
         />
       )}
+
+      {msgPanel && (
+        <DirectMessagePanel
+          linkId={msgPanel.linkId}
+          otherName={msgPanel.otherName}
+          onClose={() => setMsgPanel(null)}
+        />
+      )}
     </>
   );
 }
@@ -321,6 +334,7 @@ function ClientView() {
   const [error,       setError]       = useState('');
   const [actionError, setActionError] = useState('');
   const [shareModal,  setShareModal]  = useState(null);
+  const [msgPanel,    setMsgPanel]    = useState(null); // { linkId, otherName }
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -420,6 +434,7 @@ function ClientView() {
                   link={link}
                   onManageDocs={() => setShareModal(link)}
                   onUnlink={() => handleUnlink(link._id)}
+                  onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.lawyerId?.name || link.lawyerId?.email || 'Lawyer' })}
                 />
               ))
           }
@@ -453,13 +468,21 @@ function ClientView() {
           onClose={() => { setShareModal(null); load(); }}
         />
       )}
+
+      {msgPanel && (
+        <DirectMessagePanel
+          linkId={msgPanel.linkId}
+          otherName={msgPanel.otherName}
+          onClose={() => setMsgPanel(null)}
+        />
+      )}
     </>
   );
 }
 
 /* ── Shared sub-components ─────────────────────────────────────────── */
 
-function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
+function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient, onMessage }) {
   const client  = link.clientId || {};
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
@@ -513,6 +536,13 @@ function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
             View Documents
           </button>
           <button
+            onClick={onMessage}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 text-xs font-bold hover:bg-secondary/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">chat</span>
+            Message
+          </button>
+          <button
             onClick={onUnlink}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors"
           >
@@ -525,7 +555,7 @@ function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
   );
 }
 
-function ClientLawyerCard({ link, onManageDocs, onUnlink }) {
+function ClientLawyerCard({ link, onManageDocs, onUnlink, onMessage }) {
   const lawyer  = link.lawyerId || {};
   const initial = (lawyer.name || lawyer.email || '?').charAt(0).toUpperCase();
 
@@ -561,13 +591,20 @@ function ClientLawyerCard({ link, onManageDocs, onUnlink }) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
           <button
             onClick={onManageDocs}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"
           >
             <span className="material-symbols-outlined text-sm">tune</span>
             Manage Docs
+          </button>
+          <button
+            onClick={onMessage}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 text-xs font-bold hover:bg-secondary/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">chat</span>
+            Message
           </button>
           <button
             onClick={onUnlink}

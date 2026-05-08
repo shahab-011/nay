@@ -56,8 +56,23 @@ export function SocketProvider({ children }) {
     socket?.emit('document-update', { roomId, data });
   }, [socket]);
 
+  /** Emit typing-start so collaborators see a typing indicator. */
+  const emitTypingStart = useCallback((roomId, clauseIndex) => {
+    socket?.emit('typing-start', { roomId, clauseIndex });
+  }, [socket]);
+
+  /** Emit typing-stop to clear the typing indicator on collaborators' screens. */
+  const emitTypingStop = useCallback((roomId) => {
+    socket?.emit('typing-stop', { roomId });
+  }, [socket]);
+
+  /** Emit cursor-move so collaborators can see which clause you are reading. */
+  const emitCursorMove = useCallback((roomId, clauseIndex) => {
+    socket?.emit('cursor-move', { roomId, clauseIndex });
+  }, [socket]);
+
   return (
-    <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, emitUpdate }}>
+    <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, emitUpdate, emitTypingStart, emitTypingStop, emitCursorMove }}>
       {children}
     </SocketContext.Provider>
   );

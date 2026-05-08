@@ -32,3 +32,4 @@ export const updateDocument = (id, updates) =>
 export const getAnnotations    = (docId)              => api.get(`/documents/${docId}/annotations`);
 export const createAnnotation  = (docId, data)        => api.post(`/documents/${docId}/annotations`, data);
 export const deleteAnnotation  = (docId, annotationId) => api.delete(`/documents/${docId}/annotations/${annotationId}`);
+export const resolveAnnotation = (docId, annotationId) => api.patch(`/documents/${docId}/annotations/${annotationId}/resolve`);

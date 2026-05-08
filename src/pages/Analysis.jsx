@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { analyzeDocument, getAnalysis } from '../api/analysis.api';
-import { getDocument, getTextPreview, getAnnotations, createAnnotation, deleteAnnotation } from '../api/documents.api';
+import { getDocument, getTextPreview, getAnnotations, createAnnotation, deleteAnnotation, resolveAnnotation } from '../api/documents.api';
+import CollaborationPanel from '../components/collaboration/CollaborationPanel';
 import ConsentPanel from '../components/ConsentPanel';
 import HealthScoreRing from '../components/HealthScoreRing';
 import { generateAnalysisReport } from '../utils/generateReport';
@@ -43,7 +44,7 @@ export default function Analysis() {
   const { docId }  = useParams();
   const navigate   = useNavigate();
   const { user }   = useAuth();
-  const { socket, isConnected, joinRoom, leaveRoom } = useSocket();
+  const { socket, isConnected, joinRoom, leaveRoom, emitTypingStart, emitTypingStop } = useSocket();
 
   const [doc,      setDoc]      = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -68,7 +69,11 @@ export default function Analysis() {
   const [activeClause,     setActiveClause]      = useState(null); // clause index being annotated
   const [annotationText,   setAnnotationText]    = useState('');
   const [annotationColor,  setAnnotationColor]   = useState('yellow');
+  const [annotationType,   setAnnotationType]    = useState('annotation');
   const [savingAnnotation, setSavingAnnotation]  = useState(false);
+  const [typingUsers,      setTypingUsers]       = useState([]);
+  const [showCollab,       setShowCollab]        = useState(false);
+  const [incomingToast,    setIncomingToast]     = useState(null);
 
   /* ── fetch / auto-analyze ─────────────────────────────────────── */
   useEffect(() => { if (docId) init(); }, [docId]);
@@ -87,23 +92,55 @@ export default function Analysis() {
     const onUpdate = (data) => {
       if (data.type === 'annotation') {
         setAnnotations((prev) => {
-          // deduplicate — the creating client also receives this via io.to()
           const exists = prev.some((a) => String(a._id) === String(data.annotation._id));
+          if (!exists && String(data.annotation.userId) !== String(user?._id || user?.id)) {
+            const clauseLabel = data.annotation.clauseName || `Clause ${data.annotation.clauseIndex + 1}`;
+            setIncomingToast(`${data.annotation.userName} added a note on ${clauseLabel}`);
+            setTimeout(() => setIncomingToast(null), 4000);
+          }
           return exists ? prev : [...prev, data.annotation];
         });
       }
       if (data.type === 'annotation-delete') {
         setAnnotations((prev) => prev.filter((a) => String(a._id) !== data.annotationId));
       }
+      if (data.type === 'annotation-resolve') {
+        setAnnotations((prev) =>
+          prev.map((a) =>
+            String(a._id) === String(data.annotationId)
+              ? { ...a, isResolved: data.isResolved }
+              : a
+          )
+        );
+      }
     };
 
     const onPresence = ({ users }) => setOnlineUsers(users);
 
+    const onTypingStart = ({ userId, userName, clauseIndex }) => {
+      if (userId === String(user?._id || user?.id)) return;
+      setTypingUsers((prev) => {
+        const exists = prev.find((u) => u.userId === userId);
+        return exists ? prev : [...prev, { userId, userName, clauseIndex }];
+      });
+      setTimeout(() => {
+        setTypingUsers((prev) => prev.filter((u) => u.userId !== userId));
+      }, 3000);
+    };
+
+    const onTypingStop = ({ userId }) => {
+      setTypingUsers((prev) => prev.filter((u) => u.userId !== userId));
+    };
+
     socket.on('document-update', onUpdate);
     socket.on('presence-update', onPresence);
+    socket.on('typing-start',    onTypingStart);
+    socket.on('typing-stop',     onTypingStop);
     return () => {
       socket.off('document-update', onUpdate);
       socket.off('presence-update', onPresence);
+      socket.off('typing-start',    onTypingStart);
+      socket.off('typing-stop',     onTypingStop);
     };
   }, [socket]);
 
@@ -120,12 +157,14 @@ export default function Analysis() {
     if (!annotationText.trim()) return;
     setSavingAnnotation(true);
     try {
+      const clauseNameStr = analysis?.clauses?.[clauseIndex]?.type || `Clause ${clauseIndex + 1}`;
       const res = await createAnnotation(docId, {
         clauseIndex,
-        text:  annotationText.trim(),
-        color: annotationColor,
+        clauseName: clauseNameStr,
+        text:       annotationText.trim(),
+        color:      annotationColor,
+        type:       annotationType,
       });
-      // Add locally (socket broadcast deduplicates for other clients)
       setAnnotations((prev) => {
         const a = res.data.data.annotation;
         const exists = prev.some((x) => String(x._id) === String(a._id));
@@ -134,6 +173,8 @@ export default function Analysis() {
       setActiveClause(null);
       setAnnotationText('');
       setAnnotationColor('yellow');
+      setAnnotationType('annotation');
+      emitTypingStop(docId);
     } catch {
       // silently fail — user can retry
     } finally {
@@ -146,8 +187,17 @@ export default function Analysis() {
     try {
       await deleteAnnotation(docId, annotationId);
     } catch {
-      // re-fetch on failure
       getAnnotations(docId).then((r) => setAnnotations(r.data.data.annotations || [])).catch(() => {});
+    }
+  };
+
+  const handleResolveAnnotation = async (annotationId) => {
+    try {
+      const res = await resolveAnnotation(docId, annotationId);
+      const updated = res.data.data.annotation;
+      setAnnotations((prev) => prev.map((a) => String(a._id) === String(annotationId) ? updated : a));
+    } catch {
+      // socket broadcast will sync state for all clients
     }
   };
 
@@ -292,6 +342,20 @@ export default function Analysis() {
     <>
       <Header title={doc?.originalName || 'Document Analysis'}>
         <div className="flex items-center gap-3">
+          {/* Collaborate button */}
+          <button
+            onClick={() => setShowCollab((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-bold transition-all ${
+              showCollab
+                ? 'bg-primary/20 border-primary/40 text-primary'
+                : 'border-outline-variant/30 text-on-surface-variant hover:bg-white/5'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+            <span className="hidden md:inline">Collaborate</span>
+            {onlineUsers.length > 0 && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+          </button>
+
           {/* Online presence avatars */}
           {onlineUsers.length > 0 && (
             <div className="flex items-center gap-1.5" title={onlineUsers.map((u) => u.name).join(', ')}>
@@ -346,6 +410,32 @@ export default function Analysis() {
           </button>
         </div>
       </Header>
+
+      {/* Presence banner — shown when someone else is viewing */}
+      {onlineUsers.length > 0 && (
+        <div className="sticky top-16 z-30 flex items-center gap-3 px-4 md:px-6 py-2 bg-primary/8 border-b border-primary/15 backdrop-blur-sm">
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse flex-shrink-0" />
+          <p className="text-primary text-xs font-semibold flex-1 leading-none">
+            {onlineUsers.map((u) => u.name).join(', ')} {onlineUsers.length === 1 ? 'is' : 'are'} also viewing this document
+          </p>
+          <button
+            onClick={() => setShowCollab(true)}
+            className="text-xs text-primary font-bold underline underline-offset-2 hover:opacity-80 transition-opacity flex-shrink-0"
+          >
+            Collaborate →
+          </button>
+        </div>
+      )}
+
+      {/* Typing banner */}
+      {typingUsers.length > 0 && (
+        <div className="sticky top-16 z-30 flex items-center gap-2 px-4 md:px-6 py-1.5 bg-surface-container border-b border-white/5">
+          <span className="material-symbols-outlined text-on-surface-variant text-sm animate-pulse">edit</span>
+          <p className="text-on-surface-variant text-xs">
+            <span className="font-semibold text-on-surface">{typingUsers[0].userName}</span> is writing a note…
+          </p>
+        </div>
+      )}
 
       <div className="p-4 md:p-8 min-h-[calc(100vh-64px)] pb-24">
         {/* Breadcrumb */}
@@ -600,17 +690,34 @@ export default function Analysis() {
                     {annotations.filter((a) => a.clauseIndex === i).map((a) => {
                       const ac = ANNOTATION_COLORS[a.color] || ANNOTATION_COLORS.yellow;
                       return (
-                        <div key={a._id} className={`mt-3 flex items-start gap-3 p-3 rounded-xl border ${ac.bg} ${ac.border}`}>
+                        <div key={a._id} className={`mt-3 flex items-start gap-3 p-3 rounded-xl border transition-all ${ac.bg} ${ac.border} ${a.isResolved ? 'opacity-60' : ''}`}>
                           <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${ac.dot}`} />
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                               <span className="text-[10px] font-bold text-on-surface-variant font-label">{a.userName}</span>
-                              <span className="text-[10px] text-on-surface-variant/50">
+                              {a.authorRole === 'lawyer' && (
+                                <span className="text-[9px] font-bold bg-primary/10 text-primary px-1 py-0.5 rounded-full">Lawyer</span>
+                              )}
+                              {a.isResolved && (
+                                <span className="text-[9px] font-bold bg-primary/10 text-primary px-1 py-0.5 rounded-full flex items-center gap-0.5">
+                                  <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                  Resolved
+                                </span>
+                              )}
+                              <span className="text-[10px] text-on-surface-variant/50 ml-auto">
                                 {new Date(a.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                               </span>
                             </div>
                             <p className="text-sm text-on-surface">{a.text}</p>
                           </div>
+                          <button
+                            onClick={() => handleResolveAnnotation(String(a._id))}
+                            title={a.isResolved ? 'Mark unresolved' : 'Mark resolved'}
+                            className={`flex-shrink-0 transition-colors ${a.isResolved ? 'text-primary' : 'text-on-surface-variant hover:text-primary'}`}
+                          >
+                            <span className="material-symbols-outlined text-sm"
+                              style={{ fontVariationSettings: a.isResolved ? "'FILL' 1" : "'FILL' 0" }}>check_circle</span>
+                          </button>
                           {String(a.userId) === String(user?._id || user?.id) && (
                             <button
                               onClick={() => handleDeleteAnnotation(String(a._id))}
@@ -626,12 +733,41 @@ export default function Analysis() {
                     {/* ── Add note form (inline) ── */}
                     {activeClause === i ? (
                       <div className="mt-3 space-y-2">
+                        {/* Type selector */}
+                        <div className="flex gap-1.5 flex-wrap">
+                          {[
+                            { key: 'annotation', icon: 'chat_bubble',  label: 'Note'     },
+                            { key: 'risk_flag',  icon: 'flag',         label: 'Risk Flag'},
+                            { key: 'question',   icon: 'help',         label: 'Question' },
+                            { key: 'approval',   icon: 'check_circle', label: 'Approved' },
+                          ].map(({ key, icon, label }) => (
+                            <button
+                              key={key}
+                              onClick={() => setAnnotationType(key)}
+                              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                                annotationType === key
+                                  ? 'bg-primary/20 border-primary/40 text-primary'
+                                  : 'bg-surface-container-high border-white/8 text-on-surface-variant hover:text-white'
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-[12px]"
+                                style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                         <textarea
                           autoFocus
                           rows={2}
                           value={annotationText}
-                          onChange={(e) => setAnnotationText(e.target.value)}
-                          placeholder="Add a note or observation…"
+                          onChange={(e) => {
+                            setAnnotationText(e.target.value);
+                            emitTypingStart(docId, i);
+                            clearTimeout(window._typingTimeout);
+                            window._typingTimeout = setTimeout(() => emitTypingStop(docId), 2000);
+                          }}
+                          onBlur={() => emitTypingStop(docId)}
+                          placeholder={annotationType === 'risk_flag' ? 'Describe the risk…' : annotationType === 'question' ? 'Ask your question…' : 'Add a note or observation…'}
                           className="w-full bg-surface-container-high border border-white/10 focus:border-primary text-white text-sm py-2 px-3 rounded-lg outline-none resize-none transition-colors"
                         />
                         <div className="flex items-center gap-2">
@@ -645,7 +781,7 @@ export default function Analysis() {
                           ))}
                           <div className="ml-auto flex gap-2">
                             <button
-                              onClick={() => { setActiveClause(null); setAnnotationText(''); }}
+                              onClick={() => { setActiveClause(null); setAnnotationText(''); setAnnotationType('annotation'); emitTypingStop(docId); }}
                               className="text-xs px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-white border border-white/10 transition-colors"
                             >
                               Cancel
@@ -665,7 +801,7 @@ export default function Analysis() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setActiveClause(i); setAnnotationText(''); setAnnotationColor('yellow'); }}
+                        onClick={() => { setActiveClause(i); setAnnotationText(''); setAnnotationColor('yellow'); setAnnotationType('annotation'); }}
                         className="mt-3 flex items-center gap-1.5 text-[11px] text-on-surface-variant hover:text-primary transition-colors font-label"
                       >
                         <span className="material-symbols-outlined text-sm">add_comment</span>
@@ -873,23 +1009,40 @@ export default function Analysis() {
               <div className="space-y-3">
                 {annotations.map((a) => {
                   const ac = ANNOTATION_COLORS[a.color] || ANNOTATION_COLORS.yellow;
-                  const clauseLabel = analysis?.clauses?.[a.clauseIndex]?.type || `Clause ${a.clauseIndex + 1}`;
+                  const clauseLabel = a.clauseName || analysis?.clauses?.[a.clauseIndex]?.type || `Clause ${a.clauseIndex + 1}`;
                   return (
-                    <div key={a._id} className={`rounded-xl p-5 border ${ac.bg} ${ac.border}`}>
+                    <div key={a._id} className={`rounded-xl p-4 border transition-all ${ac.bg} ${ac.border} ${a.isResolved ? 'opacity-60' : ''}`}>
                       <div className="flex items-start gap-3">
                         <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5 ${ac.dot}`} />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <div className="flex items-center gap-2 flex-wrap mb-1.5">
                             <span className="text-xs font-bold text-on-surface font-headline">{a.userName}</span>
+                            {a.authorRole === 'lawyer' && (
+                              <span className="text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">Lawyer</span>
+                            )}
                             <span className="text-[10px] px-2 py-0.5 bg-surface-container rounded-full text-on-surface-variant border border-white/5">
                               {clauseLabel}
                             </span>
+                            {a.isResolved && (
+                              <span className="text-[9px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                Resolved
+                              </span>
+                            )}
                             <span className="text-[10px] text-on-surface-variant ml-auto">
                               {new Date(a.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </span>
                           </div>
                           <p className="text-sm text-on-surface leading-relaxed">{a.text}</p>
                         </div>
+                        <button
+                          onClick={() => handleResolveAnnotation(String(a._id))}
+                          title={a.isResolved ? 'Mark unresolved' : 'Mark resolved'}
+                          className={`flex-shrink-0 transition-colors ${a.isResolved ? 'text-primary' : 'text-on-surface-variant hover:text-primary'}`}
+                        >
+                          <span className="material-symbols-outlined text-base"
+                            style={{ fontVariationSettings: a.isResolved ? "'FILL' 1" : "'FILL' 0" }}>check_circle</span>
+                        </button>
                         {String(a.userId) === String(user?._id || user?.id) && (
                           <button
                             onClick={() => handleDeleteAnnotation(String(a._id))}
@@ -916,6 +1069,31 @@ export default function Analysis() {
       >
         <span className="material-symbols-outlined text-on-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
       </button>
+
+      {/* Real-time collaboration panel (slide-out from right) */}
+      <CollaborationPanel
+        isOpen={showCollab}
+        onClose={() => setShowCollab(false)}
+        documentId={docId}
+        currentUser={user}
+        annotations={annotations}
+        onAnnotationsChange={setAnnotations}
+        typingUsers={typingUsers}
+        collaborators={onlineUsers}
+        analysis={analysis}
+      />
+
+      {/* Incoming annotation toast */}
+      {incomingToast && (
+        <div className="fixed bottom-24 right-6 z-[90] max-w-xs bg-surface-container border border-primary/20 rounded-xl shadow-2xl px-4 py-3 flex items-start gap-3">
+          <span className="material-symbols-outlined text-primary text-sm flex-shrink-0 mt-0.5"
+            style={{ fontVariationSettings: "'FILL' 1" }}>add_comment</span>
+          <p className="text-xs text-on-surface leading-relaxed flex-1">{incomingToast}</p>
+          <button onClick={() => setIncomingToast(null)} className="text-on-surface-variant hover:text-white flex-shrink-0">
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      )}
 
       <ConsentPanel
         isOpen={consentOpen}

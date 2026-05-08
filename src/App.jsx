@@ -14,6 +14,7 @@ import Alerts from './pages/Alerts';
 import Profile from './pages/Profile';
 import LawyerDashboard from './pages/LawyerDashboard';
 import LawyerClientView from './pages/LawyerClientView';
+import LawyerDocView from './pages/LawyerDocView';
 import ClientLinks from './pages/ClientLinks';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -76,6 +77,14 @@ function App() {
                   element={
                     <RoleRoute roles={['lawyer', 'admin']}>
                       <LawyerClientView />
+                    </RoleRoute>
+                  }
+                />
+                <Route
+                  path="/lawyer/client/:linkId/document/:docId"
+                  element={
+                    <RoleRoute roles={['lawyer', 'admin']}>
+                      <LawyerDocView />
                     </RoleRoute>
                   }
                 />

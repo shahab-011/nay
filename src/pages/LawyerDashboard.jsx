@@ -640,19 +640,22 @@ function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink, onViewClient })
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/20 transition-colors">
+    <div
+      onClick={onViewClient}
+      className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/30 hover:bg-surface-container cursor-pointer transition-all group"
+    >
       <div className="flex items-start gap-5 flex-wrap sm:flex-nowrap">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 ring-1 ring-primary/20">
+        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 ring-1 ring-primary/20 group-hover:ring-primary/40 transition-all">
           <span className="text-lg font-bold text-primary font-headline">{initial}</span>
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <button onClick={onViewClient} className="font-bold text-on-surface font-headline text-base hover:text-primary transition-colors text-left">
+            <span className="font-bold text-on-surface font-headline text-base group-hover:text-primary transition-colors">
               {client.name || link.clientEmail}
-            </button>
+            </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />Linked
             </span>
@@ -666,7 +669,7 @@ function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink, onViewClient })
               { icon: 'description', v: `${link.stats?.totalDocuments ?? 0} total docs`  },
               { icon: 'share',       v: `${link.stats?.sharedDocuments ?? 0} shared`      },
               { icon: 'folder_open', v: `${link.stats?.totalCases ?? 0} cases`            },
-              { icon: 'schedule',    v: `Active ${formatRelative(client.lastLogin)}`       },
+              { icon: 'schedule',    v: `Linked ${formatRelative(link.acceptedAt)}`        },
             ].map(({ icon, v }) => (
               <span key={v} className="flex items-center gap-1.5 text-xs text-on-surface-variant">
                 <span className="material-symbols-outlined text-sm text-primary">{icon}</span>{v}
@@ -676,14 +679,23 @@ function ClientCardFull({ link, onViewDocs, onNewCase, onUnlink, onViewClient })
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-2 flex-shrink-0">
-          <button onClick={onViewClient} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors">
+        <div className="flex flex-col gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
+          <button
+            onClick={onViewClient}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"
+          >
             <span className="material-symbols-outlined text-sm">analytics</span>View Documents
           </button>
-          <button onClick={onNewCase} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container text-on-surface-variant border border-white/10 text-xs font-bold hover:text-primary hover:border-primary/20 transition-colors">
+          <button
+            onClick={onNewCase}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container text-on-surface-variant border border-white/10 text-xs font-bold hover:text-primary hover:border-primary/20 transition-colors"
+          >
             <span className="material-symbols-outlined text-sm">add</span>New Case
           </button>
-          <button onClick={onUnlink} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors">
+          <button
+            onClick={onUnlink}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors"
+          >
             <span className="material-symbols-outlined text-sm">link_off</span>Unlink
           </button>
         </div>

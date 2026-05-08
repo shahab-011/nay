@@ -464,22 +464,22 @@ function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/20 transition-colors">
+    <div
+      onClick={onViewClient}
+      className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/30 hover:bg-surface-container cursor-pointer transition-all group"
+    >
       <div className="flex items-start gap-5 flex-wrap sm:flex-nowrap">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 ring-1 ring-primary/20 group-hover:ring-primary/40 transition-all">
           <span className="text-lg font-bold text-primary font-headline">{initial}</span>
         </div>
 
-        {/* Info — clicking the name navigates to the client view page */}
+        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <button
-              onClick={onViewClient}
-              className="font-bold text-on-surface font-headline text-base hover:text-primary transition-colors text-left"
-            >
+            <span className="font-bold text-on-surface font-headline text-base group-hover:text-primary transition-colors">
               {client.name || link.clientEmail}
-            </button>
+            </span>
             <StatusBadge status={link.status} />
             {client.plan === 'pro' && (
               <span className="text-[10px] font-bold text-primary/80 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">PRO</span>
@@ -503,8 +503,8 @@ function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient }) {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-2 flex-shrink-0">
+        {/* Actions — stop propagation so buttons don't also trigger card navigation */}
+        <div className="flex flex-col gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
           <button
             onClick={onViewClient}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"

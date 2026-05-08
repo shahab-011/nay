@@ -31,7 +31,7 @@ function DaySeparator({ label }) {
 
 export default function DirectMessagePanel({ linkId, otherName, onClose }) {
   const { user }         = useAuth();
-  const { socket }       = useSocket();
+  const { socket, isConnected } = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -97,7 +97,7 @@ export default function DirectMessagePanel({ linkId, otherName, onClose }) {
   const handleSend = useCallback((e) => {
     e?.preventDefault();
     if (!text.trim() || sending) return;
-    if (!socket?.connected) {
+    if (!isConnected || !socket) {
       setError('Not connected — please wait a moment and try again.');
       return;
     }
@@ -135,8 +135,8 @@ export default function DirectMessagePanel({ linkId, otherName, onClose }) {
           <div className="flex-1 min-w-0">
             <div className="font-bold text-on-surface text-sm leading-tight truncate">{otherName || 'Chat'}</div>
             <div className="flex items-center gap-1.5 text-[10px] text-on-surface-variant">
-              <span className={`w-1.5 h-1.5 rounded-full ${socket?.connected ? 'bg-green-400' : 'bg-red-400'}`} />
-              {socket?.connected ? 'Connected' : 'Connecting…'}
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+              {isConnected ? 'Connected' : 'Connecting…'}
             </div>
           </div>
           <button
@@ -246,7 +246,7 @@ export default function DirectMessagePanel({ linkId, otherName, onClose }) {
             />
             <button
               type="submit"
-              disabled={!text.trim() || sending || !socket?.connected}
+              disabled={!text.trim() || sending || !isConnected}
               className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-primary text-on-primary hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
             >
               <span

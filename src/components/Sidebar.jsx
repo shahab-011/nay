@@ -21,6 +21,7 @@ const navItems = [
 const bottomItems = [
   { name: 'Profile',     icon: 'account_circle', path: '/profile' },
   { name: 'Help Center', icon: 'help',            path: '/help'    },
+  { name: 'About',       icon: 'info',            path: '/about'   },
 ];
 
 const lawyerItems = [

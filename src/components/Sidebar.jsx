@@ -1,22 +1,21 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useAlertCount } from '../context/AlertContext';
 import { useMobileMenu } from '../context/MobileMenuContext';
 
-/* ── Nav item definitions ───────────────────────────────────────────── */
-
 const navItems = [
-  { name: 'Dashboard',          icon: 'dashboard',      path: '/'             },
-  { name: 'Upload Document',    icon: 'upload_file',    path: '/upload'       },
-  { name: 'My Documents',       icon: 'description',    path: '/documents'    },
-  { name: 'Ask AI',             icon: 'psychology',     path: '/ask'          },
-  { name: 'Compare Documents',  icon: 'compare_arrows', path: '/compare'      },
+  { name: 'Dashboard',          icon: 'dashboard',      path: '/'                },
+  { name: 'Upload Document',    icon: 'upload_file',    path: '/upload'          },
+  { name: 'My Documents',       icon: 'description',    path: '/documents'       },
+  { name: 'Ask AI',             icon: 'psychology',     path: '/ask'             },
+  { name: 'Compare Documents',  icon: 'compare_arrows', path: '/compare'         },
   { name: 'Contract Lifecycle', icon: 'history_edu',    path: '/lifecycle'       },
   { name: 'Contract Web',       icon: 'hub',            path: '/obligation-web'  },
-  { name: 'Alerts',             icon: 'notifications',  path: '/alerts',      badge: true },
-  { name: 'Client Links',       icon: 'handshake',      path: '/client-links' },
+  { name: 'Alerts',             icon: 'notifications',  path: '/alerts', badge: true },
+  { name: 'Client Links',       icon: 'handshake',      path: '/client-links'    },
 ];
 
 const bottomItems = [
@@ -34,73 +33,116 @@ const BOTTOM_TABS = [
   { name: 'Home',      icon: 'dashboard',     path: '/'          },
   { name: 'Documents', icon: 'description',   path: '/documents' },
   { name: 'Ask AI',    icon: 'psychology',    path: '/ask'       },
-  { name: 'Alerts',    icon: 'notifications', path: '/alerts',   badge: true },
+  { name: 'Alerts',    icon: 'notifications', path: '/alerts', badge: true },
 ];
 
-const linkCls = (isActive) =>
-  `flex items-center gap-2.5 py-[7px] px-3 rounded-lg transition-all duration-150 group ${
-    isActive
-      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
-      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-  }`;
+const sidebarVariants = {
+  hidden: { x: -280, opacity: 0 },
+  visible: {
+    x: 0, opacity: 1,
+    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    x: -280, opacity: 0,
+    transition: { duration: 0.25, ease: [0.36, 0, 0.66, 0] },
+  },
+};
 
-/* ══════════════════════════════════════════════════════════════════════
-   SHARED NAV ITEMS (used by desktop sidebar + mobile drawer)
-══════════════════════════════════════════════════════════════════════ */
+const navItemVariants = {
+  initial: { opacity: 0, x: -12 },
+  animate: (i) => ({
+    opacity: 1, x: 0,
+    transition: { delay: i * 0.045, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+function NavItemLink({ item, idx, onItemClick, unread }) {
+  return (
+    <motion.div
+      custom={idx}
+      variants={navItemVariants}
+      initial="initial"
+      animate="animate"
+    >
+      <NavLink
+        to={item.path}
+        end={item.path === '/'}
+        onClick={onItemClick}
+        className={({ isActive }) =>
+          `relative flex items-center gap-2.5 py-2 px-3 rounded-xl transition-all duration-200 group overflow-hidden ${
+            isActive
+              ? 'text-primary font-semibold bg-primary/10'
+              : 'text-slate-400 hover:text-slate-100 hover:bg-white/5'
+          }`
+        }
+      >
+        {({ isActive }) => (
+          <>
+            {/* Active left bar */}
+            {isActive && (
+              <motion.span
+                layoutId="nav-active-bar"
+                className="nav-active-bar"
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              />
+            )}
+
+            {/* Hover shimmer */}
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/3 to-transparent" />
+
+            <span
+              className={`material-symbols-outlined text-[18px] flex-shrink-0 transition-all duration-200 ${isActive ? 'text-glow' : ''}`}
+              style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+            >
+              {item.icon}
+            </span>
+            <span className="text-[13px] font-medium font-headline tracking-tight flex-1 truncate">
+              {item.name}
+            </span>
+            {item.badge && unread > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-primary text-on-primary text-[9px] font-bold px-1.5 py-px rounded-full min-w-[17px] text-center leading-none"
+              >
+                {unread > 9 ? '9+' : unread}
+              </motion.span>
+            )}
+          </>
+        )}
+      </NavLink>
+    </motion.div>
+  );
+}
 
 function NavItems({ onItemClick, isLawyer, unread }) {
   return (
     <>
       {navItems
         .filter(item => !(isLawyer && item.path === '/client-links'))
-        .map(item => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={onItemClick}
-            className={({ isActive }) => linkCls(isActive)}
-          >
-            <span className="material-symbols-outlined text-[18px] flex-shrink-0">{item.icon}</span>
-            <span className="text-[13px] font-medium font-headline tracking-tight flex-1 truncate">{item.name}</span>
-            {item.badge && unread > 0 && (
-              <span className="bg-primary text-on-primary text-[10px] font-bold px-1.5 py-px rounded-full min-w-[17px] text-center leading-none">
-                {unread > 9 ? '9+' : unread}
-              </span>
-            )}
-          </NavLink>
-        ))
-      }
+        .map((item, idx) => (
+          <NavItemLink key={item.path} item={item} idx={idx} onItemClick={onItemClick} unread={unread} />
+        ))}
 
       {isLawyer && (
-        <div className="pt-2.5">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { delay: 0.4 } }}
+          className="pt-2.5"
+        >
           <div className="px-3 pb-1.5 flex items-center gap-2">
-            <div className="flex-1 h-px bg-white/5" />
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500 flex-shrink-0">Legal Pro</span>
-            <div className="flex-1 h-px bg-white/5" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/50 flex-shrink-0">Legal Pro</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
           </div>
-          {lawyerItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onItemClick}
-              className={({ isActive }) => linkCls(isActive)}
-            >
-              <span className="material-symbols-outlined text-[18px] flex-shrink-0"
-                style={{ fontVariationSettings: "'FILL' 1" }}>
-                {item.icon}
-              </span>
-              <span className="text-[13px] font-medium font-headline tracking-tight flex-1 truncate">{item.name}</span>
-            </NavLink>
+          {lawyerItems.map((item, idx) => (
+            <NavItemLink key={item.path} item={item} idx={idx + navItems.length} onItemClick={onItemClick} unread={0} />
           ))}
-        </div>
+        </motion.div>
       )}
     </>
   );
 }
-
-/* ══════════════════════════════════════════════════════════════════════
-   MAIN EXPORT
-══════════════════════════════════════════════════════════════════════ */
 
 export default function Sidebar() {
   const navigate  = useNavigate();
@@ -108,48 +150,66 @@ export default function Sidebar() {
   const { isPrivate, togglePrivacy } = usePrivacy();
   const { unreadCount: unread } = useAlertCount();
   const { isOpen, open, close } = useMobileMenu();
-
   const isLawyer = user?.role === 'lawyer' || user?.role === 'admin';
 
   return (
     <>
-      {/* ══════════ DESKTOP SIDEBAR (md+) ══════════ */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-[220px] z-50 glass-sidebar flex-col border-r border-white/5 shadow-[24px_0_48px_rgba(0,15,59,0.08)]">
+      {/* ══════════ DESKTOP SIDEBAR ══════════ */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-[220px] z-50 glass-sidebar flex-col shadow-[4px_0_40px_rgba(0,0,0,0.4)]">
 
         {/* Logo */}
-        <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/5 flex-shrink-0">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="px-4 pt-5 pb-4 flex items-center justify-between border-b border-white/5 flex-shrink-0"
+        >
           <div>
-            <h1 className="text-xl font-bold tracking-tighter text-primary-container font-headline leading-none">Nyaya</h1>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-on-surface-variant font-label mt-1">Legal Intelligence</p>
+            <h1 className="text-xl font-black tracking-tighter gradient-text font-headline leading-none">
+              Nyaya
+            </h1>
+            <p className="text-[9px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-label mt-0.5">
+              Legal Intelligence
+            </p>
           </div>
-          <div
-            title={isPrivate ? 'Privacy Mode' : 'Cloud Mode'}
-            className={`w-2 h-2 rounded-full flex-shrink-0 ${isPrivate ? 'bg-primary shadow-[0_0_7px_rgba(68,229,194,0.75)]' : 'bg-on-surface-variant/25'}`}
+          <motion.div
+            animate={isPrivate ? {
+              boxShadow: ['0 0 0px rgba(68,229,194,0)', '0 0 8px rgba(68,229,194,0.8)', '0 0 0px rgba(68,229,194,0)'],
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${isPrivate ? 'bg-primary' : 'bg-on-surface-variant/20'}`}
           />
-        </div>
+        </motion.div>
 
         {/* Nav */}
-        <nav className="flex-1 px-2.5 py-2 space-y-0.5 overflow-y-auto min-h-0">
+        <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto min-h-0 custom-scrollbar">
           <NavItems onItemClick={null} isLawyer={isLawyer} unread={unread} />
         </nav>
 
         {/* Bottom */}
-        <div className="px-2.5 pb-3 border-t border-white/5 flex-shrink-0">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+          className="px-2 pb-3 border-t border-white/5 flex-shrink-0"
+        >
+          {/* New Analysis button */}
           <div className="flex items-center gap-1.5 pt-2.5 pb-1.5">
             <button
               onClick={() => navigate('/upload')}
-              className="flex-1 flex items-center justify-center gap-1.5 py-[7px] bg-primary-container text-on-primary-container rounded-lg text-[12px] font-bold font-headline hover:opacity-90 transition-opacity"
+              className="flex-1 relative flex items-center justify-center gap-1.5 py-2 bg-gradient-to-r from-primary to-[#38debb] text-on-primary rounded-xl text-[12px] font-bold font-headline overflow-hidden group neon-btn"
             >
+              <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <span className="material-symbols-outlined text-[15px]">add</span>
               New Analysis
             </button>
             <button
               onClick={togglePrivacy}
               title={isPrivate ? 'Privacy Mode' : 'Cloud Mode'}
-              className={`w-[34px] h-[34px] flex items-center justify-center rounded-lg border transition-all flex-shrink-0 ${
+              className={`w-[34px] h-[34px] flex items-center justify-center rounded-xl border transition-all flex-shrink-0 ${
                 isPrivate
-                  ? 'border-primary/30 bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'border-outline-variant/20 bg-surface-container text-on-surface-variant hover:text-white hover:border-primary/20'
+                  ? 'border-primary/40 bg-primary/10 text-primary glow-primary-sm'
+                  : 'border-white/8 bg-white/3 text-on-surface-variant hover:text-white hover:border-primary/20'
               }`}
             >
               <span className="material-symbols-outlined text-[17px]"
@@ -159,128 +219,137 @@ export default function Sidebar() {
             </button>
           </div>
 
+          {/* Bottom nav items */}
           <div className="space-y-0.5">
-            {bottomItems.map(item => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 py-[7px] px-3 rounded-lg transition-all duration-150 text-[13px] ${
-                    isActive
-                      ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`
-                }
-              >
-                <span className="material-symbols-outlined text-[17px] flex-shrink-0">{item.icon}</span>
-                <span className="font-medium font-headline tracking-tight">{item.name}</span>
-              </NavLink>
+            {bottomItems.map((item, idx) => (
+              <motion.div key={item.name} custom={idx} variants={navItemVariants} initial="initial" animate="animate">
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 py-2 px-3 rounded-xl transition-all duration-200 text-[12px] ${
+                      isActive
+                        ? 'text-primary font-semibold bg-primary/10'
+                        : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-[16px] flex-shrink-0">{item.icon}</span>
+                  <span className="font-medium font-headline tracking-tight">{item.name}</span>
+                </NavLink>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </aside>
 
       {/* ══════════ MOBILE DRAWER OVERLAY ══════════ */}
-      <div
-        className={`md:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={close}
-      />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+            onClick={close}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ══════════ MOBILE DRAWER ══════════ */}
-      <aside
-        className={`md:hidden fixed top-0 left-0 h-full w-[280px] z-[70] glass-sidebar flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        {/* Drawer header */}
-        <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/5 flex-shrink-0">
-          <div>
-            <h1 className="text-xl font-bold tracking-tighter text-primary-container font-headline leading-none">Nyaya</h1>
-            <p className="text-[9px] uppercase tracking-[0.18em] text-on-surface-variant font-label mt-1">Legal Intelligence</p>
-          </div>
-          <button
-            onClick={close}
-            className="w-9 h-9 flex items-center justify-center rounded-xl text-on-surface-variant hover:text-white hover:bg-white/10 transition-colors"
+      <AnimatePresence>
+        {isOpen && (
+          <motion.aside
+            variants={sidebarVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="md:hidden fixed top-0 left-0 h-full w-[280px] z-[70] glass-sidebar flex flex-col shadow-2xl"
           >
-            <span className="material-symbols-outlined text-xl">close</span>
-          </button>
-        </div>
+            {/* Drawer header */}
+            <div className="px-4 pt-5 pb-4 flex items-center justify-between border-b border-white/5 flex-shrink-0">
+              <div>
+                <h1 className="text-xl font-black tracking-tighter gradient-text font-headline leading-none">Nyaya</h1>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-on-surface-variant/60 font-label mt-0.5">Legal Intelligence</p>
+              </div>
+              <button
+                onClick={close}
+                className="w-9 h-9 flex items-center justify-center rounded-xl text-on-surface-variant hover:text-white hover:bg-white/8 transition-colors"
+              >
+                <span className="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
 
-        {/* Drawer nav */}
-        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
-          <NavItems onItemClick={close} isLawyer={isLawyer} unread={unread} />
-        </nav>
+            {/* Drawer nav */}
+            <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto custom-scrollbar">
+              <NavItems onItemClick={close} isLawyer={isLawyer} unread={unread} />
+            </nav>
 
-        {/* Drawer bottom */}
-        <div className="px-3 pb-8 border-t border-white/5 flex-shrink-0 space-y-1">
-          <button
-            onClick={() => { navigate('/upload'); close(); }}
-            className="w-full flex items-center justify-center gap-2 mt-3 mb-1 py-3 bg-primary-container text-on-primary-container rounded-xl text-sm font-bold font-headline hover:opacity-90 transition-opacity"
-          >
-            <span className="material-symbols-outlined text-base">add</span>
-            New Analysis
-          </button>
-
-          {bottomItems.map(item => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              onClick={close}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 py-[7px] px-3 rounded-lg transition-all duration-150 text-[13px] ${
-                  isActive
-                    ? 'text-[#00C9A7] font-semibold bg-[#00C9A7]/10'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined text-[17px] flex-shrink-0">{item.icon}</span>
-              <span className="font-medium font-headline tracking-tight">{item.name}</span>
-            </NavLink>
-          ))}
-
-          <button
-            onClick={() => { togglePrivacy(); close(); }}
-            className={`w-full flex items-center gap-2.5 py-[7px] px-3 rounded-lg text-[13px] font-medium transition-all ${
-              isPrivate
-                ? 'text-primary bg-primary/10'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[17px] flex-shrink-0"
-              style={{ fontVariationSettings: isPrivate ? "'FILL' 1" : "'FILL' 0" }}>
-              {isPrivate ? 'shield_lock' : 'cloud'}
-            </span>
-            <span className="font-headline tracking-tight">{isPrivate ? 'Privacy Mode On' : 'Privacy Mode'}</span>
-          </button>
-        </div>
-      </aside>
+            {/* Drawer bottom */}
+            <div className="px-3 pb-8 border-t border-white/5 flex-shrink-0 space-y-1">
+              <button
+                onClick={() => { navigate('/upload'); close(); }}
+                className="w-full flex items-center justify-center gap-2 mt-3 mb-1 py-3 bg-gradient-to-r from-primary to-[#38debb] text-on-primary rounded-xl text-sm font-bold font-headline neon-btn"
+              >
+                <span className="material-symbols-outlined text-base">add</span>
+                New Analysis
+              </button>
+              {bottomItems.map(item => (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  onClick={close}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2.5 py-2 px-3 rounded-xl transition-all text-[13px] ${
+                      isActive ? 'text-primary font-semibold bg-primary/10' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    }`
+                  }
+                >
+                  <span className="material-symbols-outlined text-[17px] flex-shrink-0">{item.icon}</span>
+                  <span className="font-medium font-headline tracking-tight">{item.name}</span>
+                </NavLink>
+              ))}
+              <button
+                onClick={() => { togglePrivacy(); close(); }}
+                className={`w-full flex items-center gap-2.5 py-2 px-3 rounded-xl text-[13px] font-medium transition-all ${
+                  isPrivate ? 'text-primary bg-primary/10' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[17px] flex-shrink-0"
+                  style={{ fontVariationSettings: isPrivate ? "'FILL' 1" : "'FILL' 0" }}>
+                  {isPrivate ? 'shield_lock' : 'cloud'}
+                </span>
+                <span className="font-headline tracking-tight">{isPrivate ? 'Privacy Mode On' : 'Privacy Mode'}</span>
+              </button>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* ══════════ MOBILE BOTTOM TAB BAR ══════════ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#000d35]/95 backdrop-blur-lg border-t border-white/8 flex items-stretch h-16 safe-area-bottom">
-
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch h-16 safe-area-bottom"
+        style={{ background: 'rgba(0,8,40,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(68,229,194,0.08)' }}>
         {BOTTOM_TABS.map(tab => (
           <NavLink
             key={tab.path}
             to={tab.path}
+            end={tab.path === '/'}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors ${
-                isActive ? 'text-primary' : 'text-slate-500'
-              }`
+              `flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors ${isActive ? 'text-primary' : 'text-slate-500'}`
             }
           >
             {({ isActive }) => (
               <>
                 {isActive && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-b-full" />
+                  <motion.span
+                    layoutId="bottom-tab-indicator"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-b-full"
+                    style={{ background: 'linear-gradient(90deg, #44e5c2, #66d6e7)', boxShadow: '0 0 8px rgba(68,229,194,0.6)' }}
+                  />
                 )}
                 <div className="relative">
-                  <span
-                    className="material-symbols-outlined text-[22px] leading-none"
-                    style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
-                  >
+                  <span className="material-symbols-outlined text-[22px] leading-none"
+                    style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
                     {tab.icon}
                   </span>
                   {tab.badge && unread > 0 && (
@@ -294,8 +363,6 @@ export default function Sidebar() {
             )}
           </NavLink>
         ))}
-
-        {/* More tab */}
         <button
           onClick={open}
           className="flex-1 flex flex-col items-center justify-center gap-0.5 text-slate-500 hover:text-slate-300 transition-colors"

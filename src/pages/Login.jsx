@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const staggerItem = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
 
 export default function Login() {
   const { login } = useAuth();
@@ -27,111 +33,187 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-      <div className="relative z-10 w-full max-w-md bg-surface-container-low p-10 rounded-3xl border border-white/5 shadow-2xl">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-container mb-6 shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-4xl text-on-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-              gavel
-            </span>
-          </div>
-          <h1 className="text-3xl font-headline font-extrabold text-white mb-2 tracking-tight">NyayaAI Portal</h1>
-          <p className="text-on-surface-variant font-body">Sign in to securely access your legal workspace.</p>
-        </div>
+      {/* Floating orbs */}
+      <motion.div
+        animate={{ y: [0, -20, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-[15%] left-[10%] w-72 h-72 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(68,229,194,0.12) 0%, transparent 70%)' }}
+      />
+      <motion.div
+        animate={{ y: [0, 15, 0], scale: [1, 1.08, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        className="absolute bottom-[15%] right-[10%] w-80 h-80 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(102,214,231,0.08) 0%, transparent 70%)' }}
+      />
+      <motion.div
+        animate={{ y: [0, -12, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+        className="absolute top-[60%] left-[5%] w-48 h-48 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.07) 0%, transparent 70%)' }}
+      />
 
-        {/* Error */}
-        {error && (
-          <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg mb-6 text-sm flex items-center gap-2">
-            <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
-            {error}
-          </div>
-        )}
+      {/* Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 32, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[420px]"
+      >
+        {/* Gradient border wrapper */}
+        <div className="gradient-border rounded-3xl">
+          <div className="rounded-3xl p-8 md:p-10"
+            style={{ background: 'rgba(5, 15, 50, 0.85)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)' }}>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
-          <div className="space-y-2">
-            <label className="text-sm font-label text-on-surface-variant ml-1 uppercase tracking-wider">
-              Email Address
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">
-                mail
-              </span>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-surface-container border-b border-outline-variant/30 focus:border-primary text-white py-3 pl-12 pr-4 rounded-t-xl outline-none transition-colors"
-                placeholder="counsel@firm.com"
-              />
-            </div>
-          </div>
+            {/* Logo + Title */}
+            <motion.div
+              variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+              initial="initial" animate="animate"
+              className="text-center mb-8"
+            >
+              <motion.div variants={staggerItem} className="inline-flex items-center justify-center mb-5">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center"
+                    style={{ boxShadow: '0 0 30px rgba(68,229,194,0.2)' }}>
+                    <span className="material-symbols-outlined text-4xl text-primary"
+                      style={{ fontVariationSettings: "'FILL' 1" }}>gavel</span>
+                  </div>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                    className="absolute -inset-1 rounded-2xl border border-dashed border-primary/20"
+                  />
+                </div>
+              </motion.div>
 
-          {/* Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-label text-on-surface-variant ml-1 uppercase tracking-wider">
-              Password
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">
-                lock
-              </span>
-              <input
-                type={showPass ? 'text' : 'password'}
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-surface-container border-b border-outline-variant/30 focus:border-primary text-white py-3 pl-12 pr-12 rounded-t-xl outline-none transition-colors"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass((v) => !v)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
-                tabIndex={-1}
+              <motion.h1 variants={staggerItem}
+                className="text-3xl font-black tracking-tight font-headline mb-1">
+                <span className="gradient-text">Nyaya</span>
+                <span className="text-white">AI</span>
+              </motion.h1>
+              <motion.p variants={staggerItem} className="text-on-surface-variant text-sm">
+                Sign in to your legal intelligence workspace
+              </motion.p>
+            </motion.div>
+
+            {/* Error */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-error/10 border border-error/25 text-error px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2 overflow-hidden"
+                >
+                  <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Form */}
+            <motion.form
+              onSubmit={handleSubmit}
+              variants={{ animate: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}
+              initial="initial" animate="animate"
+              className="space-y-4"
+            >
+              {/* Email */}
+              <motion.div variants={staggerItem} className="space-y-1.5">
+                <label className="text-[10px] font-bold font-label text-on-surface-variant uppercase tracking-widest ml-1">
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[18px] group-focus-within:text-primary transition-colors">
+                    mail
+                  </span>
+                  <input
+                    type="email" required autoComplete="email"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    className="nyaya-input pl-11"
+                    placeholder="counsel@firm.com"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Password */}
+              <motion.div variants={staggerItem} className="space-y-1.5">
+                <label className="text-[10px] font-bold font-label text-on-surface-variant uppercase tracking-widest ml-1">
+                  Password
+                </label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[18px] group-focus-within:text-primary transition-colors">
+                    lock
+                  </span>
+                  <input
+                    type={showPass ? 'text' : 'password'} required
+                    autoComplete="current-password"
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    className="nyaya-input pl-11 pr-11"
+                    placeholder="••••••••"
+                  />
+                  <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60 hover:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">
+                      {showPass ? 'visibility_off' : 'visibility'}
+                    </span>
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Submit */}
+              <motion.button
+                variants={staggerItem}
+                type="submit" disabled={isLoading}
+                whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                className="w-full h-12 mt-2 relative overflow-hidden rounded-xl font-headline font-bold text-[15px] text-on-primary disabled:opacity-60 flex items-center justify-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, #44e5c2, #38debb, #2dd4bf)',
+                  boxShadow: '0 0 24px rgba(68,229,194,0.35), 0 4px 20px rgba(68,229,194,0.15)',
+                }}
               >
-                <span className="material-symbols-outlined text-xl">
-                  {showPass ? 'visibility_off' : 'visibility'}
-                </span>
-              </button>
-            </div>
+                <span className="absolute inset-0 bg-white/0 hover:bg-white/10 transition-colors" />
+                {isLoading ? (
+                  <>
+                    <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="material-symbols-outlined text-xl">progress_activity</motion.span>
+                    Authenticating…
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
+                    Sign In Securely
+                  </>
+                )}
+              </motion.button>
+            </motion.form>
+
+            {/* Divider + features */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}
+              className="mt-6 pt-5 border-t border-white/5 space-y-3"
+            >
+              <div className="flex items-center justify-center gap-6 text-[10px] text-on-surface-variant/50">
+                {['AI-Powered Analysis', 'End-to-End Encrypted', 'Indian Legal Compliance'].map((f) => (
+                  <span key={f} className="flex items-center gap-1">
+                    <span className="text-primary/60 text-[10px] material-symbols-outlined">check_circle</span>
+                    {f}
+                  </span>
+                ))}
+              </div>
+              <p className="text-center text-sm text-on-surface-variant">
+                No account?{' '}
+                <Link to="/register" className="text-primary font-bold hover:underline">
+                  Create workspace →
+                </Link>
+              </p>
+            </motion.div>
           </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-bold text-lg rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
-                Signing in…
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
-                Secure Login
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Footer link */}
-        <div className="mt-8 text-center text-sm font-body text-on-surface-variant">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-primary font-bold hover:underline">
-            Request Access
-          </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

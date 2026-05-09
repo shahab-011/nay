@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { compareDocuments, getComparisons } from '../api/comparisons.api';
@@ -360,9 +361,11 @@ export default function CompareDocuments() {
       <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
 
         {/* ── Selector panel ─────────────────────────────────────── */}
-        <div className="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5 bg-white/[0.02]">
-            <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
+        <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.55, ease:[0.22,1,0.36,1] }}
+          className="rounded-2xl border border-white/5 overflow-hidden" style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(16px)' }}>
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
+            <motion.span animate={{ rotate:[0,10,-10,0] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
+              className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</motion.span>
             <div>
               <h2 className="text-sm font-semibold text-white">Document Comparison</h2>
               <p className="text-[11px] text-on-surface-variant">Select or upload two versions to compare — AI finds every change</p>
@@ -402,11 +405,11 @@ export default function CompareDocuments() {
               )}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Analyzing state ────────────────────────────────────── */}
         {comparing && (
-          <div className="flex flex-col items-center gap-5 py-20">
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="flex flex-col items-center gap-5 py-20">
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="material-symbols-outlined text-primary text-4xl animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
@@ -425,7 +428,7 @@ export default function CompareDocuments() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Error result (bad saved comparison) ────────────────── */}

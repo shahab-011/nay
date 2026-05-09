@@ -3,11 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    @apply bg-surface text-on-surface font-body selection:bg-primary/30;
+    @apply bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 }
 
+/* ── Material Symbols ───────────────────────────────────────────── */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   display: inline-block;
@@ -19,23 +25,292 @@
   direction: ltr;
 }
 
-.glass-sidebar {
-  background: rgba(0, 11, 47, 0.8);
-  backdrop-filter: blur(20px);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3c4a45;
-  border-radius: 10px;
-}
-
+/* ── Scrollbars ─────────────────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(68,229,194,0.2); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(68,229,194,0.4); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Aurora Background ──────────────────────────────────────────── */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #000f3b;
+  pointer-events: none;
+}
+.aurora-bg::before {
+  content: '';
+  position: absolute;
+  top: -20%; right: -10%;
+  width: 70vw; height: 70vw;
+  max-width: 900px; max-height: 900px;
+  background: radial-gradient(ellipse, rgba(68,229,194,0.09) 0%, transparent 70%);
+  animation: aurora-drift-1 18s ease-in-out infinite alternate;
+  border-radius: 50%;
+}
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -20%; left: -5%;
+  width: 60vw; height: 60vw;
+  max-width: 700px; max-height: 700px;
+  background: radial-gradient(ellipse, rgba(102,214,231,0.06) 0%, transparent 70%);
+  animation: aurora-drift-2 22s ease-in-out infinite alternate;
+  border-radius: 50%;
+}
+.aurora-orb-3 {
+  position: absolute;
+  top: 35%; left: 35%;
+  width: 50vw; height: 50vw;
+  max-width: 600px; max-height: 600px;
+  background: radial-gradient(ellipse, rgba(167,139,250,0.05) 0%, transparent 70%);
+  animation: aurora-drift-3 28s ease-in-out infinite alternate;
+  border-radius: 50%;
+  pointer-events: none;
+}
+@keyframes aurora-drift-1 {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(-5%,8%) scale(1.1); }
+  100% { transform: translate(5%,-5%) scale(0.95); }
+}
+@keyframes aurora-drift-2 {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(8%,-6%) scale(1.15); }
+  100% { transform: translate(-4%,5%) scale(0.9); }
+}
+@keyframes aurora-drift-3 {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(-10%,10%) scale(1.2); }
+  100% { transform: translate(6%,-8%) scale(0.85); }
+}
+
+/* ── Dot Grid ───────────────────────────────────────────────────── */
+.dot-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── Glass Sidebar ──────────────────────────────────────────────── */
+.glass-sidebar {
+  background: rgba(0, 8, 40, 0.88);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+/* ── Glass Card ─────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(12, 28, 73, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.glass-card:hover {
+  background: rgba(12, 28, 73, 0.75);
+  border-color: rgba(68,229,194,0.16);
+  box-shadow: 0 8px 40px rgba(68,229,194,0.07), 0 0 0 1px rgba(68,229,194,0.05);
+}
+
+/* ── Glow Effects ───────────────────────────────────────────────── */
+.glow-primary    { box-shadow: 0 0 20px rgba(68,229,194,0.35), 0 0 60px rgba(68,229,194,0.12); }
+.glow-primary-sm { box-shadow: 0 0 10px rgba(68,229,194,0.25); }
+.text-glow       { text-shadow: 0 0 20px rgba(68,229,194,0.6); }
+
+/* ── Gradient Text ──────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #44e5c2 0%, #66d6e7 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-subtle {
+  background: linear-gradient(135deg, #dbe1ff 0%, #44e5c2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Animated Gradient Border ───────────────────────────────────── */
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgba(68,229,194,0.6),
+    rgba(102,214,231,0.3),
+    rgba(167,139,250,0.4),
+    rgba(68,229,194,0.6)
+  );
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradient-spin 4s linear infinite;
+  z-index: -1;
+}
+@keyframes gradient-spin {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* ── Shimmer Skeleton ───────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Scan Line ──────────────────────────────────────────────────── */
+.scan-line {
+  position: relative;
+  overflow: hidden;
+}
+.scan-line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(68,229,194,0.5), transparent);
+  animation: scan 3s ease-in-out infinite;
+  top: 0;
+}
+@keyframes scan {
+  0%   { top: -2px; }
+  100% { top: 102%; }
+}
+
+/* ── Neon Button ────────────────────────────────────────────────── */
+.neon-btn {
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.25s, transform 0.2s;
+}
+.neon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(68,229,194,0.12) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.neon-btn:hover::before { opacity: 1; }
+.neon-btn:hover {
+  box-shadow: 0 0 22px rgba(68,229,194,0.28), 0 4px 20px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
+}
+.neon-btn:active { transform: translateY(0); }
+
+/* ── Pulse Ring ─────────────────────────────────────────────────── */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(68,229,194,0.45); }
+  70%  { box-shadow: 0 0 0 10px rgba(68,229,194,0); }
+  100% { box-shadow: 0 0 0 0 rgba(68,229,194,0); }
+}
+.pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+
+/* ── Float ──────────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+/* ── Slow spin ──────────────────────────────────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+/* ── Typing cursor ──────────────────────────────────────────────── */
+.typing-cursor::after {
+  content: '|';
+  color: #44e5c2;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Cyber grid ─────────────────────────────────────────────────── */
+.cyber-grid {
+  background-image:
+    linear-gradient(rgba(68,229,194,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(68,229,194,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Input ──────────────────────────────────────────────────────── */
+.nyaya-input {
+  width: 100%;
+  background: rgba(12, 28, 73, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--color-on-surface, #dbe1ff);
+  outline: none;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+.nyaya-input::placeholder {
+  color: rgba(186, 202, 195, 0.35);
+}
+.nyaya-input:focus {
+  border-color: rgba(68,229,194,0.4);
+  box-shadow: 0 0 0 3px rgba(68,229,194,0.08), 0 0 16px rgba(68,229,194,0.06);
+}
+
+/* ── Status dot ─────────────────────────────────────────────────── */
+.status-online {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #44e5c2;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ── Progress fill ──────────────────────────────────────────────── */
+@keyframes progress-fill { from { width: 0%; } }
+.animate-progress { animation: progress-fill 1.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+/* ── Hexagon clip ───────────────────────────────────────────────── */
+.clip-hex {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* ── Nav active indicator ───────────────────────────────────────── */
+.nav-active-bar {
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 60%;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(to bottom, #44e5c2, #66d6e7);
+  box-shadow: 0 0 8px rgba(68,229,194,0.6);
+}

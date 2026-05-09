@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { getDocuments, updateDocument } from '../api/documents.api';
@@ -238,11 +239,13 @@ export default function ContractLifecycle() {
     <>
       <Header title="Contract Lifecycle" />
 
-      <div className="p-4 md:p-8 bg-surface min-h-[calc(100vh-64px)] space-y-8">
+      <div className="p-4 md:p-8 min-h-[calc(100vh-64px)] space-y-8">
 
         {/* ── Urgent expiry banner ─────────────────────────────── */}
+        <AnimatePresence>
         {!loading && urgentDocs.length > 0 && (
-          <div className="bg-error/10 border border-error/30 rounded-2xl px-6 py-4 flex items-start gap-4">
+          <motion.div initial={{ opacity:0, y:-16, scale:0.97 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:-16 }} transition={{ duration:0.4, ease:[0.22,1,0.36,1] }}
+            className="border border-error/30 rounded-2xl px-6 py-4 flex items-start gap-4" style={{ background:'rgba(239,68,68,0.08)', backdropFilter:'blur(12px)' }}>
             <span
               className="material-symbols-outlined text-error text-2xl flex-shrink-0 mt-0.5"
               style={{ fontVariationSettings: "'FILL' 1" }}
@@ -270,23 +273,25 @@ export default function ContractLifecycle() {
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── Stats row ────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={{ show:{ transition:{ staggerChildren:0.08 } } }} initial="hidden" animate="show">
           {[
             { label: 'Active Contracts', value: counts.active,   color: 'text-primary',    icon: 'verified_user',   filter: 'active'   },
             { label: 'Expiring Soon',    value: counts.expiring, color: 'text-amber-400',  icon: 'schedule',        filter: 'expiring' },
             { label: 'Expired',          value: counts.expired,  color: 'text-error',      icon: 'event_busy',      filter: 'expired'  },
             { label: 'Pending Review',   value: counts.pending,  color: 'text-purple-400', icon: 'pending_actions', filter: 'pending'  },
           ].map(({ label, value, color, icon, filter }) => (
-            <button
-              key={label}
+            <motion.button key={label}
+              variants={{ hidden:{ opacity:0, y:20, scale:0.95 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}
+              whileHover={{ y:-5, scale:1.03, boxShadow:'0 16px 40px rgba(0,0,0,0.25)' }} whileTap={{ scale:0.97 }}
               onClick={() => setFilterLC((f) => f === filter ? 'all' : filter)}
-              className={`bg-surface-container-low p-6 rounded-xl hover:bg-surface-container transition-all group text-left border ${
-                filterLC === filter ? 'border-primary/30' : 'border-white/5'
-              }`}
+              className={`p-6 rounded-xl text-left border ${filterLC === filter ? 'border-primary/30' : 'border-white/5'}`}
+              style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}
             >
               <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">{label}</p>
               <div className="flex items-end justify-between">
@@ -295,9 +300,9 @@ export default function ContractLifecycle() {
                 </h3>
                 <span className={`material-symbols-outlined ${color} group-hover:scale-110 transition-transform`} style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
               </div>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 

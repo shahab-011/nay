@@ -1,8 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header';
 import { uploadDocument, uploadTextOnly } from '../api/documents.api';
 import { usePrivacy } from '../context/PrivacyContext';
+
+const itemV = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+};
 
 const DOC_TYPES = [
   'Contract', 'NDA', 'MoU', 'Rent Agreement',
@@ -178,49 +184,54 @@ export default function UploadDocument() {
     <>
       <Header title="Upload Document" />
 
-      <div className="max-w-6xl mx-auto p-10">
-        <div className="mb-10">
-          <h1 className="text-4xl font-headline font-extrabold tracking-tight text-white mb-3">
-            Secure Document Intake
+      <div className="max-w-6xl mx-auto p-4 md:p-8 xl:p-10">
+        <motion.div variants={{ animate: { transition: { staggerChildren: 0.09 } } }} initial="initial" animate="animate">
+
+        <motion.div variants={itemV} className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight mb-2">
+            <span className="gradient-text">Secure Document</span>{' '}
+            <span className="text-white">Intake</span>
           </h1>
-          <p className="text-on-surface-variant max-w-2xl text-lg leading-relaxed">
+          <p className="text-on-surface-variant max-w-2xl leading-relaxed">
             Upload a file or paste text for AI-powered legal analysis. All processing is encrypted end-to-end.
           </p>
-        </div>
+        </motion.div>
 
         {/* Tab switcher */}
-        <div className="flex gap-2 mb-8 bg-surface-container-low rounded-xl p-1 w-fit border border-white/5">
+        <motion.div variants={itemV} className="flex gap-1.5 mb-7 p-1 w-fit rounded-xl"
+          style={{ background: 'rgba(12,28,73,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
           {['file', 'text'].map((t) => (
-            <button
-              key={t}
-              onClick={() => { setTab(t); setError(''); }}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold font-headline transition-all ${
+            <motion.button key={t} onClick={() => { setTab(t); setError(''); }}
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold font-headline transition-all ${
                 tab === t
-                  ? 'bg-primary text-on-primary shadow-md'
+                  ? 'text-on-primary shadow-md'
                   : 'text-on-surface-variant hover:text-white'
               }`}
+              style={tab === t ? { background: 'linear-gradient(135deg,#44e5c2,#38debb)', boxShadow: '0 0 16px rgba(68,229,194,0.25)' } : {}}
             >
               {t === 'file' ? '📄 Upload File' : '📋 Paste Text'}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* ── Left Column ─────────────────────────────────────── */}
-          <div className="lg:col-span-7 space-y-6">
+          <motion.div variants={itemV} className="lg:col-span-7 space-y-5">
 
             {tab === 'file' ? (
               <>
-                <div
+                <motion.div
                   onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`relative rounded-2xl p-12 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
-                    dragging
-                      ? 'border-primary bg-primary/10 scale-[1.01]'
-                      : 'border-outline-variant hover:border-primary/50 bg-surface-container-low'
-                  }`}
+                  animate={dragging ? { scale: 1.02 } : { scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative rounded-2xl p-10 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
+                  style={dragging
+                    ? { borderColor: '#44e5c2', background: 'rgba(68,229,194,0.08)', boxShadow: '0 0 40px rgba(68,229,194,0.15)' }
+                    : { borderColor: 'rgba(60,74,69,0.6)', background: 'rgba(12,28,73,0.4)' }}
                 >
                   <input
                     ref={fileInputRef}
@@ -272,20 +283,20 @@ export default function UploadDocument() {
                   </div>
 
                   {loading && progress > 0 && (
-                    <div className="w-full mt-6 space-y-2">
+                    <div className="w-full mt-5 space-y-2">
                       <div className="flex justify-between text-xs text-on-surface-variant">
                         <span>{progressMsg}</span>
                         <span>{progress}%</span>
                       </div>
-                      <div className="w-full bg-surface-container-highest rounded-full h-2">
-                        <div
-                          className="bg-primary h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        />
+                      <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                        <motion.div className="h-full rounded-full"
+                          animate={{ width: `${progress}%` }}
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                          style={{ background: 'linear-gradient(90deg, #44e5c2, #38debb)', boxShadow: '0 0 8px rgba(68,229,194,0.5)' }} />
                       </div>
                     </div>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Pipeline steps when file selected */}
                 {file && (
@@ -373,13 +384,13 @@ export default function UploadDocument() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* ── Right Column ────────────────────────────────────── */}
-          <div className="lg:col-span-5 space-y-6">
+          <motion.div variants={itemV} className="lg:col-span-5 space-y-5">
 
             {/* Analysis options */}
-            <div className="bg-surface-container-high rounded-2xl p-8 border border-white/5">
+            <div className="rounded-2xl p-6" style={{ background: 'rgba(12,28,73,0.55)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)' }}>
               <h4 className="font-headline font-bold text-white mb-6">Analysis Includes</h4>
               <div className="space-y-4">
                 {[
@@ -410,34 +421,37 @@ export default function UploadDocument() {
             )}
 
             {/* Submit */}
-            <button
+            <motion.button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className={`w-full h-16 font-headline font-extrabold text-lg rounded-2xl transition-all flex items-center justify-center gap-3 ${
-                canSubmit
-                  ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary-container shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]'
-                  : 'bg-surface-container-high text-on-surface-variant cursor-not-allowed'
+              whileHover={canSubmit ? { scale: 1.02 } : {}}
+              whileTap={canSubmit ? { scale: 0.98 } : {}}
+              className={`w-full h-14 font-headline font-extrabold text-[15px] rounded-2xl transition-all flex items-center justify-center gap-3 ${
+                canSubmit ? 'text-on-primary' : 'text-on-surface-variant cursor-not-allowed'
               }`}
+              style={canSubmit ? {
+                background: 'linear-gradient(135deg, #44e5c2, #38debb)',
+                boxShadow: '0 0 24px rgba(68,229,194,0.35), 0 4px 20px rgba(68,229,194,0.15)',
+              } : { background: 'rgba(24,39,83,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
             >
               {loading ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                  <motion.span animate={{ rotate: 360 }} transition={{ duration:1, repeat:Infinity, ease:'linear' }}
+                    className="material-symbols-outlined text-xl">progress_activity</motion.span>
                   {progressMsg || 'Processing…'}
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    bolt
-                  </span>
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
                   Analyze Document
                 </>
               )}
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
 
         {/* Trust badges */}
-        <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-30">
+        <motion.div variants={itemV} className="mt-16 flex flex-wrap justify-center gap-10 opacity-25">
           {[
             ['verified_user', 'ISO 27001 Certified'],
             ['lock',          'AES-256 Encrypted'],
@@ -448,7 +462,9 @@ export default function UploadDocument() {
               <span className="text-xs font-label font-bold tracking-widest uppercase">{label}</span>
             </div>
           ))}
-        </div>
+        </motion.div>
+
+        </motion.div>
       </div>
     </>
   );

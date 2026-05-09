@@ -1,8 +1,15 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import { usePrivacy } from '../context/PrivacyContext';
 import { MobileMenuProvider } from '../context/MobileMenuContext';
+
+const pageVariants = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, y: -8,  transition: { duration: 0.22 } },
+};
 
 export default function Layout({ children }) {
   const location   = useLocation();
@@ -10,45 +17,63 @@ export default function Layout({ children }) {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   if (isAuthPage) {
-    return <>{children}</>;
+    return (
+      <>
+        <div className="aurora-bg"><div className="aurora-orb-3" /></div>
+        <div className="dot-grid" />
+        {children}
+      </>
+    );
   }
 
   return (
     <MobileMenuProvider>
+      {/* Aurora animated background */}
+      <div className="aurora-bg"><div className="aurora-orb-3" /></div>
+      <div className="dot-grid" />
+
       <Sidebar />
 
-      {/* Main content — full width on mobile, offset by sidebar on desktop */}
-      <main className="md:ml-[220px] pt-16 pb-20 md:pb-0 min-h-screen bg-background">
-
-        {/* ── Persistent Privacy Banner ── */}
-        {isPrivate && (
-          <div className="sticky top-16 z-30 flex items-center gap-3 px-4 md:px-6 py-2.5 bg-primary/10 border-b border-primary/20 backdrop-blur-sm">
-            <span
-              className="material-symbols-outlined text-primary text-base flex-shrink-0"
-              style={{ fontVariationSettings: "'FILL' 1" }}
+      <main className="md:ml-[220px] pt-16 pb-20 md:pb-0 min-h-screen">
+        {/* Privacy banner */}
+        <AnimatePresence>
+          {isPrivate && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="sticky top-16 z-30 overflow-hidden"
             >
-              shield_lock
-            </span>
-            <p className="text-primary text-xs font-semibold flex-1 leading-relaxed">
-              Privacy Mode Active — files are processed in your browser.
-            </p>
-            <button
-              onClick={togglePrivacy}
-              className="text-primary/60 hover:text-primary text-xs font-medium underline underline-offset-2 flex-shrink-0 transition-colors"
-            >
-              Disable
-            </button>
-          </div>
-        )}
+              <div className="flex items-center gap-3 px-4 md:px-6 py-2.5 bg-primary/10 border-b border-primary/20 backdrop-blur-sm">
+                <span
+                  className="material-symbols-outlined text-primary text-base flex-shrink-0"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >shield_lock</span>
+                <p className="text-primary text-xs font-semibold flex-1">
+                  Privacy Mode Active — files processed in your browser only.
+                </p>
+                <button
+                  onClick={togglePrivacy}
+                  className="text-primary/60 hover:text-primary text-xs font-medium underline underline-offset-2 transition-colors"
+                >Disable</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
-
-      {/* Background decorative elements */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[15%] w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px]" />
-      </div>
     </MobileMenuProvider>
   );
 }

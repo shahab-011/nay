@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
@@ -234,10 +235,12 @@ export default function LawyerDashboard() {
       <div className="p-4 md:p-8 pb-24 space-y-8 max-w-6xl">
 
         {/* ── Hero greeting ── */}
-        <div className="flex items-end justify-between flex-wrap gap-4">
+        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
+          className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-4xl font-headline font-extrabold tracking-tight text-white leading-none">
-              {user?.name?.split(' ')[0]}'s Workspace
+            <h1 className="text-4xl font-headline font-extrabold tracking-tight leading-none">
+              <span className="gradient-text">{user?.name?.split(' ')[0]}'s</span>{' '}
+              <span className="text-white">Workspace</span>
             </h1>
             <p className="text-on-surface-variant text-sm mt-1.5">Legal Professional Dashboard · NyayaAI</p>
           </div>
@@ -251,26 +254,31 @@ export default function LawyerDashboard() {
               <span className="material-symbols-outlined text-amber-400 text-base">arrow_forward</span>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* ── Stats row ── */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+            variants={{ show:{ transition:{ staggerChildren:0.08 } } }} initial="hidden" animate="show">
             {[
               { label: 'Linked Clients',   value: stats.linkedClients  ?? accepted.length, icon: 'group',        color: 'text-primary',    glow: 'shadow-primary/10'  },
               { label: 'Pending Requests', value: stats.pendingLinks   ?? pending.length,  icon: 'schedule',     color: 'text-amber-400',  glow: 'shadow-amber-400/10'},
               { label: 'Active Cases',     value: stats.activeCases    ?? 0,              icon: 'folder_open',  color: 'text-blue-400',   glow: 'shadow-blue-400/10' },
               { label: 'Completed Cases',  value: stats.closedCases    ?? 0,              icon: 'check_circle', color: 'text-emerald-400',glow: ''                   },
             ].map(s => (
-              <div key={s.label} className={`bg-surface-container-low rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-colors`}>
-                <div className={`w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center mb-3`}>
+              <motion.div key={s.label}
+                variants={{ hidden:{ opacity:0, y:20, scale:0.95 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}
+                whileHover={{ y:-5, scale:1.03, boxShadow:'0 16px 40px rgba(0,0,0,0.25)' }}
+                className="rounded-2xl p-5 border border-white/5"
+                style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
                   <span className={`material-symbols-outlined text-xl ${s.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                 </div>
                 <div className="text-3xl font-headline font-extrabold text-white leading-none">{s.value}</div>
                 <div className="text-xs text-on-surface-variant mt-1">{s.label}</div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {/* ── Error ── */}
@@ -289,22 +297,20 @@ export default function LawyerDashboard() {
             { key: 'clients',  label: 'My Clients',  badge: accepted.length  },
             { key: 'cases',    label: 'Cases',        badge: cases.filter(c => ['active','in_review','pending'].includes(c.status)).length },
           ].map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold font-headline rounded-t-lg transition-all ${
-                tab === t.key
-                  ? 'text-primary border-b-2 border-primary bg-primary/5'
-                  : 'text-on-surface-variant hover:text-white'
+            <motion.button key={t.key} onClick={() => setTab(t.key)}
+              whileHover={{ scale:1.03 }} whileTap={{ scale:0.97 }}
+              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold font-headline rounded-t-lg transition-colors relative ${
+                tab === t.key ? 'text-primary' : 'text-on-surface-variant hover:text-white'
               }`}
             >
+              {tab === t.key && <motion.div layoutId="lawyer-tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" transition={{ type:'spring', stiffness:400, damping:30 }} />}
               {t.label}
               {t.badge > 0 && (
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none ${
                   tab === t.key ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
                 }`}>{t.badge}</span>
               )}
-            </button>
+            </motion.button>
           ))}
         </div>
 

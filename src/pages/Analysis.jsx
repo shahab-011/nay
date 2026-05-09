@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { analyzeDocument, getAnalysis } from '../api/analysis.api';
@@ -276,28 +277,32 @@ export default function Analysis() {
       <>
         <Header title={phase === 'analyzing' ? 'Analyzing…' : 'Loading…'} />
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)]">
-          <div className="w-24 h-24 mb-8 relative flex items-center justify-center">
-            <div className="absolute inset-0 border-4 border-primary/20 rounded-full animate-ping" />
-            <span
-              className="material-symbols-outlined text-6xl text-primary animate-pulse relative z-10"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              psychology
-            </span>
-          </div>
-          <h2 className="text-3xl font-headline font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">
+          <motion.div initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
+            className="w-28 h-28 mb-8 relative flex items-center justify-center">
+            <motion.div animate={{ scale:[1,1.4,1], opacity:[0.3,0,0.3] }} transition={{ duration:2, repeat:Infinity }}
+              className="absolute inset-0 border-2 border-primary/40 rounded-full" />
+            <motion.div animate={{ scale:[1,1.6,1], opacity:[0.2,0,0.2] }} transition={{ duration:2, repeat:Infinity, delay:0.4 }}
+              className="absolute inset-0 border-2 border-primary/20 rounded-full" />
+            <motion.div animate={{ rotate:360 }} transition={{ duration:3, repeat:Infinity, ease:'linear' }}
+              className="absolute inset-2 border-2 border-transparent border-t-primary rounded-full" />
+            <motion.span animate={{ scale:[1,1.08,1] }} transition={{ duration:2, repeat:Infinity }}
+              className="material-symbols-outlined text-6xl text-primary relative z-10"
+              style={{ fontVariationSettings: "'FILL' 1" }}>psychology</motion.span>
+          </motion.div>
+          <motion.h2 initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, duration:0.5 }}
+            className="text-3xl font-headline font-bold gradient-text">
             {phase === 'analyzing' ? 'AI Analysis in Progress' : 'Loading Document'}
-          </h2>
-          <p className="text-on-surface-variant font-body mt-4 tracking-widest uppercase text-sm">
-            {phase === 'analyzing'
-              ? 'Running Gemini 1.5 Flash + Compliance Engine…'
-              : 'Fetching your document…'}
-          </p>
+          </motion.h2>
+          <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5, duration:0.5 }}
+            className="text-on-surface-variant font-body mt-4 tracking-widest uppercase text-sm">
+            {phase === 'analyzing' ? 'Running Gemini 1.5 Flash + Compliance Engine…' : 'Fetching your document…'}
+          </motion.p>
           {phase === 'analyzing' && (
-            <div className="mt-8 flex flex-col items-center gap-2 text-xs text-on-surface-variant max-w-sm text-center">
+            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.7 }}
+              className="mt-8 flex flex-col items-center gap-2 text-xs text-on-surface-variant max-w-sm text-center">
               <p>Extracting clauses · Detecting risks · Checking compliance · Scoring health</p>
               <p className="text-primary/60">This takes 10–30 seconds depending on document size.</p>
-            </div>
+            </motion.div>
           )}
         </div>
       </>
@@ -310,23 +315,21 @@ export default function Analysis() {
       <>
         <Header title="Analysis Error" />
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-6">
-          <span className="material-symbols-outlined text-6xl text-error">error</span>
-          <h2 className="text-2xl font-headline font-bold text-error">Analysis Failed</h2>
-          <p className="text-on-surface-variant text-center max-w-md">{errMsg}</p>
-          <div className="flex gap-4">
-            <button
+          <motion.span initial={{ scale:0, rotate:-20 }} animate={{ scale:1, rotate:0 }} transition={{ type:'spring', stiffness:300, damping:20 }}
+            className="material-symbols-outlined text-6xl text-error">error</motion.span>
+          <motion.h2 initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
+            className="text-2xl font-headline font-bold text-error">Analysis Failed</motion.h2>
+          <motion.p initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.3 }}
+            className="text-on-surface-variant text-center max-w-md">{errMsg}</motion.p>
+          <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4 }} className="flex gap-4">
+            <motion.button whileHover={{ scale:1.04, boxShadow:'0 0 20px rgba(68,229,194,0.4)' }} whileTap={{ scale:0.97 }}
               onClick={() => runAnalysis(false)}
-              className="px-6 py-3 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
-            >
-              Try Again
-            </button>
-            <button
+              className="px-6 py-3 text-on-primary font-bold rounded-xl text-sm"
+              style={{ background:'linear-gradient(135deg,#44e5c2,#38bfa1)' }}>Try Again</motion.button>
+            <motion.button whileHover={{ scale:1.04 }} whileTap={{ scale:0.97 }}
               onClick={() => navigate('/documents')}
-              className="px-6 py-3 bg-surface-container-high text-on-surface font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
-            >
-              Back to Documents
-            </button>
-          </div>
+              className="px-6 py-3 bg-surface-container-high text-on-surface font-bold rounded-xl text-sm hover:opacity-90 transition-opacity">Back to Documents</motion.button>
+          </motion.div>
         </div>
       </>
     );
@@ -478,7 +481,9 @@ export default function Analysis() {
         {/* Top grid — health + summary */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
           {/* Health donut */}
-          <div className={`lg:col-span-4 bg-surface-container-low p-8 rounded-2xl border-l-4 ${BorderColor(score)}`}>
+          <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6, ease:[0.22,1,0.36,1] }}
+            className={`lg:col-span-4 p-8 rounded-2xl border-l-4 ${BorderColor(score)}`}
+            style={{ background:'rgba(12,28,73,0.5)', backdropFilter:'blur(16px)', border:'1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-headline font-bold">Document Health</h3>
               <span className={`text-[11px] font-bold px-2 py-1 rounded-full font-label ${
@@ -495,10 +500,12 @@ export default function Analysis() {
               risks={risks}
               confidenceScore={analysis?.confidenceScore ?? 0}
             />
-          </div>
+          </motion.div>
 
           {/* AI Summary */}
-          <div className="lg:col-span-8 bg-surface-container-low p-8 rounded-2xl flex flex-col">
+          <motion.div initial={{ opacity:0, x:30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.6, ease:[0.22,1,0.36,1], delay:0.1 }}
+            className="lg:col-span-8 p-8 rounded-2xl flex flex-col"
+            style={{ background:'rgba(12,28,73,0.5)', backdropFilter:'blur(16px)', border:'1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-3 mb-5">
               <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
               <h3 className="text-lg font-headline font-bold">AI Summary</h3>
@@ -562,53 +569,70 @@ export default function Analysis() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-surface-container-low rounded-xl p-1 w-fit border border-white/5">
+        <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.3 }}
+          className="flex gap-1 mb-6 rounded-xl p-1 w-fit border border-white/5"
+          style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(12px)' }}>
           {TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-2 rounded-lg text-sm font-semibold font-headline transition-all ${
-                tab === t
-                  ? 'bg-primary text-on-primary shadow'
-                  : 'text-on-surface-variant hover:text-white'
+            <motion.button key={t} onClick={() => setTab(t)}
+              whileHover={{ scale: tab !== t ? 1.04 : 1 }} whileTap={{ scale:0.97 }}
+              className={`px-5 py-2 rounded-lg text-sm font-semibold font-headline transition-colors relative ${
+                tab === t ? 'text-[#001a12]' : 'text-on-surface-variant hover:text-white'
               }`}
             >
+              {tab === t && (
+                <motion.div layoutId="analysis-tab-bg" className="absolute inset-0 rounded-lg z-[-1]"
+                  style={{ background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 16px rgba(68,229,194,0.3)' }}
+                  transition={{ type:'spring', stiffness:400, damping:30 }} />
+              )}
               {t}
               {t === 'Clauses'     && <span className="ml-1.5 text-[10px] opacity-70">({clauses.length})</span>}
               {t === 'Risks'       && <span className="ml-1.5 text-[10px] opacity-70">({risks.length})</span>}
               {t === 'Annotations' && annotations.length > 0 && (
                 <span className="ml-1.5 text-[10px] opacity-70">({annotations.length})</span>
               )}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* ── Tab: Summary ──────────────────────────────────────── */}
+        <AnimatePresence mode="wait">
         {tab === 'Summary' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div key="summary" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.3 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { label: 'Document Type',   value: analysis?.detectedDocType    || doc?.docType || '—' },
-              { label: 'Jurisdiction',    value: analysis?.detectedJurisdiction || doc?.jurisdiction || '—' },
-              { label: 'Expiry Date',     value: (analysis?.expiryDate  || doc?.expiryDate)  ? new Date(analysis?.expiryDate  || doc?.expiryDate).toLocaleDateString('en-IN')  : '—' },
-              { label: 'Renewal Date',    value: (analysis?.renewalDate || doc?.renewalDate) ? new Date(analysis?.renewalDate || doc?.renewalDate).toLocaleDateString('en-IN') : '—' },
-              { label: 'Health Score',    value: `${score} / 100` },
-              { label: 'Confidence',      value: `${analysis?.confidenceScore ?? 0}%` },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-surface-container-low rounded-2xl p-6 border border-white/5">
-                <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-2">{label}</p>
+              { label: 'Document Type',   value: analysis?.detectedDocType    || doc?.docType || '—', icon:'description' },
+              { label: 'Jurisdiction',    value: analysis?.detectedJurisdiction || doc?.jurisdiction || '—', icon:'location_on' },
+              { label: 'Expiry Date',     value: (analysis?.expiryDate  || doc?.expiryDate)  ? new Date(analysis?.expiryDate  || doc?.expiryDate).toLocaleDateString('en-IN')  : '—', icon:'event' },
+              { label: 'Renewal Date',    value: (analysis?.renewalDate || doc?.renewalDate) ? new Date(analysis?.renewalDate || doc?.renewalDate).toLocaleDateString('en-IN') : '—', icon:'autorenew' },
+              { label: 'Health Score',    value: `${score} / 100`, icon:'favorite' },
+              { label: 'Confidence',      value: `${analysis?.confidenceScore ?? 0}%`, icon:'psychology' },
+            ].map(({ label, value, icon }, idx) => (
+              <motion.div key={label}
+                initial={{ opacity:0, y:20, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
+                transition={{ duration:0.4, delay:idx*0.07, ease:[0.22,1,0.36,1] }}
+                whileHover={{ y:-4, scale:1.02, boxShadow:'0 12px 30px rgba(0,0,0,0.25)' }}
+                className="rounded-2xl p-6 border border-white/5"
+                style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-primary text-[18px]" style={{ fontVariationSettings:"'FILL' 1" }}>{icon}</span>
+                  <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest">{label}</p>
+                </div>
                 <p className="text-xl font-headline font-bold text-on-surface">{value}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── Tab: Clauses ──────────────────────────────────────── */}
+        <AnimatePresence mode="wait">
         {tab === 'Clauses' && (
-          <div className="space-y-4">
+          <motion.div key="clauses" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.3 }}
+            className="space-y-4">
             {clauses.length === 0 ? (
               <div className="text-center py-16 text-on-surface-variant">No clauses extracted.</div>
             ) : clauses.map((clause, i) => {
@@ -620,7 +644,12 @@ export default function Analysis() {
                   return next;
                 });
               return (
-                <div key={i} className={`bg-surface-container rounded-2xl border ${rc(clause.riskLevel).border} transition-all`}>
+                <motion.div key={i}
+                  initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
+                  transition={{ duration:0.35, delay: Math.min(i * 0.06, 0.4), ease:[0.22,1,0.36,1] }}
+                  whileHover={{ scale:1.005 }}
+                  className={`rounded-2xl border ${rc(clause.riskLevel).border}`}
+                  style={{ background:'rgba(12,28,73,0.5)', backdropFilter:'blur(12px)' }}>
                   {/* Card header */}
                   <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
                     <span className={`text-[10px] font-label font-bold uppercase tracking-widest px-2 py-1 rounded-full flex-shrink-0 ${rc(clause.riskLevel).bg} ${rc(clause.riskLevel).text}`}>
@@ -810,15 +839,18 @@ export default function Analysis() {
                       </button>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── Tab: Risks ────────────────────────────────────────── */}
+        <AnimatePresence mode="wait">
         {tab === 'Risks' && (
-          <div className="space-y-4">
+          <motion.div key="risks" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.3 }}
+            className="space-y-4">
             {risks.length === 0 ? (
               <div className="flex flex-col items-center py-16 gap-4">
                 <span className="material-symbols-outlined text-5xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -826,7 +858,12 @@ export default function Analysis() {
                 <p className="text-sm text-on-surface-variant">This document has no identified risk factors.</p>
               </div>
             ) : risks.map((risk, i) => (
-              <div key={i} className={`bg-surface-container rounded-2xl p-6 border ${rc(risk.severity).border}`}>
+              <motion.div key={i}
+                initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }}
+                transition={{ duration:0.4, delay: Math.min(i*0.08, 0.4), ease:[0.22,1,0.36,1] }}
+                whileHover={{ x:4, scale:1.005 }}
+                className={`rounded-2xl p-6 border ${rc(risk.severity).border}`}
+                style={{ background:'rgba(12,28,73,0.5)', backdropFilter:'blur(12px)' }}>
                 <div className="flex items-start gap-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${rc(risk.severity).bg}`}>
                     <span className={`material-symbols-outlined ${rc(risk.severity).text}`} style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
@@ -852,14 +889,17 @@ export default function Analysis() {
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── Tab: Compliance ───────────────────────────────────── */}
+        <AnimatePresence mode="wait">
         {tab === 'Compliance' && (
-          <div className="space-y-6">
+          <motion.div key="compliance" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.3 }}
+            className="space-y-6">
             {/* Score banner */}
             {(() => {
               const cs = compliance.score ?? 0;
@@ -978,7 +1018,7 @@ export default function Analysis() {
 
             {/* Jurisdiction detected */}
             {compliance.jurisdictionDetected && compliance.jurisdictionDetected !== 'Not specified' && (
-              <div className="bg-surface-container-low rounded-xl p-5 border border-white/5 flex items-center gap-3">
+              <div className="rounded-xl p-5 border border-white/5 flex items-center gap-3" style={{ background:'rgba(12,28,73,0.5)', backdropFilter:'blur(12px)' }}>
                 <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
                 <div>
                   <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Jurisdiction Detected</p>
@@ -986,12 +1026,15 @@ export default function Analysis() {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* ── Tab: Annotations ──────────────────────────────── */}
+        <AnimatePresence mode="wait">
         {tab === 'Annotations' && (
-          <div className="space-y-4">
+          <motion.div key="annotations" initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }} transition={{ duration:0.3 }}
+            className="space-y-4">
             {/* Connection status */}
             <div className="flex items-center gap-2 text-xs text-on-surface-variant">
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? 'bg-primary animate-pulse' : 'bg-error'}`} />
@@ -1058,8 +1101,9 @@ export default function Analysis() {
                 })}
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
         {/* ── Silence Detector section ──────────────────────── */}
         <div className="mt-12">
           <div className="flex items-center gap-4 mb-6">
@@ -1081,13 +1125,15 @@ export default function Analysis() {
       </div>
 
       {/* Floating Ask AI button */}
-      <button
+      <motion.button initial={{ scale:0, rotate:-180 }} animate={{ scale:1, rotate:0 }} transition={{ type:'spring', stiffness:300, damping:20, delay:0.5 }}
+        whileHover={{ scale:1.12, boxShadow:'0 0 32px rgba(68,229,194,0.6)' }} whileTap={{ scale:0.92 }}
         onClick={() => navigate(`/ask?docId=${docId}`)}
-        className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all z-50"
+        className="fixed bottom-8 right-8 h-14 w-14 rounded-full flex items-center justify-center z-50"
+        style={{ background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 8px 32px rgba(68,229,194,0.4)' }}
         title="Ask AI about this document"
       >
-        <span className="material-symbols-outlined text-on-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-      </button>
+        <span className="material-symbols-outlined text-[#001a12] text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+      </motion.button>
 
       {/* Real-time collaboration panel (slide-out from right) */}
       <CollaborationPanel
@@ -1103,16 +1149,21 @@ export default function Analysis() {
       />
 
       {/* Incoming annotation toast */}
+      <AnimatePresence>
       {incomingToast && (
-        <div className="fixed bottom-24 right-6 z-[90] max-w-xs bg-surface-container border border-primary/20 rounded-xl shadow-2xl px-4 py-3 flex items-start gap-3">
+        <motion.div initial={{ opacity:0, y:20, scale:0.95 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:20, scale:0.95 }}
+          transition={{ duration:0.3, ease:[0.22,1,0.36,1] }}
+          className="fixed bottom-24 right-6 z-[90] max-w-xs border border-primary/20 rounded-xl shadow-2xl px-4 py-3 flex items-start gap-3"
+          style={{ background:'rgba(12,28,73,0.9)', backdropFilter:'blur(16px)' }}>
           <span className="material-symbols-outlined text-primary text-sm flex-shrink-0 mt-0.5"
             style={{ fontVariationSettings: "'FILL' 1" }}>add_comment</span>
           <p className="text-xs text-on-surface leading-relaxed flex-1">{incomingToast}</p>
           <button onClick={() => setIncomingToast(null)} className="text-on-surface-variant hover:text-white flex-shrink-0">
             <span className="material-symbols-outlined text-sm">close</span>
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       <ConsentPanel
         isOpen={consentOpen}

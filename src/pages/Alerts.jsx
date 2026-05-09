@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { getAlerts, markAsRead, markAllRead, deleteAlert } from '../api/alerts.api';
@@ -128,10 +129,11 @@ export default function Alerts() {
       <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
 
         {/* ── Page heading ──────────────────────────────────────── */}
-        <div className="flex items-end justify-between">
+        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
+          className="flex items-end justify-between">
           <div>
-            <h1 className="text-4xl font-headline font-extrabold tracking-tight text-white mb-2">
-              Notifications
+            <h1 className="text-4xl font-headline font-extrabold tracking-tight mb-2">
+              <span className="gradient-text">Notifications</span>
             </h1>
             <div className="flex items-center gap-3">
               {loading ? (
@@ -139,9 +141,10 @@ export default function Alerts() {
               ) : (
                 <>
                   {unreadCount > 0 ? (
-                    <span className="bg-primary/20 text-primary text-sm px-3 py-1 rounded-full font-bold font-label">
+                    <motion.span initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:'spring', stiffness:400, damping:20 }}
+                      className="bg-primary/20 text-primary text-sm px-3 py-1 rounded-full font-bold font-label">
                       {unreadCount} UNREAD
-                    </span>
+                    </motion.span>
                   ) : (
                     <span className="bg-surface-container text-on-surface-variant text-sm px-3 py-1 rounded-full font-label">
                       ALL CAUGHT UP
@@ -154,10 +157,11 @@ export default function Alerts() {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Filter tabs ───────────────────────────────────────── */}
-        <div className="flex gap-2 flex-wrap">
+        <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
+          className="flex gap-2 flex-wrap">
           {FILTER_TABS.map((tab) => {
             const count =
               tab === 'Unread'     ? alerts.filter((a) => !a.isRead).length :
@@ -168,27 +172,25 @@ export default function Alerts() {
               alerts.length;
 
             return (
-              <button
-                key={tab}
-                onClick={() => setFilter(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold font-headline transition-all flex items-center gap-2 ${
-                  filter === tab
-                    ? 'bg-primary text-on-primary shadow-md'
-                    : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5'
+              <motion.button key={tab} onClick={() => setFilter(tab)}
+                whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold font-headline transition-colors flex items-center gap-2 relative ${
+                  filter === tab ? 'text-[#001a12]' : 'text-on-surface-variant hover:text-white border border-white/5'
                 }`}
+                style={filter === tab ? { background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 16px rgba(68,229,194,0.3)' } : { background:'rgba(12,28,73,0.5)' }}
               >
                 {tab}
                 {count > 0 && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    filter === tab ? 'bg-on-primary/20 text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
+                    filter === tab ? 'bg-[#001a12]/20 text-[#001a12]' : 'bg-surface-container-high text-on-surface-variant'
                   }`}>
                     {count}
                   </span>
                 )}
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* ── States ───────────────────────────────────────────────── */}
         {loading && (
@@ -234,17 +236,24 @@ export default function Alerts() {
 
         {/* ── Alert cards ───────────────────────────────────────── */}
         {!loading && !error && filtered.length > 0 && (
-          <div className="space-y-3">
+          <motion.div className="space-y-3"
+            variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+            initial="hidden" animate="show">
+            <AnimatePresence>
             {filtered.map((alert) => (
-              <AlertCard
-                key={alert._id}
-                alert={alert}
-                onMarkRead={handleMarkRead}
-                onDelete={handleDelete}
-                onViewDoc={(docId) => navigate(`/analysis/${docId}`)}
-              />
+              <motion.div key={alert._id}
+                variants={{ hidden:{ opacity:0, y:16, scale:0.97 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.35, ease:[0.22,1,0.36,1] } } }}
+                exit={{ opacity:0, x:20, scale:0.97, transition:{ duration:0.25 } }}>
+                <AlertCard
+                  alert={alert}
+                  onMarkRead={handleMarkRead}
+                  onDelete={handleDelete}
+                  onViewDoc={(docId) => navigate(`/analysis/${docId}`)}
+                />
+              </motion.div>
             ))}
-          </div>
+            </AnimatePresence>
+          </motion.div>
         )}
 
         {/* ── Footer ───────────────────────────────────────────── */}
@@ -279,13 +288,14 @@ function AlertCard({ alert, onMarkRead, onDelete, onViewDoc }) {
   };
 
   return (
-    <div
+    <motion.div
       onClick={handleClick}
-      className={`group relative overflow-hidden rounded-xl p-6 transition-all hover:translate-x-1 cursor-pointer border-l-4 ${
-        alert.isRead
-          ? 'bg-surface-container-low border-transparent hover:bg-surface-container'
-          : `${meta.bg} ${meta.border}`
+      whileHover={{ x: 4, scale: 1.005 }}
+      whileTap={{ scale: 0.99 }}
+      className={`group relative overflow-hidden rounded-xl p-6 cursor-pointer border-l-4 ${
+        alert.isRead ? 'border-transparent' : meta.border
       }`}
+      style={{ background: alert.isRead ? 'rgba(12,28,73,0.35)' : undefined, backdropFilter:'blur(12px)', border:'1px solid rgba(255,255,255,0.05)', borderLeftWidth:'4px', borderLeftColor: alert.isRead ? 'transparent' : undefined }}
     >
       <div className="flex gap-5">
         {/* Icon */}
@@ -358,6 +368,6 @@ function AlertCard({ alert, onMarkRead, onDelete, onViewDoc }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

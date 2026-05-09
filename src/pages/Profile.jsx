@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Header from '../components/Header';
 import { AuthContext } from '../context/AuthContext';
 import { updatePassword, updateProfile, getUserStats, deleteAccount } from '../api/auth.api';
@@ -31,15 +32,18 @@ function SectionCard({ icon, title, children, className = '' }) {
 
 function StatCard({ icon, label, value }) {
   return (
-    <div className="bg-surface-container-low border border-white/5 rounded-2xl px-6 py-5 flex items-center gap-4 hover:border-primary/20 transition-colors">
-      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+    <motion.div whileHover={{ y:-4, scale:1.03, boxShadow:'0 12px 30px rgba(0,0,0,0.25)' }} whileTap={{ scale:0.98 }}
+      className="border border-white/5 rounded-2xl px-6 py-5 flex items-center gap-4"
+      style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}>
+      <motion.div whileHover={{ rotate:8 }}
+        className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
         <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-      </div>
+      </motion.div>
       <div>
         <div className="text-2xl font-bold font-headline text-on-surface leading-none">{value}</div>
         <div className="text-[11px] text-on-surface-variant mt-1">{label}</div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -347,7 +351,8 @@ export default function Profile() {
       <div className="p-4 md:p-8 pb-24 space-y-8 max-w-6xl">
 
         {/* ── Hero Card ─────────────────────────────────────── */}
-        <div className="relative rounded-2xl overflow-hidden border border-white/5 bg-surface-container-low">
+        <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, ease:[0.22,1,0.36,1] }}
+          className="relative rounded-2xl overflow-hidden border border-white/5" style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(20px)' }}>
           <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-r from-[#0a1628] via-[#0d2040] to-[#003d30] pointer-events-none">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(0,201,167,0.18),transparent_70%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(0,151,167,0.12),transparent_70%)]" />
@@ -408,15 +413,22 @@ export default function Profile() {
                 : `${AVATAR_META.find(a => a.id === currentAvatarId)?.label || 'Balance'} avatar — click to change or upload photo`}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Stats Row ──────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon="description"  label="Documents uploaded" value={statsLoading ? '—' : stats?.totalDocuments ?? 0} />
-          <StatCard icon="auto_awesome" label="Analyses completed" value={statsLoading ? '—' : stats?.totalAnalyses  ?? 0} />
-          <StatCard icon="warning"      label="Risks detected"     value={statsLoading ? '—' : stats?.totalRisks     ?? 0} />
-          <StatCard icon="schedule"     label="Last active"        value={statsLoading ? '—' : formatRelative(user?.lastLogin)} />
-        </div>
+        <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          variants={{ show:{ transition:{ staggerChildren:0.08 } } }} initial="hidden" animate="show">
+          {[
+            { icon:'description',  label:'Documents uploaded', value: statsLoading ? '—' : stats?.totalDocuments ?? 0 },
+            { icon:'auto_awesome', label:'Analyses completed', value: statsLoading ? '—' : stats?.totalAnalyses  ?? 0 },
+            { icon:'warning',      label:'Risks detected',     value: statsLoading ? '—' : stats?.totalRisks     ?? 0 },
+            { icon:'schedule',     label:'Last active',        value: statsLoading ? '—' : formatRelative(user?.lastLogin) },
+          ].map((s) => (
+            <motion.div key={s.label} variants={{ hidden:{ opacity:0, y:20, scale:0.95 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}>
+              <StatCard {...s} />
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* ── Main Grid ─────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

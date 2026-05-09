@@ -5,6 +5,7 @@ import { analyzeDocument, getAnalysis } from '../api/analysis.api';
 import { getDocument, getTextPreview, getAnnotations, createAnnotation, deleteAnnotation, resolveAnnotation } from '../api/documents.api';
 import CollaborationPanel from '../components/collaboration/CollaborationPanel';
 import ConsentPanel from '../components/ConsentPanel';
+import SilenceDetector from '../components/SilenceDetector';
 import HealthScoreRing from '../components/HealthScoreRing';
 import { generateAnalysisReport } from '../utils/generateReport';
 import { useSocket } from '../context/SocketContext';
@@ -1059,6 +1060,24 @@ export default function Analysis() {
             )}
           </div>
         )}
+        {/* ── Silence Detector section ──────────────────────── */}
+        <div className="mt-12">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-1 h-px bg-white/5" />
+            <span className="text-[11px] font-label font-bold text-on-surface-variant uppercase tracking-[0.2em] whitespace-nowrap flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm text-red-400" style={{ fontVariationSettings: "'FILL' 1" }}>hearing_disabled</span>
+              The Silence Report
+            </span>
+            <div className="flex-1 h-px bg-white/5" />
+          </div>
+          <SilenceDetector
+            analysis={analysis}
+            documentId={docId}
+            onSilenceComplete={(silenceData) =>
+              setAnalysis(prev => prev ? { ...prev, ...silenceData } : prev)
+            }
+          />
+        </div>
       </div>
 
       {/* Floating Ask AI button */}

@@ -14,3 +14,6 @@ export const getChatHistory = (docId) =>
 
 export const clearChatHistory = (docId) =>
   api.delete(`/analysis/${docId}/chat-history`);
+
+export const runSilenceDetector = (docId) =>
+  api.post(`/analysis/${docId}/silence`);

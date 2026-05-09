@@ -18,6 +18,7 @@ import HelpCenter from './pages/HelpCenter';
 import About from './pages/About';
 import LawyerDocView from './pages/LawyerDocView';
 import ClientLinks from './pages/ClientLinks';
+import ObligationWeb from './pages/ObligationWeb';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PrivacyProvider } from './context/PrivacyContext';
@@ -64,7 +65,8 @@ function App() {
                 <Route path="/lifecycle" element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
                 <Route path="/alerts"    element={<PrivateRoute><Alerts /></PrivateRoute>} />
                 <Route path="/profile"      element={<PrivateRoute><Profile /></PrivateRoute>} />
-                <Route path="/client-links" element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
+                <Route path="/client-links"   element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
+                <Route path="/obligation-web" element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
                 <Route path="/help"         element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
                 <Route path="/about"        element={<PrivateRoute><About /></PrivateRoute>} />
 

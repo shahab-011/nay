@@ -13,7 +13,8 @@ const navItems = [
   { name: 'My Documents',       icon: 'description',    path: '/documents'    },
   { name: 'Ask AI',             icon: 'psychology',     path: '/ask'          },
   { name: 'Compare Documents',  icon: 'compare_arrows', path: '/compare'      },
-  { name: 'Contract Lifecycle', icon: 'history_edu',    path: '/lifecycle'    },
+  { name: 'Contract Lifecycle', icon: 'history_edu',    path: '/lifecycle'       },
+  { name: 'Contract Web',       icon: 'hub',            path: '/obligation-web'  },
   { name: 'Alerts',             icon: 'notifications',  path: '/alerts',      badge: true },
   { name: 'Client Links',       icon: 'handshake',      path: '/client-links' },
 ];

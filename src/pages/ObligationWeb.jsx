@@ -138,6 +138,8 @@ export default function ObligationWeb() {
   const [selectedNode,  setSelectedNode]  = useState(null);
   const [filter,        setFilter]        = useState('all');
   const [docFilter,     setDocFilter]     = useState('');
+  const [isFullscreen,  setIsFullscreen]  = useState(false);
+  const graphContainerRef = useRef(null);
 
   /* ── Step-through loading text ────────────────────────────────── */
   useEffect(() => {
@@ -162,6 +164,29 @@ export default function ObligationWeb() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  /* ── Fullscreen ───────────────────────────────────────────────── */
+  const toggleFullscreen = useCallback(() => {
+    if (!graphContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      graphContainerRef.current.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
+  // Rebuild graph after fullscreen resize settles
+  useEffect(() => {
+    if (!graphData) return;
+    const t = setTimeout(() => buildGraph(), 120);
+    return () => clearTimeout(t);
+  }, [isFullscreen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Build D3 graph ───────────────────────────────────────────── */
   useEffect(() => {
@@ -601,10 +626,68 @@ export default function ObligationWeb() {
 
             {/* Graph canvas */}
             <div
+              ref={graphContainerRef}
               className="relative rounded-2xl overflow-hidden border border-white/8"
-              style={{ background: '#000f3b', height: 520 }}
+              style={{ background: '#000f3b', height: isFullscreen ? '100vh' : 520 }}
             >
               <svg ref={svgRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+
+              {/* Fullscreen toggle button — top-left */}
+              <button
+                onClick={toggleFullscreen}
+                title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen'}
+                className="absolute top-3 left-3 z-30 w-9 h-9 flex items-center justify-center rounded-xl bg-black/50 border border-white/10 text-on-surface-variant hover:text-white hover:border-white/25 transition-colors backdrop-blur-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
+                </span>
+              </button>
+
+              {/* In-canvas filter controls — shown only in fullscreen */}
+              {isFullscreen && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/60 border border-white/10 rounded-xl px-3 py-2 backdrop-blur-md">
+                  <span className="text-[9px] text-on-surface-variant font-label uppercase tracking-widest mr-1 flex-shrink-0">Filter</span>
+                  {[
+                    { key: 'all',       label: 'All'       },
+                    { key: 'conflicts', label: 'Conflicts' },
+                    { key: 'doc',       label: 'By Doc'    },
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => { setFilter(key); if (key !== 'doc') setDocFilter(''); }}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        filter === key
+                          ? 'bg-primary/20 text-primary border border-primary/30'
+                          : 'bg-white/5 text-on-surface-variant border border-white/8 hover:text-white'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  {filter === 'doc' && docNodes.length > 0 && (
+                    <select
+                      value={docFilter}
+                      onChange={e => setDocFilter(e.target.value)}
+                      className="px-2 py-1 rounded-lg text-[10px] bg-surface-container-high text-on-surface border border-white/10 focus:outline-none max-w-[140px]"
+                    >
+                      <option value="">Select doc…</option>
+                      {docNodes.map(n => (
+                        <option key={n.id} value={n.id}>{n.label}</option>
+                      ))}
+                    </select>
+                  )}
+                  {/* Refresh in fullscreen */}
+                  <button
+                    onClick={fetchData}
+                    disabled={loading}
+                    title="Refresh"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 border border-white/8 text-on-surface-variant hover:text-white transition-colors ml-1"
+                  >
+                    <span className={`material-symbols-outlined text-[14px] ${loading ? 'animate-spin' : ''}`}>refresh</span>
+                  </button>
+                </div>
+              )}
+
               <Legend />
               {selectedNode && (
                 <DetailPanel
@@ -613,9 +696,9 @@ export default function ObligationWeb() {
                   onNavigate={(docId) => navigate(`/analysis/${docId}`)}
                 />
               )}
-              {/* Instructions overlay — fades on interaction */}
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant/40 text-center pointer-events-none select-none">
-                Drag nodes · Scroll to zoom · Click for details
+              {/* Instructions */}
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-[10px] text-on-surface-variant/40 text-center pointer-events-none select-none whitespace-nowrap">
+                Drag nodes · Scroll to zoom · Click for details{isFullscreen ? ' · Esc to exit' : ''}
               </div>
             </div>
 

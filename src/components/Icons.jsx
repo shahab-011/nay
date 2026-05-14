@@ -25,6 +25,7 @@ export const I = {
     </svg>
   ),
   Sparkle:       (p) => <Icon {...p}><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></Icon>,
+  Menu:          (p) => <Icon {...p}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></Icon>,
   Doc:           (p) => <Icon {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></Icon>,
   DocAI:         (p) => <Icon {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 14l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="currentColor" opacity="0.6"/></Icon>,
   Scale:         (p) => <Icon {...p}><path d="M12 3v18M5 21h14M5 8l-3 6h6zM19 8l-3 6h6zM5 8l7-2 7 2"/></Icon>,

@@ -263,6 +263,17 @@ textarea.input { height: auto; padding: 14px 16px; min-height: 96px; resize: ver
 .nav-pill-item:hover { color: var(--ink); background: var(--active); }
 .nav-pill-item.active { color: var(--ink); background: var(--active); }
 
+/* ── Landing page responsive navbar ────────────────────── */
+.lp-pill-nav  { display: flex !important; }
+.lp-signin    { display: inline-flex !important; }
+.lp-hamburger { display: none !important; }
+
+@media (max-width: 768px) {
+  .lp-pill-nav  { display: none !important; }
+  .lp-signin    { display: none !important; }
+  .lp-hamburger { display: flex !important; }
+}
+
 .wordmark {
   font-family: var(--font-heading);
   font-weight: 800; font-size: 26px;

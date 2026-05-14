@@ -6,6 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Nyaya — AI-powered legal intelligence platform. Understand documents, find lawyers, manage cases." />
 
+    <!-- Critical inline styles: prevent black flash before CSS loads -->
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { background: #F6F4F8; min-height: 100vh; }
+      #root { min-height: 100vh; }
+
+      /* Loading spinner shown while JS bundle downloads */
+      #app-loading {
+        position: fixed; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        background: #F6F4F8; z-index: 9999;
+        gap: 16px; transition: opacity 0.3s ease;
+      }
+      #app-loading.hidden { opacity: 0; pointer-events: none; }
+
+      #app-loading .logo {
+        width: 52px; height: 52px;
+        background: #F0EAFC; border-radius: 14px;
+        border: 1px solid #E4D9F9;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 4px;
+      }
+      #app-loading .wordmark {
+        font-family: system-ui, sans-serif;
+        font-size: 22px; font-weight: 800;
+        color: #0B0B14; letter-spacing: -0.04em;
+      }
+      #app-loading .wordmark span { color: #7C3AED; }
+      #app-loading .spinner {
+        width: 28px; height: 28px;
+        border: 3px solid #E4D9F9;
+        border-top-color: #7C3AED;
+        border-radius: 50%;
+        animation: nyaya-spin 0.75s linear infinite;
+      }
+      #app-loading .sub {
+        font-family: system-ui, sans-serif;
+        font-size: 12px; color: #8A8A9E; font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+      @keyframes nyaya-spin { to { transform: rotate(360deg); } }
+    </style>
+
     <!-- Fonts: Bricolage Grotesque (display) + Plus Jakarta Sans (body) + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,6 +61,20 @@
     <title>Nyaya — Legal Intelligence Platform</title>
   </head>
   <body>
+    <!-- Shown instantly while React JS bundle downloads -->
+    <div id="app-loading" aria-label="Loading Nyaya">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <path d="M16 3l11 5.5v7c0 7-4.5 12.5-11 14.5C9.5 28 5 22.5 5 15.5v-7L16 3z" stroke="#7C3AED" stroke-width="1.8"/>
+          <path d="M12 14h8M12 18h5" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="16" cy="11" r="1.5" fill="#7C3AED"/>
+        </svg>
+      </div>
+      <div class="wordmark">Nyaya<span>.</span></div>
+      <div class="spinner"></div>
+      <div class="sub">Legal Intelligence Platform</div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

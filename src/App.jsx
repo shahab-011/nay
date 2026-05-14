@@ -1,37 +1,8 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 /* ── Layout ── */
 import Layout from './components/Layout';
-
-/* ── Public pages ── */
-import Landing from './pages/Landing';
-import Intake from './pages/Intake';
-import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
-
-/* ── Auth pages ── */
-import Login from './pages/Login';
-import Register from './pages/Register';
-
-/* ── Authenticated user pages ── */
-import Dashboard from './pages/Dashboard';
-import UploadDocument from './pages/UploadDocument';
-import MyDocuments from './pages/MyDocuments';
-import Analysis from './pages/Analysis';
-import CompareDocuments from './pages/CompareDocuments';
-import ContractLifecycle from './pages/ContractLifecycle';
-import AskAI from './pages/AskAI';
-import Alerts from './pages/Alerts';
-import Profile from './pages/Profile';
-import ClientLinks from './pages/ClientLinks';
-import ObligationWeb from './pages/ObligationWeb';
-import HelpCenter from './pages/HelpCenter';
-import About from './pages/About';
-
-/* ── Lawyer-only pages ── */
-import LawyerDashboard from './pages/LawyerDashboard';
-import LawyerClientView from './pages/LawyerClientView';
-import LawyerDocView from './pages/LawyerDocView';
 
 /* ── Contexts ── */
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -40,27 +11,68 @@ import { AlertProvider } from './context/AlertContext';
 import { SocketProvider } from './context/SocketContext';
 import { MobileMenuProvider } from './context/MobileMenuContext';
 
+/* ── Public pages (loaded eagerly — users land here first) ── */
+import Landing    from './pages/Landing';
+import Intake     from './pages/Intake';
+import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
+
+/* ── Auth pages (small, load fast) ── */
+import Login    from './pages/Login';
+import Register from './pages/Register';
+
+/* ── Authenticated pages — lazy loaded (split into separate chunks) ── */
+const Dashboard        = lazy(() => import('./pages/Dashboard'));
+const UploadDocument   = lazy(() => import('./pages/UploadDocument'));
+const MyDocuments      = lazy(() => import('./pages/MyDocuments'));
+const Analysis         = lazy(() => import('./pages/Analysis'));
+const CompareDocuments = lazy(() => import('./pages/CompareDocuments'));
+const ContractLifecycle = lazy(() => import('./pages/ContractLifecycle'));
+const AskAI            = lazy(() => import('./pages/AskAI'));
+const Alerts           = lazy(() => import('./pages/Alerts'));
+const Profile          = lazy(() => import('./pages/Profile'));
+const ClientLinks      = lazy(() => import('./pages/ClientLinks'));
+const ObligationWeb    = lazy(() => import('./pages/ObligationWeb'));
+const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
+const About            = lazy(() => import('./pages/About'));
+const LawyerDashboard  = lazy(() => import('./pages/LawyerDashboard'));
+const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
+const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
+
+/* ── Page-level loading fallback ── */
+function PageLoader() {
+  return (
+    <div style={{
+      minHeight: '60vh',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        width: 28, height: 28,
+        border: '3px solid var(--purple-mist)',
+        borderTopColor: 'var(--purple)',
+        borderRadius: '50%',
+        animation: 'nyaya-spin 0.75s linear infinite',
+      }} />
+    </div>
+  );
+}
+
 /* ── Route guards ─────────────────────────────────────── */
 
-/** Redirect authenticated users away from login/register */
 function GuestRoute({ children }) {
   const { user } = useAuth();
   return user ? <Navigate to="/" replace /> : children;
 }
 
-/** Redirect unauthenticated users to landing (not login) */
 function PrivateRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/landing" replace />;
 }
 
-/** Show landing for guests, dashboard for authenticated users */
 function RootRoute() {
   const { user } = useAuth();
   return user ? <Dashboard /> : <Landing />;
 }
 
-/** Redirect to / if the user's role is not in the allowed list */
 function RoleRoute({ children, roles }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/landing" replace />;
@@ -77,63 +89,65 @@ function App() {
           <PrivacyProvider>
             <Router>
               <Layout>
-                <Routes>
-                  {/* ── Root: landing for guests, dashboard for users ── */}
-                  <Route path="/" element={<RootRoute />} />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* ── Root: landing for guests, dashboard for users ── */}
+                    <Route path="/" element={<RootRoute />} />
 
-                  {/* ── Public pages (always accessible) ── */}
-                  <Route path="/landing"     element={<Landing />} />
-                  <Route path="/intake"      element={<Intake />} />
-                  <Route path="/marketplace" element={<MarketDiscovery />} />
-                  <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />
+                    {/* ── Public pages (always accessible) ── */}
+                    <Route path="/landing"        element={<Landing />} />
+                    <Route path="/intake"         element={<Intake />} />
+                    <Route path="/marketplace"    element={<MarketDiscovery />} />
+                    <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />
 
-                  {/* ── Auth pages (guest only) ── */}
-                  <Route path="/login"    element={<GuestRoute><Login /></GuestRoute>} />
-                  <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+                    {/* ── Auth pages (guest only) ── */}
+                    <Route path="/login"    element={<GuestRoute><Login /></GuestRoute>} />
+                    <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
 
-                  {/* ── Authenticated user pages ── */}
-                  <Route path="/upload"           element={<PrivateRoute><UploadDocument /></PrivateRoute>} />
-                  <Route path="/documents"        element={<PrivateRoute><MyDocuments /></PrivateRoute>} />
-                  <Route path="/analysis/:docId"  element={<PrivateRoute><Analysis /></PrivateRoute>} />
-                  <Route path="/ask"              element={<PrivateRoute><AskAI /></PrivateRoute>} />
-                  <Route path="/compare"          element={<PrivateRoute><CompareDocuments /></PrivateRoute>} />
-                  <Route path="/lifecycle"        element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
-                  <Route path="/alerts"           element={<PrivateRoute><Alerts /></PrivateRoute>} />
-                  <Route path="/profile"          element={<PrivateRoute><Profile /></PrivateRoute>} />
-                  <Route path="/client-links"     element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
-                  <Route path="/obligation-web"   element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
-                  <Route path="/help"             element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
-                  <Route path="/about"            element={<PrivateRoute><About /></PrivateRoute>} />
+                    {/* ── Authenticated user pages ── */}
+                    <Route path="/upload"          element={<PrivateRoute><UploadDocument /></PrivateRoute>} />
+                    <Route path="/documents"       element={<PrivateRoute><MyDocuments /></PrivateRoute>} />
+                    <Route path="/analysis/:docId" element={<PrivateRoute><Analysis /></PrivateRoute>} />
+                    <Route path="/ask"             element={<PrivateRoute><AskAI /></PrivateRoute>} />
+                    <Route path="/compare"         element={<PrivateRoute><CompareDocuments /></PrivateRoute>} />
+                    <Route path="/lifecycle"       element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
+                    <Route path="/alerts"          element={<PrivateRoute><Alerts /></PrivateRoute>} />
+                    <Route path="/profile"         element={<PrivateRoute><Profile /></PrivateRoute>} />
+                    <Route path="/client-links"    element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
+                    <Route path="/obligation-web"  element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
+                    <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
+                    <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
 
-                  {/* ── Lawyer-only pages ── */}
-                  <Route
-                    path="/lawyer"
-                    element={
-                      <RoleRoute roles={['lawyer', 'admin']}>
-                        <LawyerDashboard />
-                      </RoleRoute>
-                    }
-                  />
-                  <Route
-                    path="/lawyer/client/:linkId"
-                    element={
-                      <RoleRoute roles={['lawyer', 'admin']}>
-                        <LawyerClientView />
-                      </RoleRoute>
-                    }
-                  />
-                  <Route
-                    path="/lawyer/client/:linkId/document/:docId"
-                    element={
-                      <RoleRoute roles={['lawyer', 'admin']}>
-                        <LawyerDocView />
-                      </RoleRoute>
-                    }
-                  />
+                    {/* ── Lawyer-only pages ── */}
+                    <Route
+                      path="/lawyer"
+                      element={
+                        <RoleRoute roles={['lawyer', 'admin']}>
+                          <LawyerDashboard />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="/lawyer/client/:linkId"
+                      element={
+                        <RoleRoute roles={['lawyer', 'admin']}>
+                          <LawyerClientView />
+                        </RoleRoute>
+                      }
+                    />
+                    <Route
+                      path="/lawyer/client/:linkId/document/:docId"
+                      element={
+                        <RoleRoute roles={['lawyer', 'admin']}>
+                          <LawyerDocView />
+                        </RoleRoute>
+                      }
+                    />
 
-                  {/* ── Fallback ── */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                    {/* ── Fallback ── */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
               </Layout>
             </Router>
           </PrivacyProvider>

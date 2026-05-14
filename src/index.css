@@ -395,6 +395,7 @@ textarea.input { height: auto; padding: 14px 16px; min-height: 96px; resize: ver
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+@keyframes nyaya-spin { to { transform: rotate(360deg); } }
 
 .fade-up           { animation: fade-up 500ms ease both; }
 .fade-up-delay-1   { animation: fade-up 500ms ease 80ms both; }

@@ -46,7 +46,7 @@ const SUGGESTIONS = [
 
 const fmtTime = (ts) =>
   ts
-    ? new Date(ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    ? new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     : 'Just now';
 
 /* ── AI response text formatter ───────────────────────────────────── */
@@ -54,7 +54,7 @@ function parseBold(str) {
   const parts = str.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((p, i) =>
     p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i} className="text-white font-semibold">{p.slice(2, -2)}</strong>
+      ? <strong key={i} style={{ fontWeight: 700, color: 'inherit' }}>{p.slice(2, -2)}</strong>
       : p
   );
 }
@@ -367,7 +367,7 @@ export default function AskAI() {
         </div>
       </Header>
 
-      <div className="flex flex-col h-[calc(100vh-64px)]">
+      <div className="flex flex-col h-[calc(100vh-60px)]">
 
         {/* ── Document Picker ────────────────────────────────────── */}
         {!docId && (
@@ -378,13 +378,13 @@ export default function AskAI() {
               <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
                 className="flex flex-col items-center text-center mb-10">
                 <motion.div
-                  animate={{ boxShadow: ['0 0 20px rgba(68,229,194,0.1)', '0 0 40px rgba(68,229,194,0.25)', '0 0 20px rgba(68,229,194,0.1)'] }}
+                  animate={{ boxShadow: ['0 0 20px rgba(124,58,237,0.15)', '0 0 40px rgba(124,58,237,0.15)', '0 0 20px rgba(124,58,237,0.15)'] }}
                   transition={{ duration:3, repeat:Infinity }}
                   className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-5">
                   <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                 </motion.div>
                 <h2 className="text-3xl font-headline font-extrabold mb-2 tracking-tight">
-                  <span className="gradient-text">Ask AI</span> <span className="text-white">About a Document</span>
+                  <span className="gradient-text">Ask AI</span> <span className="text-on-surface">About a Document</span>
                 </h2>
                 <p className="text-on-surface-variant text-sm max-w-md">
                   Choose an existing document or upload a new one — get instant AI answers in plain English.
@@ -394,7 +394,7 @@ export default function AskAI() {
               {/* Tab toggle */}
               <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}
                 className="flex items-center gap-1 rounded-2xl p-1.5 mb-8 max-w-xs mx-auto border border-white/5 shadow-inner relative"
-                style={{ background: 'rgba(12,28,73,0.5)', backdropFilter: 'blur(12px)' }}>
+                style={{ background: 'var(--surface)', backdropFilter: 'blur(12px)' }}>
                 {[
                   { key: 'existing', icon: 'folder_open', label: 'My Documents' },
                   { key: 'upload',   icon: 'upload_file', label: 'Upload New'   },
@@ -410,7 +410,7 @@ export default function AskAI() {
                   >
                     {pickerTab === key && (
                       <motion.div layoutId="tab-active-bg" className="absolute inset-0 rounded-xl z-[-1]"
-                        style={{ background: 'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow: '0 4px 20px rgba(68,229,194,0.35)' }}
+                        style={{ background: 'linear-gradient(135deg,var(--purple),#9333ea)', boxShadow: '0 4px 20px rgba(124,58,237,0.15)' }}
                         transition={{ type:'spring', stiffness:400, damping:30 }} />
                     )}
                     <span className="material-symbols-outlined text-[17px]">{icon}</span>
@@ -471,14 +471,14 @@ export default function AskAI() {
                             <motion.button
                               key={doc._id}
                               variants={{ hidden: { opacity:0, y:20, scale:0.96 }, show: { opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}
-                              whileHover={{ y:-5, scale:1.02, boxShadow:'0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(68,229,194,0.15)' }}
+                              whileHover={{ y:-5, scale:1.02, boxShadow:'0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(124,58,237,0.15)' }}
                               whileTap={{ scale:0.98 }}
                               onClick={() => {
                                 setDocId(doc._id);
                                 navigate(`/ask?docId=${doc._id}`, { replace: true });
                               }}
                               className="text-left border border-white/5 rounded-2xl p-5 group"
-                              style={{ background: 'rgba(12,28,73,0.5)', backdropFilter: 'blur(12px)', transition: 'border-color 0.2s' }}
+                              style={{ background: 'var(--surface)', backdropFilter: 'blur(12px)', transition: 'border-color 0.2s' }}
                             >
                               {/* Icon + name */}
                               <div className="flex items-center gap-3 mb-4">
@@ -523,7 +523,7 @@ export default function AskAI() {
                                   {analyzed ? 'Ready to chat' : 'Upload only'}
                                 </span>
                                 <span className="text-[10px] text-on-surface-variant/50 font-label">
-                                  {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                  {new Date(doc.uploadedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                                 </span>
                               </div>
                             </motion.button>
@@ -649,11 +649,11 @@ export default function AskAI() {
                 {messages.length === 0 && !sending && (
                   <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
                     className="flex gap-4 items-start">
-                    <motion.div animate={{ boxShadow: ['0 0 16px rgba(68,229,194,0.35)','0 0 30px rgba(68,229,194,0.55)','0 0 16px rgba(68,229,194,0.35)'] }} transition={{ duration:2.5, repeat:Infinity }}
+                    <motion.div animate={{ boxShadow: ['0 0 16px rgba(124,58,237,0.15)','0 0 30px rgba(124,58,237,0.15)','0 0 16px rgba(124,58,237,0.15)'] }} transition={{ duration:2.5, repeat:Infinity }}
                       className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                     </motion.div>
-                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[88%] shadow-sm" style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(12px)' }}>
+                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[88%] shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
                       <p className="text-sm text-on-surface/90 leading-relaxed">
                         Hello! I've loaded{' '}
                         <span className="text-primary font-semibold">{selectedDoc?.originalName?.replace(/\.[^.]+$/, '')}</span>.
@@ -677,7 +677,7 @@ export default function AskAI() {
                     {/* AI avatar */}
                     {msg.role === 'assistant' && (
                       <motion.div whileHover={{ scale:1.1 }}
-                        className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 self-start shadow-[0_0_12px_rgba(68,229,194,0.25)]">
+                        className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 self-start shadow-[0_0_12px_rgba(124,58,237,0.15)]">
                         <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                       </motion.div>
                     )}
@@ -685,12 +685,12 @@ export default function AskAI() {
                     <div className={`flex flex-col gap-1.5 max-w-[88%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                       {msg.role === 'user' ? (
                         /* User bubble */
-                        <div className="px-5 py-3.5 rounded-2xl rounded-br-sm" style={{ background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 24px rgba(68,229,194,0.22)' }}>
+                        <div className="px-5 py-3.5 rounded-2xl rounded-br-sm" style={{ background:'linear-gradient(135deg,var(--purple),#9333ea)', boxShadow:'0 4px 24px rgba(124,58,237,0.15)' }}>
                           <p className="text-[#001a12] font-medium text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                         </div>
                       ) : (
                         /* AI bubble */
-                        <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(12px)' }}>
+                        <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
                           <MessageContent text={msg.content} />
                         </div>
                       )}
@@ -714,7 +714,7 @@ export default function AskAI() {
 
                     {/* User avatar */}
                     {msg.role === 'user' && (
-                      <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 self-start text-primary font-bold text-sm" style={{ background:'rgba(12,28,73,0.8)' }}>
+                      <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 self-start text-primary font-bold text-sm" style={{ background:'var(--surface)' }}>
                         {user?.name?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}
@@ -727,14 +727,14 @@ export default function AskAI() {
                 {sending && (
                   <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }}
                     transition={{ duration:0.3 }} className="flex gap-4 items-end">
-                    <motion.div animate={{ boxShadow: ['0 0 12px rgba(68,229,194,0.25)','0 0 24px rgba(68,229,194,0.45)','0 0 12px rgba(68,229,194,0.25)'] }} transition={{ duration:1.5, repeat:Infinity }}
+                    <motion.div animate={{ boxShadow: ['0 0 12px rgba(124,58,237,0.15)','0 0 24px rgba(124,58,237,0.15)','0 0 12px rgba(124,58,237,0.15)'] }} transition={{ duration:1.5, repeat:Infinity }}
                       className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
                     </motion.div>
-                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(12px)' }}>
+                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
                       <div className="flex items-center gap-1.5">
                         {[0, 1, 2].map((j) => (
-                          <motion.span key={j} className="w-2 h-2 rounded-full" style={{ background:'rgba(68,229,194,0.6)' }}
+                          <motion.span key={j} className="w-2 h-2 rounded-full" style={{ background:'rgba(124,58,237,0.15)' }}
                             animate={{ y:[0,-6,0], opacity:[0.6,1,0.6] }}
                             transition={{ duration:0.9, repeat:Infinity, delay:j*0.18, ease:'easeInOut' }} />
                         ))}
@@ -775,7 +775,7 @@ export default function AskAI() {
                         whileHover={{ scale:1.06, y:-2 }} whileTap={{ scale:0.94 }}
                         onClick={() => setQuestion(text)}
                         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/[0.07] hover:border-primary/30 text-[11px] font-medium text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap shrink-0"
-                        style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(8px)' }}
+                        style={{ background:'var(--surface)', backdropFilter:'blur(8px)' }}
                       >
                         <span className="material-symbols-outlined text-[13px] text-primary">{icon}</span>
                         {text}
@@ -788,8 +788,8 @@ export default function AskAI() {
                 {/* Input box */}
                 <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
                   className="relative group">
-                  <div className="absolute -inset-px blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl pointer-events-none" style={{ background:'rgba(68,229,194,0.15)' }} />
-                  <div className="relative flex items-end gap-3 border border-white/[0.08] rounded-2xl px-4 pt-3 pb-3 focus-within:border-primary/35 transition-all duration-200" style={{ background:'rgba(12,28,73,0.7)', backdropFilter:'blur(16px)' }}>
+                  <div className="absolute -inset-px blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl pointer-events-none" style={{ background:'rgba(124,58,237,0.15)' }} />
+                  <div className="relative flex items-end gap-3 border border-white/[0.08] rounded-2xl px-4 pt-3 pb-3 focus-within:border-primary/35 transition-all duration-200" style={{ background:'var(--surface)', backdropFilter:'blur(16px)' }}>
                     <textarea
                       ref={textareaRef}
                       value={question}
@@ -800,11 +800,11 @@ export default function AskAI() {
                       placeholder="Ask anything about your document…"
                       className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/30 resize-none outline-none overflow-hidden leading-relaxed pt-0.5"
                     />
-                    <motion.button whileHover={{ scale:1.1, boxShadow:'0 0 20px rgba(68,229,194,0.5)' }} whileTap={{ scale:0.88 }}
+                    <motion.button whileHover={{ scale:1.1, boxShadow:'0 0 20px rgba(124,58,237,0.15)' }} whileTap={{ scale:0.88 }}
                       onClick={handleSend}
                       disabled={!question.trim() || sending}
                       className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-[#001a12] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ background:'linear-gradient(135deg,#44e5c2,#38bfa1)' }}
+                      style={{ background:'linear-gradient(135deg,var(--purple),#9333ea)' }}
                     >
                       {sending
                         ? <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>

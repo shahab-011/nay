@@ -217,7 +217,7 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
             {file ? (
               <>
                 <span className={`material-symbols-outlined text-3xl ${accentText}`} style={{ fontVariationSettings: "'FILL' 1" }}>draft</span>
-                <p className="text-xs font-semibold text-white text-center max-w-[180px] truncate px-2">{file.name}</p>
+                <p className="text-xs font-semibold text-on-surface text-center max-w-[180px] truncate px-2">{file.name}</p>
                 <p className="text-[10px] text-on-surface-variant">{(file.size / 1024).toFixed(0)} KB</p>
                 <button onClick={(e) => { e.stopPropagation(); setFile(null); setProgress(0); setMsg(''); setErr(''); }} className="absolute top-2 right-2 text-on-surface-variant hover:text-white">
                   <span className="material-symbols-outlined text-base">close</span>
@@ -362,12 +362,12 @@ export default function CompareDocuments() {
 
         {/* ── Selector panel ─────────────────────────────────────── */}
         <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.55, ease:[0.22,1,0.36,1] }}
-          className="rounded-2xl border border-white/5 overflow-hidden" style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(16px)' }}>
+          className="rounded-2xl border border-white/5 overflow-hidden" style={{ background:'var(--surface)', backdropFilter:'blur(16px)' }}>
           <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
             <motion.span animate={{ rotate:[0,10,-10,0] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
               className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</motion.span>
             <div>
-              <h2 className="text-sm font-semibold text-white">Document Comparison</h2>
+              <h2 className="text-sm font-semibold text-on-surface">Document Comparison</h2>
               <p className="text-[11px] text-on-surface-variant">Select or upload two versions to compare — AI finds every change</p>
             </div>
           </div>
@@ -488,7 +488,7 @@ export default function CompareDocuments() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Original Version</p>
-                  <p className="text-sm font-semibold text-white truncate">{docA?.originalName || 'Document A'}</p>
+                  <p className="text-sm font-semibold text-on-surface truncate">{docA?.originalName || 'Document A'}</p>
                 </div>
               </div>
               <div className="flex justify-center">
@@ -500,7 +500,7 @@ export default function CompareDocuments() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Revised Version</p>
-                  <p className="text-sm font-semibold text-white truncate">{docB?.originalName || 'Document B'}</p>
+                  <p className="text-sm font-semibold text-on-surface truncate">{docB?.originalName || 'Document B'}</p>
                 </div>
               </div>
             </div>
@@ -602,7 +602,7 @@ export default function CompareDocuments() {
                   {removals.map((text, i) => (
                     <div key={i} className="flex items-start gap-3 bg-error/5 border border-error/15 rounded-xl px-5 py-4 border-l-4 border-l-error">
                       <div className="w-6 h-6 rounded-full bg-error flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="material-symbols-outlined text-white text-sm">remove</span>
+                        <span className="material-symbols-outlined text-on-surface text-sm">remove</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-error mr-2">REMOVED</span>
@@ -634,7 +634,7 @@ export default function CompareDocuments() {
                             <span className="w-6 h-6 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
                               <span className="text-[10px] font-black text-amber-400">{i + 1}</span>
                             </span>
-                            <h4 className="font-semibold text-sm text-white truncate">
+                            <h4 className="font-semibold text-sm text-on-surface truncate">
                               {mod.clauseName || `Change ${i + 1}`}
                             </h4>
                           </div>
@@ -781,7 +781,7 @@ export default function CompareDocuments() {
                     const total = (h.additions?.length || 0) + (h.removals?.length || 0) + (h.modifications?.length || 0);
                     const hb    = riskChangeMeta(h.riskChange);
                     const date  = h.createdAt
-                      ? new Date(h.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                      ? new Date(h.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
                       : '—';
                     return (
                       <tr key={h._id || i} className="hover:bg-white/[0.02] transition-colors group">

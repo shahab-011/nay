@@ -30,7 +30,7 @@ const RISK = {
 };
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 const fmtSize = (b) =>
   !b ? '—' : b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`;
@@ -123,11 +123,11 @@ export default function MyDocuments() {
         </button>
       </Header>
 
-      <div className="p-4 md:p-8 max-w-[1400px] mx-auto min-h-[calc(100vh-64px)]">
+      <div className="p-4 md:p-8 max-w-[1400px] mx-auto min-h-[calc(100vh-60px)]">
         {/* Page header */}
         <motion.div initial={{ opacity:0, y:18 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }} className="mb-7">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-1">
-            <span className="gradient-text">Legal</span> <span className="text-white">Repository</span>
+            <span className="gradient-text">Legal</span> <span className="text-on-surface">Repository</span>
           </h2>
           <p className="text-on-surface-variant max-w-2xl text-sm">
             Manage your complete portfolio of legal documents with AI-powered analysis.
@@ -138,10 +138,10 @@ export default function MyDocuments() {
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.15 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
-            { label: 'Total Documents', value: documents.length, icon: 'folder_open', hex: '#44e5c2' },
-            { label: 'Analyzed',        value: analyzed.length,  icon: 'analytics',   hex: '#66d6e7' },
-            { label: 'Avg Health',      value: `${avgHealth}%`,  icon: 'favorite',    hex: '#44e5c2' },
-            { label: 'High Risk',       value: highRisk,         icon: 'warning',     hex: '#ff6b6b' },
+            { label: 'Total Documents', value: documents.length, icon: 'folder_open', hex: '#7C3AED' },
+            { label: 'Analyzed',        value: analyzed.length,  icon: 'analytics',   hex: '#2563EB' },
+            { label: 'Avg Health',      value: `${avgHealth}%`,  icon: 'favorite',    hex: '#16A36A' },
+            { label: 'High Risk',       value: highRisk,         icon: 'warning',     hex: '#DC2660' },
           ].map(({ label, value, icon, hex }, idx) => (
             <motion.div key={label}
               initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay: 0.2+idx*0.07 }}
@@ -197,8 +197,7 @@ export default function MyDocuments() {
 
         {/* Table */}
         <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.35, duration:0.5, ease:[0.22,1,0.36,1] }}
-          className="rounded-2xl overflow-hidden shadow-2xl shadow-black/20"
-          style={{ background:'rgba(12,28,73,0.5)', border:'1px solid rgba(255,255,255,0.06)', backdropFilter:'blur(16px)' }}>
+          className="card rounded-2xl overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
               <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>

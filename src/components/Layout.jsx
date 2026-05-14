@@ -6,35 +6,54 @@ import { usePrivacy } from '../context/PrivacyContext';
 import { MobileMenuProvider } from '../context/MobileMenuContext';
 
 const pageVariants = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
-  exit:    { opacity: 0, y: -8,  transition: { duration: 0.22 } },
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, y: -6, transition: { duration: 0.2 } },
 };
 
-export default function Layout({ children }) {
-  const location   = useLocation();
-  const { isPrivate, togglePrivacy } = usePrivacy();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+/* Public routes render without the app sidebar/shell */
+const PUBLIC_PATHS = ['/', '/landing', '/intake', '/marketplace'];
 
-  if (isAuthPage) {
+function isPublicPath(pathname) {
+  if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (pathname.startsWith('/marketplace/')) return true;
+  return false;
+}
+
+const AUTH_PATHS = ['/login', '/register'];
+
+export default function Layout({ children }) {
+  const location = useLocation();
+  const { isPrivate, togglePrivacy } = usePrivacy();
+  const isAuth   = AUTH_PATHS.includes(location.pathname);
+  const isPublic = isPublicPath(location.pathname);
+
+  /* Auth pages (login/register) — plain white background, no sidebar */
+  if (isAuth) {
     return (
-      <>
-        <div className="aurora-bg"><div className="aurora-orb-3" /></div>
-        <div className="dot-grid" />
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         {children}
-      </>
+      </div>
     );
   }
 
+  /* Public pages (landing, intake, marketplace) — no sidebar */
+  if (isPublic) {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  /* Authenticated app — sidebar + main content area */
   return (
     <MobileMenuProvider>
-      {/* Aurora animated background */}
-      <div className="aurora-bg"><div className="aurora-orb-3" /></div>
-      <div className="dot-grid" />
-
       <Sidebar />
 
-      <main className="md:ml-[220px] pt-16 pb-20 md:pb-0 min-h-screen">
+      <main className="md:ml-[240px] min-h-screen" style={{ background: 'var(--bg)' }}>
         {/* Privacy banner */}
         <AnimatePresence>
           {isPrivate && (
@@ -43,20 +62,24 @@ export default function Layout({ children }) {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="sticky top-16 z-30 overflow-hidden"
+              style={{ overflow: 'hidden', position: 'sticky', top: 0, zIndex: 30 }}
             >
-              <div className="flex items-center gap-3 px-4 md:px-6 py-2.5 bg-primary/10 border-b border-primary/20 backdrop-blur-sm">
-                <span
-                  className="material-symbols-outlined text-primary text-base flex-shrink-0"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >shield_lock</span>
-                <p className="text-primary text-xs font-semibold flex-1">
-                  Privacy Mode Active — files processed in your browser only.
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 20px',
+                background: 'var(--purple-soft)',
+                borderBottom: '1px solid var(--purple-mist)',
+              }}>
+                <span style={{ color: 'var(--purple)', fontSize: 18 }}>🔒</span>
+                <p style={{ color: 'var(--purple-deep)', fontSize: 13, fontWeight: 600, flex: 1 }}>
+                  Privacy Mode Active — files are processed in your browser only. Nothing is uploaded.
                 </p>
                 <button
                   onClick={togglePrivacy}
-                  className="text-primary/60 hover:text-primary text-xs font-medium underline underline-offset-2 transition-colors"
-                >Disable</button>
+                  style={{ color: 'var(--purple)', fontSize: 12, fontWeight: 600, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  Disable
+                </button>
               </div>
             </motion.div>
           )}

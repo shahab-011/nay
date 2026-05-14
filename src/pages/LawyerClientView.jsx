@@ -14,12 +14,12 @@ function formatRelative(d) {
   if (h < 24)  return `${h}h ago`;
   const day = Math.floor(h / 24);
   if (day < 30) return `${day}d ago`;
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const ScoreColor = (s) => s >= 80 ? 'text-primary' : s >= 50 ? 'text-amber-400' : 'text-error';
@@ -58,7 +58,7 @@ export default function LawyerClientView() {
     return (
       <>
         <Header title="Client Profile" />
-        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+        <div className="flex items-center justify-center min-h-[calc(100vh-60px)]">
           <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
         </div>
       </>
@@ -69,7 +69,7 @@ export default function LawyerClientView() {
     return (
       <>
         <Header title="Client Profile" />
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] gap-4">
           <span className="material-symbols-outlined text-5xl text-error">error</span>
           <p className="text-on-surface-variant text-center max-w-md">{error}</p>
           <button onClick={() => navigate(-1)}
@@ -107,7 +107,7 @@ export default function LawyerClientView() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl font-headline font-extrabold text-white tracking-tight">
+                <h1 className="text-2xl font-headline font-extrabold text-on-surface tracking-tight">
                   {client.name || link?.clientEmail}
                 </h1>
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">

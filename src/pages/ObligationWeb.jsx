@@ -251,7 +251,7 @@ export default function ObligationWeb() {
       .attr('patternUnits', 'userSpaceOnUse')
       .append('circle')
       .attr('cx', 2).attr('cy', 2).attr('r', 1)
-      .attr('fill', 'rgba(255,255,255,0.04)');
+      .attr('fill', 'var(--border)');
 
     // Arrow markers
     ['default', 'conflict'].forEach(k => {
@@ -502,7 +502,7 @@ export default function ObligationWeb() {
         {/* Page title */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface flex items-center gap-3">
               <span className="text-2xl">🕸</span>
               Obligation Web
             </h1>

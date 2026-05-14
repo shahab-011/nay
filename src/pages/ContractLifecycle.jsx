@@ -19,7 +19,7 @@ function healthColor(score) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function toInputDate(dateStr) {
@@ -239,7 +239,7 @@ export default function ContractLifecycle() {
     <>
       <Header title="Contract Lifecycle" />
 
-      <div className="p-4 md:p-8 min-h-[calc(100vh-64px)] space-y-8">
+      <div className="p-4 md:p-8 min-h-[calc(100vh-60px)] space-y-8">
 
         {/* ── Urgent expiry banner ─────────────────────────────── */}
         <AnimatePresence>
@@ -291,7 +291,7 @@ export default function ContractLifecycle() {
               whileHover={{ y:-5, scale:1.03, boxShadow:'0 16px 40px rgba(0,0,0,0.25)' }} whileTap={{ scale:0.97 }}
               onClick={() => setFilterLC((f) => f === filter ? 'all' : filter)}
               className={`p-6 rounded-xl text-left border ${filterLC === filter ? 'border-primary/30' : 'border-white/5'}`}
-              style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}
+              style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}
             >
               <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">{label}</p>
               <div className="flex items-end justify-between">
@@ -330,7 +330,7 @@ export default function ContractLifecycle() {
                 <div className="relative space-y-10 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-outline-variant/30">
                   {pipeline.map(({ label, count, done, color, icon }) => (
                     <div key={label} className={`relative pl-10 ${!done && count === 0 ? 'opacity-40' : ''}`}>
-                      <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full ${done ? color : 'bg-surface-container-high border border-outline-variant'} flex items-center justify-center z-10 ${done ? 'shadow-[0_0_12px_rgba(68,229,194,0.25)]' : ''}`}>
+                      <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full ${done ? color : 'bg-surface-container-high border border-outline-variant'} flex items-center justify-center z-10 ${done ? 'shadow-[0_0_12px_rgba(124,58,237,0.15)]' : ''}`}>
                         {done ? (
                           <span className="material-symbols-outlined text-[13px] text-on-primary font-bold">check</span>
                         ) : (
@@ -759,7 +759,7 @@ function LifecycleTimeline({ events, onNavigate }) {
                       {/* Date line */}
                       {event.date && (
                         <p className="text-[10px] text-on-surface-variant/60 mt-1.5">
-                          {new Date(event.date).toLocaleDateString('en-IN', {
+                          {new Date(event.date).toLocaleDateString('en-US', {
                             weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
                           })}
                         </p>
@@ -834,7 +834,7 @@ function LifecycleTimeline({ events, onNavigate }) {
                       </div>
                       {event.date && (
                         <p className="text-[10px] text-on-surface-variant/50 mt-1.5">
-                          {new Date(event.date).toLocaleDateString('en-IN', {
+                          {new Date(event.date).toLocaleDateString('en-US', {
                             weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
                           })}
                         </p>

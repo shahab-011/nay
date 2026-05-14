@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { getDocuments } from '../api/documents.api';
 import { getAlerts } from '../api/alerts.api';
 import { ContractStatusBadge } from '../utils/contractStatus';
+import { I } from '../components/Icons';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -17,14 +18,14 @@ function timeAgo(dateStr) {
   const d = Math.floor(h / 24);
   if (d === 1) return 'yesterday';
   if (d < 7) return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
 function healthColor(s) {
-  return s >= 75 ? 'text-primary' : s >= 50 ? 'text-secondary' : 'text-error';
+  if (s >= 75) return 'var(--green)';
+  if (s >= 50) return 'var(--amber)';
+  return 'var(--red)';
 }
-
-const TYPE_ICON = { expiry: 'schedule', compliance: 'gavel', risk: 'warning', general: 'info' };
 
 function AnimatedNumber({ value }) {
   const [display, setDisplay] = useState(0);
@@ -45,48 +46,71 @@ function AnimatedNumber({ value }) {
 }
 
 const itemV = {
-  initial: { opacity: 0, y: 22 },
+  initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
 };
-const containerV = { animate: { transition: { staggerChildren: 0.09 } } };
+const containerV = { animate: { transition: { staggerChildren: 0.08 } } };
 
-function StatCard({ icon, label, value, sub, subColor, subIcon, loading, progressBar, accentColor = 'primary' }) {
-  const palette = {
-    primary:   { bg: 'rgba(68,229,194,0.06)',  border: 'rgba(68,229,194,0.14)',  glow: 'rgba(68,229,194,0.18)',  hex: '#44e5c2' },
-    secondary: { bg: 'rgba(102,214,231,0.06)', border: 'rgba(102,214,231,0.14)', glow: 'rgba(102,214,231,0.18)', hex: '#66d6e7' },
-    warning:   { bg: 'rgba(245,158,11,0.06)',  border: 'rgba(245,158,11,0.14)',  glow: 'rgba(245,158,11,0.14)',  hex: '#f59e0b' },
-    error:     { bg: 'rgba(255,107,107,0.06)', border: 'rgba(255,107,107,0.14)', glow: 'rgba(255,107,107,0.14)', hex: '#ff6b6b' },
-  };
-  const c = palette[accentColor] || palette.primary;
+const ACCENT = {
+  purple: { bg: 'var(--purple-soft)', border: 'var(--purple-mist)', hex: 'var(--purple)' },
+  green:  { bg: 'rgba(22,163,106,0.07)', border: 'rgba(22,163,106,0.2)', hex: 'var(--green)' },
+  red:    { bg: 'rgba(220,38,96,0.07)',  border: 'rgba(220,38,96,0.2)',  hex: 'var(--red)'   },
+  amber:  { bg: 'rgba(217,119,6,0.07)', border: 'rgba(217,119,6,0.2)',  hex: 'var(--amber)' },
+};
+
+function StatCard({ Icon, label, value, sub, subColor, loading, progressBar, accent = 'purple' }) {
+  const c = ACCENT[accent] || ACCENT.purple;
   return (
-    <motion.div variants={itemV} whileHover={{ y: -5, scale: 1.02 }} transition={{ duration: 0.22, ease: 'easeOut' }}
-      className="relative overflow-hidden rounded-2xl p-5 cursor-default"
-      style={{ background: c.bg, border: `1px solid ${c.border}` }}>
-      <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-xl pointer-events-none opacity-70"
-        style={{ background: c.glow }} />
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{ background: `${c.hex}18`, border: `1px solid ${c.hex}28` }}>
-          <span className="material-symbols-outlined text-xl" style={{ color: c.hex, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+    <motion.div variants={itemV} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}
+      className="card" style={{ background: c.bg, border: `1px solid ${c.border}`, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: `1px solid ${c.border}`,
+        }}>
+          {Icon && <Icon size={16} style={{ color: c.hex }} />}
         </div>
-        <span className="text-[9px] font-bold font-label uppercase tracking-widest" style={{ color: `${c.hex}80` }}>{label}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>
+          {label}
+        </span>
       </div>
-      <div className={`text-4xl font-black font-headline ${loading ? 'text-on-surface-variant animate-pulse' : 'text-on-surface'}`}>
+      <div style={{ fontSize: 36, fontWeight: 900, fontFamily: 'var(--font-headline)', color: 'var(--ink)', lineHeight: 1 }}>
         {loading ? '—' : typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
       </div>
       {progressBar !== undefined && progressBar > 0 && !loading && (
-        <div className="mt-3 mb-1 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-          <motion.div className="h-full rounded-full" initial={{ width: 0 }}
-            animate={{ width: `${progressBar}%` }}
-            transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ background: `linear-gradient(90deg, ${c.hex}, ${c.hex}99)` }} />
+        <div style={{ marginTop: 10, height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+          <motion.div style={{ height: '100%', borderRadius: 4, background: c.hex }}
+            initial={{ width: 0 }} animate={{ width: `${progressBar}%` }}
+            transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }} />
         </div>
       )}
-      <div className={`mt-3 flex items-center gap-1.5 text-xs font-semibold ${subColor}`}>
-        <span className="material-symbols-outlined text-sm">{subIcon}</span>
-        <span>{sub}</span>
-      </div>
+      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: subColor || 'var(--text-muted)' }}>{sub}</div>
     </motion.div>
+  );
+}
+
+function SectionCard({ title, subtitle, action, onAction, children }) {
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <div style={{
+        padding: '16px 20px 12px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-headline)' }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</p>}
+        </div>
+        {action && (
+          <button onClick={onAction}
+            style={{ fontSize: 12, fontWeight: 700, color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer' }}>
+            {action} →
+          </button>
+        )}
+      </div>
+      <div style={{ padding: 12 }}>{children}</div>
+    </div>
   );
 }
 
@@ -124,22 +148,20 @@ export default function Dashboard() {
     low:    docs.filter(d => d.riskLevel === 'low' || !d.riskLevel).length,
   };
   const recentDocs   = [...docs].sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt)).slice(0,4);
-  const recentAlerts = [...alerts].filter(a=>!a.isRead).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,4);
+  const recentAlerts = alerts.filter(a=>!a.isRead).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,4);
 
   return (
     <>
       <Header title="Dashboard" />
-      <div className="p-4 md:p-6 xl:p-8 space-y-5 pb-24">
+      <div style={{ padding: '80px 24px 100px', maxWidth: 1200, margin: '0 auto' }}>
 
         {/* Greeting */}
-        <motion.div variants={itemV} initial="initial" animate="animate" className="pt-1">
-          <h1 className="text-2xl md:text-3xl font-black font-headline tracking-tight">
-            <span className="text-white">Welcome back</span>
-            {user?.name && <span className="gradient-text">, {user.name.split(' ')[0]}</span>}
-            <span className="text-white">.</span>
+        <motion.div variants={itemV} initial="initial" animate="animate" style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 900, fontFamily: 'var(--font-headline)', color: 'var(--ink)', lineHeight: 1.1 }}>
+            Welcome back{user?.name && <span style={{ color: 'var(--purple)' }}>, {user.name.split(' ')[0]}</span>}.
           </h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
-            className="text-on-surface-variant text-sm mt-1">
+            style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
             {loading ? 'Loading your legal portfolio…'
               : `${totalDocs} document${totalDocs !== 1 ? 's' : ''} · ${unreadAlerts} unread alert${unreadAlerts !== 1 ? 's' : ''}`}
           </motion.p>
@@ -147,232 +169,239 @@ export default function Dashboard() {
 
         {/* Stat cards */}
         <motion.div variants={containerV} initial="initial" animate="animate"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon="folder_open"   label="Total Documents"  accentColor="primary"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: 20 }}>
+          <StatCard Icon={I.Folder} label="Total Documents" accent="purple"
             value={loading ? '—' : totalDocs}
             sub={analyzedDocs.length > 0 ? `${analyzedDocs.length} analyzed` : 'None analyzed yet'}
-            subColor="text-primary" subIcon="check_circle" loading={loading} />
-          <StatCard icon="verified_user" label="Avg Health Score" accentColor="secondary"
+            loading={loading} />
+          <StatCard Icon={I.Activity} label="Avg Health Score" accent="green"
             value={loading ? '—' : avgHealth || 0}
             sub={avgHealth >= 75 ? 'Portfolio healthy' : avgHealth > 0 ? 'Needs attention' : 'No analyses yet'}
-            subColor={avgHealth >= 75 ? 'text-primary' : avgHealth > 0 ? 'text-secondary' : 'text-on-surface-variant'}
-            subIcon={avgHealth >= 75 ? 'trending_up' : 'trending_flat'}
+            subColor={avgHealth >= 75 ? 'var(--green)' : avgHealth > 0 ? 'var(--amber)' : undefined}
             loading={loading} progressBar={avgHealth} />
-          <StatCard icon="warning"       label="Risks Found"      accentColor="error"
+          <StatCard Icon={I.Alert} label="Risks Found" accent="red"
             value={loading ? '—' : risksFound}
             sub={risksFound > 0 ? 'Across all documents' : 'No risks detected'}
-            subColor={risksFound > 0 ? 'text-error' : 'text-primary'} subIcon={risksFound > 0 ? 'report' : 'check_circle'} loading={loading} />
-          <StatCard icon="alarm_on"      label="Expiring Soon"    accentColor="warning"
+            subColor={risksFound > 0 ? 'var(--red)' : 'var(--green)'}
+            loading={loading} />
+          <StatCard Icon={I.Clock} label="Expiring Soon" accent="amber"
             value={loading ? '—' : expiringSoon}
             sub={expiringSoon > 0 ? 'Within 30 days' : 'All clear'}
-            subColor={expiringSoon > 0 ? 'text-amber-400' : 'text-primary'} subIcon="calendar_month" loading={loading} />
+            subColor={expiringSoon > 0 ? 'var(--amber)' : 'var(--green)'}
+            loading={loading} />
         </motion.div>
 
         {/* Middle row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, marginBottom: 16 }}
+          className="lg:grid-cols-3">
+
           {/* Recent Docs */}
-          <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, duration:0.5, ease:[0.22,1,0.36,1] }}
-            className="lg:col-span-2 rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(12,28,73,0.5)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-            <div className="px-5 pt-5 pb-3 flex justify-between items-center border-b border-white/5">
-              <div>
-                <h2 className="text-base font-bold font-headline text-white">Recent Documents</h2>
-                <p className="text-on-surface-variant text-xs mt-0.5">Latest uploads and analyses</p>
-              </div>
-              <button onClick={() => navigate('/documents')} className="text-primary text-xs font-bold hover:underline flex items-center gap-0.5">
-                View All <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </button>
-            </div>
-            <div className="p-3 space-y-2">
-              {loading ? Array.from({length:3}).map((_,i)=><div key={i} className="h-14 rounded-xl shimmer"/>)
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, duration:0.5 }}
+            className="lg:col-span-2">
+            <SectionCard title="Recent Documents" subtitle="Latest uploads and analyses"
+              action="View All" onAction={() => navigate('/documents')}>
+              {loading
+                ? Array.from({length:3}).map((_,i)=>(
+                    <div key={i} style={{ height: 56, borderRadius: 10, marginBottom: 8, background: 'var(--elevated)' }} className="shimmer" />
+                  ))
                 : recentDocs.length === 0
-                  ? <div className="text-center py-12 space-y-2">
-                      <motion.span animate={{y:[0,-6,0]}} transition={{duration:3,repeat:Infinity}}
-                        className="material-symbols-outlined text-4xl block text-on-surface-variant/15">folder_open</motion.span>
-                      <p className="text-on-surface-variant text-sm">No documents yet.</p>
-                      <button onClick={() => navigate('/upload')} className="text-primary text-sm font-bold hover:underline">Upload your first →</button>
+                  ? <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                      <I.Folder size={32} style={{ color: 'var(--text-muted)', margin: '0 auto 8px', display: 'block' }} />
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No documents yet.</p>
+                      <button onClick={() => navigate('/upload')}
+                        style={{ fontSize: 13, fontWeight: 700, color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}>
+                        Upload your first →
+                      </button>
                     </div>
-                  : <motion.div variants={containerV} initial="initial" animate="animate" className="space-y-2">
+                  : <motion.div variants={containerV} initial="initial" animate="animate" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {recentDocs.map(doc => (
-                        <motion.div key={doc._id} variants={itemV} whileHover={{ x:4 }}
+                        <motion.div key={doc._id} variants={itemV} whileHover={{ x: 4 }}
                           onClick={() => navigate(`/analysis/${doc._id}`)}
-                          className="flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors group"
-                          style={{ background: 'rgba(24,39,83,0.5)' }}>
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{ background: 'rgba(68,229,194,0.1)', border: '1px solid rgba(68,229,194,0.18)' }}>
-                              <span className="material-symbols-outlined text-primary text-base" style={{fontVariationSettings:"'FILL' 1"}}>description</span>
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '10px 12px', borderRadius: 10,
+                            background: 'var(--elevated)', border: '1px solid var(--border)',
+                            cursor: 'pointer',
+                          }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                            <div style={{
+                              width: 36, height: 36, borderRadius: 8, flexShrink: 0,
+                              background: 'var(--purple-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <I.Doc size={16} style={{ color: 'var(--purple)' }} />
                             </div>
-                            <div className="min-w-0">
-                              <p className="font-semibold text-sm text-on-surface truncate">{doc.originalName}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {doc.originalName}
+                              </p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                                 <ContractStatusBadge doc={doc} size="xs" />
-                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-on-surface-variant">{doc.docType}</span>
-                                <span className="text-[9px] text-on-surface-variant/50">{timeAgo(doc.updatedAt||doc.createdAt)}</span>
+                                <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{doc.docType}</span>
+                                <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{timeAgo(doc.updatedAt||doc.createdAt)}</span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, marginLeft: 12 }}>
                             {doc.healthScore > 0 && (
-                              <div className="text-right hidden sm:block">
-                                <div className="text-[9px] text-on-surface-variant uppercase">Health</div>
-                                <div className={`font-headline font-bold text-sm ${healthColor(doc.healthScore)}`}>{doc.healthScore}%</div>
+                              <div style={{ textAlign: 'right' }} className="hidden sm:block">
+                                <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Health</div>
+                                <div style={{ fontWeight: 700, fontSize: 12, color: healthColor(doc.healthScore) }}>{doc.healthScore}%</div>
                               </div>
                             )}
-                            <span className="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary transition-colors text-sm">chevron_right</span>
+                            <I.ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
                           </div>
                         </motion.div>
                       ))}
                     </motion.div>
               }
-            </div>
+            </SectionCard>
           </motion.div>
 
           {/* Risk Summary */}
-          <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4, duration:0.5, ease:[0.22,1,0.36,1] }}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(12,28,73,0.5)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-            <div className="px-5 pt-5 pb-3 border-b border-white/5">
-              <h2 className="text-base font-bold font-headline text-white">Risk Summary</h2>
-              <p className="text-on-surface-variant text-xs mt-0.5">Portfolio exposure</p>
-            </div>
-            <div className="p-3 space-y-2.5">
-              {loading ? Array.from({length:3}).map((_,i)=><div key={i} className="h-14 rounded-xl shimmer"/>)
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.4, duration:0.5 }}>
+            <SectionCard title="Risk Summary" subtitle="Portfolio exposure">
+              {loading
+                ? Array.from({length:3}).map((_,i)=>(
+                    <div key={i} style={{ height: 56, borderRadius: 10, marginBottom: 8, background: 'var(--elevated)' }} className="shimmer" />
+                  ))
                 : totalDocs === 0
-                  ? <p className="text-center py-8 text-on-surface-variant text-sm">Upload documents to see breakdown.</p>
+                  ? <p style={{ textAlign: 'center', padding: '24px 0', fontSize: 13, color: 'var(--text-muted)' }}>
+                      Upload documents to see breakdown.
+                    </p>
                   : [
-                      { label:'High',   count:riskCounts.high,   hex:'#ff6b6b', bg:'rgba(255,107,107,0.07)', border:'rgba(255,107,107,0.2)' },
-                      { label:'Medium', count:riskCounts.medium, hex:'#66d6e7', bg:'rgba(102,214,231,0.07)', border:'rgba(102,214,231,0.2)' },
-                      { label:'Low',    count:riskCounts.low,    hex:'#44e5c2', bg:'rgba(68,229,194,0.07)',  border:'rgba(68,229,194,0.2)'  },
+                      { label:'High',   count:riskCounts.high,   hex:'var(--red)',   bg:'rgba(220,38,96,0.06)',   border:'rgba(220,38,96,0.18)'  },
+                      { label:'Medium', count:riskCounts.medium, hex:'var(--amber)', bg:'rgba(217,119,6,0.06)',   border:'rgba(217,119,6,0.18)'  },
+                      { label:'Low',    count:riskCounts.low,    hex:'var(--green)', bg:'rgba(22,163,106,0.06)', border:'rgba(22,163,106,0.18)' },
                     ].map(({ label, count, hex, bg, border }, idx) => (
-                      <motion.div key={label} initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ delay: 0.5+idx*0.1 }}
-                        className="p-3 rounded-xl" style={{ background: bg, border: `1px solid ${border}` }}>
-                        <div className="flex justify-between items-center mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: hex }}>{label} Severity</span>
-                          <span className="font-headline font-black text-xl" style={{ color: hex }}>{count}</span>
+                      <motion.div key={label} initial={{ opacity:0, x:-10 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.5+idx*0.1 }}
+                        style={{ padding: '10px 12px', borderRadius: 10, background: bg, border: `1px solid ${border}`, marginBottom: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: hex }}>{label} Severity</span>
+                          <span style={{ fontFamily: 'var(--font-headline)', fontWeight: 900, fontSize: 20, color: hex }}>{count}</span>
                         </div>
-                        <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                          <motion.div className="h-full rounded-full" initial={{ width:0 }}
+                        <div style={{ height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+                          <motion.div style={{ height: '100%', borderRadius: 4, background: hex }}
+                            initial={{ width: 0 }}
                             animate={{ width: totalDocs > 0 ? `${Math.round((count/totalDocs)*100)}%` : '0%' }}
-                            transition={{ duration:1, delay:0.7+idx*0.1, ease:[0.22,1,0.36,1] }}
-                            style={{ background: hex }} />
+                            transition={{ duration: 1, delay: 0.7+idx*0.1, ease: [0.22,1,0.36,1] }} />
                         </div>
                       </motion.div>
                     ))
               }
-            </div>
-            <div className="px-3 pb-3">
               <button onClick={() => navigate('/documents')}
-                className="w-full py-2.5 rounded-xl border border-white/8 text-xs font-semibold text-on-surface-variant hover:text-white hover:border-white/15 transition-all">
+                style={{
+                  width: '100%', padding: '10px', borderRadius: 10,
+                  border: '1px solid var(--border)', background: 'transparent',
+                  fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer',
+                }}>
                 View All Documents
               </button>
-            </div>
+            </SectionCard>
           </motion.div>
         </div>
 
         {/* Bottom row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }} className="lg:grid-cols-2">
+
           {/* Alerts */}
-          <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5, duration:0.5, ease:[0.22,1,0.36,1] }}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(12,28,73,0.45)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-            <div className="px-5 pt-4 pb-3 border-b border-white/5 flex justify-between items-center">
-              <div>
-                <h3 className="text-base font-bold font-headline text-white">Recent Alerts</h3>
-                <p className="text-on-surface-variant text-xs mt-0.5">Unread notifications</p>
-              </div>
-              {unreadAlerts > 0 && (
-                <motion.span initial={{ scale:0 }} animate={{ scale:1 }}
-                  className="bg-primary/12 text-primary text-[9px] px-2 py-0.5 rounded-full font-bold border border-primary/20">
-                  {unreadAlerts} UNREAD
-                </motion.span>
-              )}
-            </div>
-            <div className="p-3 space-y-2">
-              {loading ? Array.from({length:3}).map((_,i)=><div key={i} className="h-12 rounded-xl shimmer"/>)
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5, duration:0.5 }}>
+            <SectionCard title="Recent Alerts" subtitle="Unread notifications"
+              action={unreadAlerts > 0 ? `${unreadAlerts} unread` : undefined}
+              onAction={() => navigate('/alerts')}>
+              {loading
+                ? Array.from({length:3}).map((_,i)=>(
+                    <div key={i} style={{ height: 48, borderRadius: 10, marginBottom: 8, background: 'var(--elevated)' }} className="shimmer" />
+                  ))
                 : recentAlerts.length === 0
-                  ? <div className="text-center py-10 space-y-2">
-                      <span className="material-symbols-outlined text-4xl block text-on-surface-variant/15">notifications_off</span>
-                      <p className="text-on-surface-variant text-sm">All caught up!</p>
+                  ? <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                      <I.Bell size={28} style={{ color: 'var(--text-muted)', margin: '0 auto 8px', display: 'block' }} />
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>All caught up!</p>
                     </div>
                   : recentAlerts.map((alert, idx) => (
-                      <motion.div key={alert._id} initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }} transition={{ delay: 0.6+idx*0.07 }}
-                        whileHover={{ x:3 }} onClick={() => navigate('/alerts')}
-                        className="flex items-start gap-2.5 p-3 rounded-xl cursor-pointer"
-                        style={{ background: 'rgba(24,39,83,0.5)' }}>
-                        <span className="material-symbols-outlined text-primary text-base flex-shrink-0 mt-0.5"
-                          style={{ fontVariationSettings:"'FILL' 1" }}>
-                          {TYPE_ICON[alert.alertType] || 'info'}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-on-surface line-clamp-2 leading-relaxed">{alert.message}</p>
-                          <p className="text-[9px] text-on-surface-variant/50 mt-0.5">{timeAgo(alert.createdAt)}</p>
+                      <motion.div key={alert._id} initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.6+idx*0.07 }}
+                        whileHover={{ x: 3 }} onClick={() => navigate('/alerts')}
+                        style={{
+                          display: 'flex', alignItems: 'flex-start', gap: 10,
+                          padding: '10px 12px', borderRadius: 10,
+                          background: 'var(--elevated)', border: '1px solid var(--border)',
+                          cursor: 'pointer', marginBottom: 8,
+                        }}>
+                        <I.Bell size={14} style={{ color: 'var(--purple)', flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 12, color: 'var(--ink)', lineHeight: 1.5 }}
+                            className="line-clamp-2">{alert.message}</p>
+                          <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{timeAgo(alert.createdAt)}</p>
                         </div>
                       </motion.div>
                     ))
               }
               {recentAlerts.length > 0 && (
-                <button onClick={() => navigate('/alerts')} className="w-full text-center text-primary text-xs font-bold hover:underline pt-1">
+                <button onClick={() => navigate('/alerts')}
+                  style={{ width: '100%', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer', paddingTop: 4 }}>
                   View all alerts →
                 </button>
               )}
-            </div>
+            </SectionCard>
           </motion.div>
 
           {/* Quick Actions */}
-          <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6, duration:0.5, ease:[0.22,1,0.36,1] }}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(12,28,73,0.45)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)' }}>
-            <div className="px-5 pt-4 pb-3 border-b border-white/5">
-              <h3 className="text-base font-bold font-headline text-white">Quick Actions</h3>
-              <p className="text-on-surface-variant text-xs mt-0.5">Jump straight into your workflow</p>
-            </div>
-            <div className="p-3">
-              <div className="grid grid-cols-2 gap-2">
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6, duration:0.5 }}>
+            <SectionCard title="Quick Actions" subtitle="Jump straight into your workflow">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {[
-                  { icon:'upload_file',    label:'Upload',    sub:'New document',      path:'/upload',          color:'#44e5c2' },
-                  { icon:'compare_arrows', label:'Compare',   sub:'Side-by-side diff', path:'/compare',         color:'#66d6e7' },
-                  { icon:'psychology',     label:'Ask AI',    sub:'Chat with AI',      path:'/ask',             color:'#a78bfa' },
-                  { icon:'hub',            label:'Web Graph', sub:'Contract network',  path:'/obligation-web',  color:'#f59e0b' },
-                ].map(({ icon, label, sub, path, color }, idx) => (
+                  { Icon: I.Upload,         label: 'Upload',    sub: 'New document',     path: '/upload',         hex: '#7C3AED' },
+                  { Icon: I.Copy,           label: 'Compare',   sub: 'Side-by-side diff', path: '/compare',        hex: '#2563EB' },
+                  { Icon: I.MessageCircle,  label: 'Ask AI',    sub: 'Chat with AI',     path: '/ask',            hex: '#7C3AED' },
+                  { Icon: I.Network,        label: 'Web Graph', sub: 'Contract network', path: '/obligation-web', hex: '#D97706' },
+                ].map(({ Icon, label, sub, path, hex }, idx) => (
                   <motion.button key={label}
-                    initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} transition={{ delay: 0.7+idx*0.07 }}
-                    whileHover={{ y:-4, scale:1.03 }} whileTap={{ scale:0.97 }}
+                    initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7+idx*0.07 }}
+                    whileHover={{ y: -3 }} whileTap={{ scale: 0.97 }}
                     onClick={() => navigate(path)}
-                    className="flex flex-col items-start gap-2 p-4 rounded-xl text-left"
-                    style={{ background:`${color}09`, border:`1px solid ${color}18` }}>
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ background:`${color}15`, border:`1px solid ${color}25` }}>
-                      <span className="material-symbols-outlined text-base" style={{ color, fontVariationSettings:"'FILL' 1" }}>{icon}</span>
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
+                      padding: '14px 14px', borderRadius: 12, textAlign: 'left', cursor: 'pointer',
+                      background: `${hex}08`, border: `1px solid ${hex}20`,
+                    }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: `${hex}15`, border: `1px solid ${hex}25`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Icon size={15} style={{ color: hex }} />
                     </div>
                     <div>
-                      <p className="text-[13px] font-bold text-on-surface font-headline">{label}</p>
-                      <p className="text-[10px] text-on-surface-variant/55">{sub}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-headline)' }}>{label}</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{sub}</p>
                     </div>
                   </motion.button>
                 ))}
               </div>
+
               {analyzedDocs.length > 0 && (
-                <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.9 }}
-                  className="mt-3 p-3.5 rounded-xl" style={{ background:'rgba(24,39,83,0.5)', border:'1px solid rgba(255,255,255,0.04)' }}>
-                  <div className="flex justify-between text-[10px] mb-2">
-                    <span className="text-on-surface-variant font-label uppercase tracking-widest">Portfolio Health</span>
-                    <span className={`font-bold ${healthColor(avgHealth)}`}>{avgHealth}%</span>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
+                  style={{
+                    marginTop: 12, padding: '12px 14px', borderRadius: 12,
+                    background: 'var(--elevated)', border: '1px solid var(--border)',
+                  }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 8 }}>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Portfolio Health</span>
+                    <span style={{ fontWeight: 700, color: healthColor(avgHealth) }}>{avgHealth}%</span>
                   </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div className="h-full rounded-full" initial={{ width:0 }}
-                      animate={{ width:`${avgHealth}%` }}
-                      transition={{ duration:1.2, delay:1, ease:[0.22,1,0.36,1] }}
-                      style={{ background:'linear-gradient(90deg,#44e5c2,#38debb)' }} />
+                  <div style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 4, overflow: 'hidden' }}>
+                    <motion.div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, var(--purple), #9333ea)' }}
+                      initial={{ width: 0 }} animate={{ width: `${avgHealth}%` }}
+                      transition={{ duration: 1.2, delay: 1, ease: [0.22,1,0.36,1] }} />
                   </div>
-                  <p className="text-[10px] text-on-surface-variant/50 mt-1.5">
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
                     Based on {analyzedDocs.length} analyzed document{analyzedDocs.length!==1?'s':''}
                   </p>
                 </motion.div>
               )}
-            </div>
+            </SectionCard>
           </motion.div>
         </div>
+
       </div>
     </>
   );

@@ -21,7 +21,7 @@ import DirectMessagePanel from '../components/collaboration/DirectMessagePanel';
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatRelative(d) {
@@ -58,7 +58,7 @@ function StatCard({ icon, label, value, color }) {
   return (
     <div className="bg-surface-container-low rounded-2xl p-5 border border-white/5">
       <span className={`material-symbols-outlined text-2xl ${color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-      <div className="mt-3 text-3xl font-headline font-extrabold text-white">{value}</div>
+      <div className="mt-3 text-3xl font-headline font-extrabold text-on-surface">{value}</div>
       <div className="text-xs text-on-surface-variant mt-0.5">{label}</div>
     </div>
   );
@@ -222,7 +222,7 @@ function LawyerView() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-headline font-extrabold tracking-tight text-white">Client Links</h1>
+          <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">Client Links</h1>
           <p className="text-on-surface-variant text-sm mt-1">Send link requests, manage connected clients, and view shared documents</p>
         </div>
         <button
@@ -387,7 +387,7 @@ function ClientView() {
     <>
       {/* Page header */}
       <div>
-        <h1 className="text-3xl font-headline font-extrabold tracking-tight text-white">My Lawyers</h1>
+        <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">My Lawyers</h1>
         <p className="text-on-surface-variant text-sm mt-1">Manage your connected lawyers and control which documents they can view</p>
       </div>
 
@@ -893,7 +893,7 @@ function DocShareModal({ link, onClose }) {
                       isShared ? 'bg-primary border-primary' : 'bg-transparent border-outline-variant group-hover:border-primary/50'
                     }`}>
                       {isBusy
-                        ? <span className="material-symbols-outlined text-[11px] text-white animate-spin">progress_activity</span>
+                        ? <span className="material-symbols-outlined text-[11px] text-on-surface animate-spin">progress_activity</span>
                         : isShared && <span className="material-symbols-outlined text-[11px] text-on-primary">check</span>
                       }
                     </div>

@@ -21,7 +21,7 @@ const TABS = ['Summary', 'Clauses', 'Risks', 'Compliance'];
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function LawyerDocView() {
@@ -62,7 +62,7 @@ export default function LawyerDocView() {
     return (
       <>
         <Header title="Document Analysis" />
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] gap-4">
           <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
           <p className="text-sm text-on-surface-variant">Loading analysis…</p>
         </div>
@@ -74,7 +74,7 @@ export default function LawyerDocView() {
     return (
       <>
         <Header title="Document Analysis" />
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] gap-4">
           <span className="material-symbols-outlined text-5xl text-on-surface-variant opacity-30">analytics</span>
           <p className="text-on-surface-variant text-center max-w-md">{error || 'No analysis available for this document yet.'}</p>
           <button onClick={() => navigate(-1)}
@@ -357,7 +357,7 @@ export default function LawyerDocView() {
                 { label: 'All mandatory clauses', points: 40, earned: compliance.mandatoryClauses  },
                 { label: 'Signature found',        points: 20, earned: compliance.signaturePresent  },
                 { label: 'Valid dates found',       points: 20, earned: compliance.datesValid        },
-                { label: 'Indian jurisdiction',     points: 20, earned: compliance.jurisdictionValid },
+                { label: 'Jurisdiction',     points: 20, earned: compliance.jurisdictionValid },
               ];
               return (
                 <div className={`p-6 rounded-2xl border ${cs >= 80 ? 'bg-primary/5 border-primary/20' : cs >= 40 ? 'bg-amber-400/5 border-amber-400/20' : 'bg-error/5 border-error/20'}`}>
@@ -428,7 +428,7 @@ export default function LawyerDocView() {
                 {[
                   { label: 'Signature Present',        desc: 'Document has a signature block', pass: compliance.signaturePresent  },
                   { label: 'Valid Dates Found',         desc: 'Date format detected',           pass: compliance.datesValid        },
-                  { label: 'Indian Jurisdiction Valid', desc: 'Governed by Indian law',         pass: compliance.jurisdictionValid },
+                  { label: 'Jurisdiction Valid', desc: 'Governed by applicable jurisdiction',         pass: compliance.jurisdictionValid },
                 ].map(({ label, desc, pass }) => (
                   <div key={label} className={`rounded-xl p-4 border flex items-start gap-3 ${pass ? 'bg-primary/5 border-primary/15' : 'bg-error/5 border-error/15'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${pass ? 'bg-primary/20' : 'bg-error/20'}`}>

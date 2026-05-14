@@ -117,7 +117,7 @@ function formatRelative(d) {
   if (h < 24)  return `${h}h ago`;
   const day = Math.floor(h / 24);
   if (day < 30) return `${day}d ago`;
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -240,7 +240,7 @@ export default function LawyerDashboard() {
           <div>
             <h1 className="text-4xl font-headline font-extrabold tracking-tight leading-none">
               <span className="gradient-text">{user?.name?.split(' ')[0]}'s</span>{' '}
-              <span className="text-white">Workspace</span>
+              <span className="text-on-surface">Workspace</span>
             </h1>
             <p className="text-on-surface-variant text-sm mt-1.5">Legal Professional Dashboard · NyayaAI</p>
           </div>
@@ -270,11 +270,11 @@ export default function LawyerDashboard() {
                 variants={{ hidden:{ opacity:0, y:20, scale:0.95 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}
                 whileHover={{ y:-5, scale:1.03, boxShadow:'0 16px 40px rgba(0,0,0,0.25)' }}
                 className="rounded-2xl p-5 border border-white/5"
-                style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}>
+                style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
                   <span className={`material-symbols-outlined text-xl ${s.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
                 </div>
-                <div className="text-3xl font-headline font-extrabold text-white leading-none">{s.value}</div>
+                <div className="text-3xl font-headline font-extrabold text-on-surface leading-none">{s.value}</div>
                 <div className="text-xs text-on-surface-variant mt-1">{s.label}</div>
               </motion.div>
             ))}
@@ -897,7 +897,7 @@ function CaseFormModal({ mode, initialData, defaultLink, acceptedLinks, onSave, 
       <div className="w-full max-w-lg bg-surface-container-low rounded-2xl border border-white/10 shadow-2xl overflow-y-auto max-h-[92vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <h2 className="text-base font-headline font-bold text-white">{isEdit ? 'Edit Case' : 'New Case'}</h2>
+          <h2 className="text-base font-headline font-bold text-on-surface">{isEdit ? 'Edit Case' : 'New Case'}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-on-surface-variant transition-colors">
             <span className="material-symbols-outlined text-base">close</span>
           </button>

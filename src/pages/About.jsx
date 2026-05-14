@@ -14,8 +14,8 @@ const FEATURES = [
   },
   {
     icon: 'gavel',
-    title: 'Built for Indian Law',
-    desc: 'Nyaya is designed ground-up for the Indian legal ecosystem. Compliance checks reference the Indian Contract Act, IT Act, GDPR adaptations, and jurisdiction-specific requirements — not generic global templates.',
+    title: 'Built for Global Law',
+    desc: 'Nyaya is designed for any jurisdiction worldwide. Compliance checks reference contract law fundamentals, GDPR, and jurisdiction-specific requirements — not one-size-fits-all templates.',
     color: 'from-primary/10 to-transparent border-primary/15',
     iconColor: 'text-primary',
   },
@@ -52,13 +52,13 @@ const FEATURES = [
 const DIFFERENTIATORS = [
   {
     icon: 'language',
-    label: 'Indian Law First',
-    detail: 'Competitors use US or UK legal datasets. Nyaya was trained and calibrated on Indian statutes, case law patterns, and compliance frameworks.',
+    label: 'Jurisdiction-Aware',
+    detail: 'Nyaya is trained on global contract law patterns, covering major jurisdictions worldwide.',
   },
   {
     icon: 'lock',
     label: 'True Privacy Option',
-    detail: 'Most AI legal tools are cloud-only. Nyaya\'s Privacy Mode is the only fully offline processing option in the Indian legal AI space.',
+    detail: 'Most AI legal tools are cloud-only. Nyaya\'s Privacy Mode is the only fully offline processing option among legal AI platforms.',
   },
   {
     icon: 'psychology',
@@ -85,7 +85,7 @@ const DIFFERENTIATORS = [
 const STATS = [
   { value: '60s', label: 'Average analysis time' },
   { value: '4', label: 'Analysis dimensions' },
-  { value: '100%', label: 'Indian law focused' },
+  { value: '100%', label: 'Global law coverage' },
   { value: '0 uploads', label: 'In Privacy Mode' },
 ];
 
@@ -143,10 +143,10 @@ export default function About() {
             </h1>
 
             <p className="text-on-surface-variant text-sm md:text-base leading-relaxed max-w-2xl mb-6">
-              Nyaya is an AI-powered legal document intelligence platform built specifically for India.
+              Nyaya is an AI-powered legal document intelligence platform built for global legal intelligence.
               It lets individuals, businesses, and lawyers upload contracts and legal documents,
               instantly understand every clause in plain English, identify risks, track compliance
-              with Indian law, and collaborate — all in one place.
+              with applicable law, and collaborate — all in one place.
             </p>
 
             <p className="text-on-surface-variant text-sm md:text-base leading-relaxed max-w-2xl">
@@ -228,10 +228,10 @@ export default function About() {
               <div className="flex gap-3">
                 <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                 <div>
-                  <p className="text-sm font-semibold text-on-surface mb-0.5">India-first, not India-adapted</p>
+                  <p className="text-sm font-semibold text-on-surface mb-0.5">Jurisdiction-aware, not jurisdiction-locked</p>
                   <p className="text-[12px] text-on-surface-variant leading-relaxed">
-                    Every risk flag, compliance check, and clause explanation is referenced against Indian statutes.
-                    We didn't just translate a US product — we built for ₹ and IPC from day one.
+                    Every risk flag, compliance check, and clause explanation adapts to the jurisdiction you specify.
+                    We built for global contract law from the ground up.
                   </p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function About() {
                 <div>
                   <p className="text-sm font-semibold text-on-surface mb-0.5">The only legal AI with real Privacy Mode</p>
                   <p className="text-[12px] text-on-surface-variant leading-relaxed">
-                    No other Indian legal AI lets you process documents entirely in the browser with zero server
+                    No other legal AI platform lets you process documents entirely in the browser with zero server
                     upload. Nyaya's Privacy Mode is a genuine architectural choice — not a checkbox.
                   </p>
                 </div>
@@ -275,7 +275,7 @@ export default function About() {
             style={{ fontVariationSettings: "'FILL' 1" }}>balance</span>
           <h2 className="text-xl font-bold text-on-surface font-headline mb-3">Our Mission</h2>
           <p className="text-on-surface-variant text-sm md:text-base leading-relaxed max-w-2xl mx-auto mb-4">
-            Legal clarity should not be a luxury. In India, millions of people sign contracts they don't
+            Legal clarity should not be a luxury. Millions of people sign contracts they don't
             fully understand — employment agreements, rental deeds, vendor contracts, loan documents —
             because professional legal advice is expensive and slow.
           </p>
@@ -322,7 +322,7 @@ export default function About() {
         {/* ── Version footer ────────────────────────────────────────── */}
         <div className="text-center text-[11px] text-on-surface-variant space-y-1 pb-4">
           <p className="font-semibold text-on-surface">Nyaya Legal Intelligence</p>
-          <p>Version 1.0 · Final Year Project · Built with ❤ for India</p>
+          <p>Version 1.0 · Final Year Project · Built with ❤ for legal clarity worldwide</p>
           <p className="text-[10px]">For support, visit <button onClick={() => navigate('/help')} className="text-primary underline underline-offset-2">Help Center</button></p>
         </div>
 

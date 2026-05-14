@@ -16,10 +16,9 @@ const DOC_TYPES = [
 ];
 
 const JURISDICTIONS = [
-  'Not detected', 'India', 'Maharashtra', 'Delhi', 'Karnataka',
-  'Tamil Nadu', 'West Bengal', 'Gujarat', 'Rajasthan', 'Kerala',
-  'Andhra Pradesh', 'Telangana', 'Uttar Pradesh', 'Bihar',
-  'Punjab', 'Haryana', 'Goa',
+  'Not detected', 'United States', 'United Kingdom', 'Canada', 'Australia',
+  'European Union', 'India', 'Singapore', 'UAE', 'Germany', 'France',
+  'South Africa', 'Kenya', 'Nigeria', 'Other',
 ];
 
 const ACCEPT       = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp';
@@ -190,7 +189,7 @@ export default function UploadDocument() {
         <motion.div variants={itemV} className="mb-8">
           <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight mb-2">
             <span className="gradient-text">Secure Document</span>{' '}
-            <span className="text-white">Intake</span>
+            <span className="text-on-surface">Intake</span>
           </h1>
           <p className="text-on-surface-variant max-w-2xl leading-relaxed">
             Upload a file or paste text for AI-powered legal analysis. All processing is encrypted end-to-end.
@@ -199,16 +198,16 @@ export default function UploadDocument() {
 
         {/* Tab switcher */}
         <motion.div variants={itemV} className="flex gap-1.5 mb-7 p-1 w-fit rounded-xl"
-          style={{ background: 'rgba(12,28,73,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ background: 'var(--elevated)', border: '1px solid var(--border)' }}>
           {['file', 'text'].map((t) => (
             <motion.button key={t} onClick={() => { setTab(t); setError(''); }}
               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               className={`px-5 py-2 rounded-lg text-sm font-semibold font-headline transition-all ${
                 tab === t
                   ? 'text-on-primary shadow-md'
-                  : 'text-on-surface-variant hover:text-white'
+                  : 'text-on-surface-variant'
               }`}
-              style={tab === t ? { background: 'linear-gradient(135deg,#44e5c2,#38debb)', boxShadow: '0 0 16px rgba(68,229,194,0.25)' } : {}}
+              style={tab === t ? { background: 'var(--purple)', color: '#fff', boxShadow: '0 4px 14px rgba(124,58,237,0.25)' } : {}}
             >
               {t === 'file' ? '📄 Upload File' : '📋 Paste Text'}
             </motion.button>
@@ -230,8 +229,8 @@ export default function UploadDocument() {
                   transition={{ duration: 0.2 }}
                   className="relative rounded-2xl p-10 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300"
                   style={dragging
-                    ? { borderColor: '#44e5c2', background: 'rgba(68,229,194,0.08)', boxShadow: '0 0 40px rgba(68,229,194,0.15)' }
-                    : { borderColor: 'rgba(60,74,69,0.6)', background: 'rgba(12,28,73,0.4)' }}
+                    ? { borderColor: 'var(--purple)', background: 'var(--purple-soft)', boxShadow: '0 0 30px rgba(124,58,237,0.12)' }
+                    : { borderColor: 'var(--border)', background: 'var(--elevated)' }}
                 >
                   <input
                     ref={fileInputRef}
@@ -269,7 +268,7 @@ export default function UploadDocument() {
                     </>
                   ) : (
                     <>
-                      <h3 className="text-xl font-headline font-bold text-white mb-2">
+                      <h3 className="text-xl font-headline font-bold text-on-surface mb-2">
                         {dragging ? 'Drop it!' : 'Drop your file here'}
                       </h3>
                       <p className="text-on-surface-variant font-body text-sm">
@@ -325,7 +324,7 @@ export default function UploadDocument() {
                     value={textFileName}
                     onChange={(e) => setTextFileName(e.target.value)}
                     placeholder="e.g. Rental_Agreement_2024.txt"
-                    className="w-full bg-surface-container border-b border-outline-variant/30 focus:border-primary text-white py-3 px-4 rounded-t-xl outline-none transition-colors"
+                    className="w-full bg-surface-container border-b border-outline-variant/30 focus:border-primary text-on-surface py-3 px-4 rounded-t-xl outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -337,7 +336,7 @@ export default function UploadDocument() {
                     onChange={(e) => setPastedText(e.target.value)}
                     placeholder="Paste the full text of your legal document here…"
                     rows={14}
-                    className="w-full bg-surface-container-low border border-outline-variant/20 focus:border-primary text-white py-3 px-4 rounded-xl outline-none transition-colors resize-none font-mono text-sm leading-relaxed"
+                    className="w-full bg-surface-container-low border border-outline-variant/20 focus:border-primary text-on-surface py-3 px-4 rounded-xl outline-none transition-colors resize-none font-mono text-sm leading-relaxed"
                   />
                   <p className="text-xs text-on-surface-variant mt-1 text-right">
                     {pastedText.length.toLocaleString()} characters
@@ -390,18 +389,18 @@ export default function UploadDocument() {
           <motion.div variants={itemV} className="lg:col-span-5 space-y-5">
 
             {/* Analysis options */}
-            <div className="rounded-2xl p-6" style={{ background: 'rgba(12,28,73,0.55)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(16px)' }}>
-              <h4 className="font-headline font-bold text-white mb-6">Analysis Includes</h4>
+            <div className="card rounded-2xl p-6">
+              <h4 className="font-headline font-bold text-on-surface mb-6">Analysis Includes</h4>
               <div className="space-y-4">
                 {[
                   ['Risk Detection',         'Flag unfavorable clauses & liabilities'],
                   ['Plain Language Summary', 'Translate legalese into simple English'],
-                  ['Compliance Check',       'Indian law mandatory clause check'],
-                  ['Jurisdiction Detection', 'Auto-detect applicable Indian state law'],
+                  ['Compliance Check',       'Applicable law mandatory clause check'],
+                  ['Jurisdiction Detection', 'Auto-detect applicable jurisdiction'],
                 ].map(([title, sub]) => (
                   <div key={title} className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-white">{title}</p>
+                      <p className="text-sm font-semibold text-on-surface">{title}</p>
                       <p className="text-[12px] text-on-surface-variant">{sub}</p>
                     </div>
                     <div className="w-12 h-6 bg-primary rounded-full relative flex-shrink-0">
@@ -430,9 +429,10 @@ export default function UploadDocument() {
                 canSubmit ? 'text-on-primary' : 'text-on-surface-variant cursor-not-allowed'
               }`}
               style={canSubmit ? {
-                background: 'linear-gradient(135deg, #44e5c2, #38debb)',
-                boxShadow: '0 0 24px rgba(68,229,194,0.35), 0 4px 20px rgba(68,229,194,0.15)',
-              } : { background: 'rgba(24,39,83,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
+                background: 'var(--purple)',
+                boxShadow: '0 4px 20px rgba(124,58,237,0.25)',
+                color: '#fff',
+              } : { background: 'var(--elevated)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
             >
               {loading ? (
                 <>

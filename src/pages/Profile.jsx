@@ -34,7 +34,7 @@ function StatCard({ icon, label, value }) {
   return (
     <motion.div whileHover={{ y:-4, scale:1.03, boxShadow:'0 12px 30px rgba(0,0,0,0.25)' }} whileTap={{ scale:0.98 }}
       className="border border-white/5 rounded-2xl px-6 py-5 flex items-center gap-4"
-      style={{ background:'rgba(12,28,73,0.55)', backdropFilter:'blur(12px)' }}>
+      style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
       <motion.div whileHover={{ rotate:8 }}
         className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
         <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
@@ -49,7 +49,7 @@ function StatCard({ icon, label, value }) {
 
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 function formatRelative(d) {
   if (!d) return '—';
@@ -352,7 +352,7 @@ export default function Profile() {
 
         {/* ── Hero Card ─────────────────────────────────────── */}
         <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.6, ease:[0.22,1,0.36,1] }}
-          className="relative rounded-2xl overflow-hidden border border-white/5" style={{ background:'rgba(12,28,73,0.6)', backdropFilter:'blur(20px)' }}>
+          className="relative rounded-2xl overflow-hidden border border-white/5" style={{ background:'var(--surface)', backdropFilter:'blur(20px)' }}>
           <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-r from-[#0a1628] via-[#0d2040] to-[#003d30] pointer-events-none">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(0,201,167,0.18),transparent_70%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(0,151,167,0.12),transparent_70%)]" />
@@ -372,7 +372,7 @@ export default function Profile() {
                 </div>
                 {/* Camera overlay */}
                 <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
+                  <span className="material-symbols-outlined text-on-surface text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
                 </div>
                 {/* Edit badge */}
                 <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-primary flex items-center justify-center border-2 border-surface-container-low shadow">
@@ -619,7 +619,7 @@ export default function Profile() {
                     <p className="text-xs text-error font-semibold">Are you absolutely sure? This cannot be undone.</p>
                     <div className="flex gap-2">
                       <button onClick={() => setDeleteConfirm(false)} className="flex-1 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-xs font-bold hover:bg-white/5 transition-colors">Cancel</button>
-                      <button onClick={handleDeleteAccount} disabled={deleteLoading} className="flex-1 py-2 rounded-lg bg-error text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-1">
+                      <button onClick={handleDeleteAccount} disabled={deleteLoading} className="flex-1 py-2 rounded-lg bg-error text-on-surface text-xs font-bold hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-1">
                         {deleteLoading ? <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-sm">delete_forever</span>}
                         Yes, Delete
                       </button>

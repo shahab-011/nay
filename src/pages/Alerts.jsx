@@ -32,7 +32,7 @@ function timeAgo(dateStr) {
   if (h < 24)  return `${h}h ago`;
   const d = Math.floor(h / 24);
   if (d < 7)   return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
 export default function Alerts() {
@@ -177,7 +177,7 @@ export default function Alerts() {
                 className={`px-4 py-2 rounded-lg text-sm font-semibold font-headline transition-colors flex items-center gap-2 relative ${
                   filter === tab ? 'text-[#001a12]' : 'text-on-surface-variant hover:text-white border border-white/5'
                 }`}
-                style={filter === tab ? { background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 16px rgba(68,229,194,0.3)' } : { background:'rgba(12,28,73,0.5)' }}
+                style={filter === tab ? { background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 16px rgba(124,58,237,0.15)' } : { background:'var(--surface)' }}
               >
                 {tab}
                 {count > 0 && (
@@ -295,7 +295,7 @@ function AlertCard({ alert, onMarkRead, onDelete, onViewDoc }) {
       className={`group relative overflow-hidden rounded-xl p-6 cursor-pointer border-l-4 ${
         alert.isRead ? 'border-transparent' : meta.border
       }`}
-      style={{ background: alert.isRead ? 'rgba(12,28,73,0.35)' : undefined, backdropFilter:'blur(12px)', border:'1px solid rgba(255,255,255,0.05)', borderLeftWidth:'4px', borderLeftColor: alert.isRead ? 'transparent' : undefined }}
+      style={{ background: alert.isRead ? 'var(--surface)' : undefined, backdropFilter:'blur(12px)', border:'1px solid var(--border)', borderLeftWidth:'4px', borderLeftColor: alert.isRead ? 'transparent' : undefined }}
     >
       <div className="flex gap-5">
         {/* Icon */}

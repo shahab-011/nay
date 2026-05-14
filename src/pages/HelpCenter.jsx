@@ -43,12 +43,12 @@ const FAQS = [
   {
     cat: 'analysis',
     q: 'What are the four analysis tabs?',
-    a: 'Summary — key metadata and an AI-generated overview. Clauses — every extracted legal clause with a plain-English explanation and risk rating. Risks — detailed breakdown of all identified risks with recommendations. Compliance — checks for mandatory clauses, signature, valid dates, and Indian jurisdiction.',
+    a: 'Summary — key metadata and an AI-generated overview. Clauses — every extracted legal clause with a plain-English explanation and risk rating. Risks — detailed breakdown of all identified risks with recommendations. Compliance — checks for mandatory clauses, signature, valid dates, and applicable jurisdiction.',
   },
   {
     cat: 'analysis',
     q: 'How accurate is the AI analysis?',
-    a: 'NyayaAI uses Google Gemini and is designed for Indian legal documents. Each analysis includes a Confidence Score. When confidence is below 60%, a warning is shown — always verify low-confidence results with a qualified lawyer before acting on them.',
+    a: 'NyayaAI uses Google Gemini and is designed for legal documents worldwide. Each analysis includes a Confidence Score. When confidence is below 60%, a warning is shown — always verify low-confidence results with a qualified lawyer before acting on them.',
   },
   {
     cat: 'analysis',
@@ -151,7 +151,7 @@ export default function HelpCenter() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 border border-primary/20 mb-2">
               <span className="material-symbols-outlined text-3xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>help</span>
             </div>
-            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-white">
+            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">
               How can we help you?
             </h1>
             <p className="text-on-surface-variant text-sm max-w-md mx-auto">
@@ -282,7 +282,7 @@ export default function HelpCenter() {
           <div className="flex-1 min-w-0">
             <p className="font-headline font-bold text-on-surface text-sm">Still have questions?</p>
             <p className="text-xs text-on-surface-variant mt-0.5">
-              NyayaAI is built for Indian legal professionals. For feedback or issues, reach us at{' '}
+              Nyaya is built for legal professionals worldwide. For feedback or issues, reach us at{' '}
               <span className="text-primary font-semibold">support@nyayaai.in</span>
             </p>
           </div>

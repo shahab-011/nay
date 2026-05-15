@@ -62,9 +62,10 @@ export default function Register() {
 
   const [name,        setName]        = useState('');
   const [email,       setEmail]       = useState('');
+  const [firmName,    setFirmName]    = useState('');
+  const [phone,       setPhone]       = useState('');
   const [password,    setPassword]    = useState('');
   const [confirm,     setConfirm]     = useState('');
-  const [role,        setRole]        = useState('user');
   const [showPass,    setShowPass]    = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error,       setError]       = useState('');
@@ -75,12 +76,14 @@ export default function Register() {
     setError('');
     if (password.length < MIN_PASSWORD_LENGTH)
       return setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password))
+      return setError('Password needs an uppercase letter, a number, and a special character');
     if (password !== confirm)
       return setError('Passwords do not match');
     setIsLoading(true);
     try {
-      await register(name, email, password, role);
-      navigate('/');
+      await register({ name, email, password, firmName, phone });
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Error creating account');
     } finally {
@@ -148,7 +151,7 @@ export default function Register() {
 
             {/* Name */}
             <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={labelStyle}>Full Name</label>
+              <label style={labelStyle}>Your Full Name</label>
               <div style={{ position: 'relative' }}>
                 <I.User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input type="text" required autoComplete="name" value={name} onChange={e => setName(e.target.value)}
@@ -156,39 +159,23 @@ export default function Register() {
               </div>
             </motion.div>
 
-            {/* Email */}
+            {/* Firm Name */}
+            <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={labelStyle}>Law Firm / Practice Name</label>
+              <div style={{ position: 'relative' }}>
+                <I.Briefcase size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input type="text" autoComplete="organization" value={firmName} onChange={e => setFirmName(e.target.value)}
+                  placeholder="Acme Law Associates" style={{ ...inputStyle, paddingLeft: 42, paddingRight: 14 }} />
+              </div>
+            </motion.div>
+
+            {/* Email + Phone */}
             <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={labelStyle}>Email Address</label>
               <div style={{ position: 'relative' }}>
                 <I.Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com" style={{ ...inputStyle, paddingLeft: 42, paddingRight: 14 }} />
-              </div>
-            </motion.div>
-
-            {/* Role selector */}
-            <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={labelStyle}>Account Type</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {[
-                  { value: 'user',   Icon: I.User,      label: 'Individual', sub: 'Manage your own documents' },
-                  { value: 'lawyer', Icon: I.Briefcase, label: 'Legal Pro',  sub: 'Manage clients & cases'    },
-                ].map((opt) => (
-                  <motion.button key={opt.value} type="button" onClick={() => setRole(opt.value)}
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4,
-                      padding: 12, borderRadius: 12, textAlign: 'left', cursor: 'pointer',
-                      border: `1px solid ${role === opt.value ? 'var(--purple-mist)' : 'var(--border)'}`,
-                      background: role === opt.value ? 'var(--purple-soft)' : 'var(--elevated)',
-                      color: role === opt.value ? 'var(--purple)' : 'var(--text-muted)',
-                      transition: 'all 150ms',
-                    }}>
-                    <opt.Icon size={18} />
-                    <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-headline)', color: role === opt.value ? 'var(--purple-deep)' : 'var(--ink)' }}>{opt.label}</span>
-                    <span style={{ fontSize: 10, opacity: 0.6, lineHeight: 1.3 }}>{opt.sub}</span>
-                  </motion.button>
-                ))}
               </div>
             </motion.div>
 

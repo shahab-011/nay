@@ -147,6 +147,13 @@ export default function Login() {
               </div>
             </motion.div>
 
+            {/* Forgot password */}
+            <motion.div variants={staggerItem} style={{ textAlign: 'right', marginTop: -6 }}>
+              <Link to="/forgot-password" style={{ fontSize: 12, color: 'var(--purple)', fontWeight: 600, textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
+            </motion.div>
+
             {/* Submit */}
             <motion.button variants={staggerItem}
               type="submit" disabled={isLoading}

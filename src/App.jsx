@@ -20,8 +20,9 @@ import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
 import Login    from './pages/Login';
 import Register from './pages/Register';
 
-/* ── Section 1: Document Studio ── */
+/* ── Portal home + section entries ── */
 const PortalHome       = lazy(() => import('./pages/PortalHome'));
+const StudioHome       = lazy(() => import('./pages/StudioHome'));
 const UploadDocument   = lazy(() => import('./pages/UploadDocument'));
 const MyDocuments      = lazy(() => import('./pages/MyDocuments'));
 const Analysis         = lazy(() => import('./pages/Analysis'));
@@ -106,6 +107,7 @@ function App() {
                     <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
 
                     {/* ── Section 1: Document Studio ── */}
+                    <Route path="/studio"          element={<PrivateRoute><StudioHome /></PrivateRoute>} />
                     <Route path="/upload"          element={<PrivateRoute><UploadDocument /></PrivateRoute>} />
                     <Route path="/documents"       element={<PrivateRoute><MyDocuments /></PrivateRoute>} />
                     <Route path="/analysis/:docId" element={<PrivateRoute><Analysis /></PrivateRoute>} />

@@ -76,14 +76,64 @@ const FEATURES = [
     available: true,
   },
   {
-    icon: I.Doc,
+    icon: I.Target,
+    label: 'Lead Pipeline',
+    path: '/leads',
+    color: '#10B981',
+    bg: 'rgba(16,185,129,0.08)',
+    description: 'Track prospects from first contact to signed retainer. Kanban pipeline with conversion analytics.',
+    badges: ['Kanban', 'Win Rate', 'Convert to Matter'],
+    available: true,
+  },
+  {
+    icon: I.Shield,
+    label: 'Conflict Checker',
+    path: '/conflicts',
+    color: '#EF4444',
+    bg: 'rgba(239,68,68,0.08)',
+    description: 'Search across all matters and contacts to detect conflicts of interest before taking a new client.',
+    badges: ['Cross-Matter', 'Instant Report', 'Export'],
+    available: true,
+  },
+  {
+    icon: I.Layers,
     label: 'Document Automation',
     path: '/doc-automation',
     color: '#06B6D4',
     bg: 'rgba(6,182,212,0.08)',
-    description: 'Build templates with smart fields, generate documents in one click.',
-    badges: ['Templates', 'Auto-fill', 'E-Sign'],
-    available: false,
+    description: 'Build templates with smart fields, fill and generate any document in seconds.',
+    badges: ['Templates', 'Smart Fields', 'Download'],
+    available: true,
+  },
+  {
+    icon: I.PenTool,
+    label: 'E-Signatures',
+    path: '/esign',
+    color: '#6366F1',
+    bg: 'rgba(99,102,241,0.08)',
+    description: 'Send documents for electronic signature and track signing progress with full audit trail.',
+    badges: ['Multi-Signatory', 'Audit Trail', 'Reminders'],
+    available: true,
+  },
+  {
+    icon: I.MessageSquare,
+    label: 'Communications',
+    path: '/communications',
+    color: '#3B82F6',
+    bg: 'rgba(59,130,246,0.08)',
+    description: 'Log all client calls, emails, and meetings. Link communications to matters for a complete record.',
+    badges: ['Call Log', 'Email Log', 'Matter Link'],
+    available: true,
+  },
+  {
+    icon: I.Settings,
+    label: 'Firm Settings',
+    path: '/firm-settings',
+    color: '#374151',
+    bg: 'rgba(55,65,81,0.08)',
+    description: 'Manage firm profile, team members, billing defaults, and notification preferences.',
+    badges: ['Team', 'Billing', 'Notifications'],
+    available: true,
   },
 ];
 
@@ -264,7 +314,7 @@ export default function PracticeHub() {
         {/* Coming soon divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
-          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Coming in Phase 2 & 3</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Coming Soon — Phase 4 & 5</span>
           <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
         </div>
 

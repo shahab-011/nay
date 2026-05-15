@@ -52,6 +52,15 @@ const LawyerDashboard  = lazy(() => import('./pages/LawyerDashboard'));
 const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
 const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
 
+/* ── Phase 3: Remaining Clio features ── */
+const DocAutomation   = lazy(() => import('./pages/DocAutomation'));
+const LeadPipeline    = lazy(() => import('./pages/LeadPipeline'));
+const ConflictChecker = lazy(() => import('./pages/ConflictChecker'));
+const FirmSettings    = lazy(() => import('./pages/FirmSettings'));
+const ESign           = lazy(() => import('./pages/ESign'));
+const Communications  = lazy(() => import('./pages/Communications'));
+const ClientPortal    = lazy(() => import('./pages/ClientPortal'));
+
 /* ── Loading spinner ── */
 function PageLoader() {
   return (
@@ -135,6 +144,18 @@ function App() {
                     <Route path="/time"         element={<RoleRoute roles={['lawyer','admin']}><TimeTracking /></RoleRoute>} />
                     <Route path="/billing"      element={<RoleRoute roles={['lawyer','admin']}><Billing /></RoleRoute>} />
                     <Route path="/reports"      element={<RoleRoute roles={['lawyer','admin']}><Reports /></RoleRoute>} />
+
+                    {/* ── Phase 3: Remaining Clio features ── */}
+                    <Route path="/doc-automation"  element={<RoleRoute roles={['lawyer','admin']}><DocAutomation /></RoleRoute>} />
+                    <Route path="/leads"           element={<RoleRoute roles={['lawyer','admin']}><LeadPipeline /></RoleRoute>} />
+                    <Route path="/conflicts"       element={<RoleRoute roles={['lawyer','admin']}><ConflictChecker /></RoleRoute>} />
+                    <Route path="/firm-settings"   element={<RoleRoute roles={['lawyer','admin']}><FirmSettings /></RoleRoute>} />
+                    <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin']}><ESign /></RoleRoute>} />
+                    <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin']}><Communications /></RoleRoute>} />
+
+                    {/* ── Client Portal (public, token-based) ── */}
+                    <Route path="/client-portal/:token" element={<ClientPortal />} />
+                    <Route path="/client-portal"        element={<ClientPortal />} />
 
                     {/* ── Section 3: Legal Marketplace ── */}
                     <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />

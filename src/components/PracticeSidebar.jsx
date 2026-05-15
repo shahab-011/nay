@@ -15,15 +15,18 @@ const NAV = [
   {
     sec: 'MATTERS',
     items: [
-      { label: 'All Matters',   path: '/matters',   Ic: I.Briefcase },
-      { label: 'Contacts',      path: '/contacts',  Ic: I.Users },
+      { label: 'All Matters',     path: '/matters',   Ic: I.Briefcase },
+      { label: 'Contacts',        path: '/contacts',  Ic: I.Users },
+      { label: 'Lead Pipeline',   path: '/leads',     Ic: I.Target },
+      { label: 'Conflict Check',  path: '/conflicts', Ic: I.Shield },
     ],
   },
   {
     sec: 'WORK',
     items: [
-      { label: 'Tasks',         path: '/tasks',     Ic: I.CheckSquare },
-      { label: 'Calendar',      path: '/cal',       Ic: I.Calendar },
+      { label: 'Tasks',           path: '/tasks',          Ic: I.CheckSquare },
+      { label: 'Calendar',        path: '/cal',            Ic: I.Calendar },
+      { label: 'Communications',  path: '/communications', Ic: I.MessageSquare },
     ],
   },
   {
@@ -31,6 +34,13 @@ const NAV = [
     items: [
       { label: 'Time Tracking', path: '/time',      Ic: I.Timer },
       { label: 'Invoices',      path: '/billing',   Ic: I.DollarSign },
+    ],
+  },
+  {
+    sec: 'DOCUMENTS',
+    items: [
+      { label: 'Doc Automation',  path: '/doc-automation', Ic: I.Layers },
+      { label: 'E-Signatures',    path: '/esign',          Ic: I.PenTool },
     ],
   },
   {
@@ -44,8 +54,9 @@ const NAV = [
 const LAWYER_SECTION = {
   sec: 'FIRM',
   items: [
-    { label: 'Lawyer Dashboard', path: '/lawyer',       Ic: I.Scale },
-    { label: 'Client Links',     path: '/client-links', Ic: I.Users },
+    { label: 'Lawyer Dashboard', path: '/lawyer',         Ic: I.Scale },
+    { label: 'Client Links',     path: '/client-links',   Ic: I.Users },
+    { label: 'Firm Settings',    path: '/firm-settings',  Ic: I.Settings },
   ],
 };
 
@@ -236,6 +247,8 @@ function PracticeMobileBar({ onOpen }) {
     '/practice': 'Practice Hub', '/matters': 'Matters', '/contacts': 'Contacts',
     '/tasks': 'Tasks', '/cal': 'Calendar', '/time': 'Time Tracking', '/billing': 'Invoices',
     '/lawyer': 'Lawyer Dashboard', '/reports': 'Reports & Analytics',
+    '/doc-automation': 'Doc Automation', '/leads': 'Lead Pipeline', '/conflicts': 'Conflict Check',
+    '/firm-settings': 'Firm Settings', '/esign': 'E-Signatures', '/communications': 'Communications',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

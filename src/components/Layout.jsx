@@ -23,6 +23,7 @@ function isNoSidebarPath(pathname) {
     '/', '/landing', '/intake', '/find-lawyer',
   ].includes(pathname)) return true;
   if (pathname.startsWith('/marketplace')) return true;
+  if (pathname.startsWith('/client-portal')) return true;
   return false;
 }
 
@@ -30,6 +31,8 @@ function isNoSidebarPath(pathname) {
 const PRACTICE_ROOTS = [
   '/practice', '/matters', '/contacts', '/tasks',
   '/cal', '/time', '/billing', '/lawyer', '/reports',
+  '/doc-automation', '/leads', '/conflicts', '/firm-settings',
+  '/esign', '/communications',
 ];
 function isPracticePath(pathname) {
   return PRACTICE_ROOTS.some(root =>

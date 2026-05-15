@@ -37,11 +37,14 @@ const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
 const About            = lazy(() => import('./pages/About'));
 
 /* ── Section 2: Practice Management (lawyer/admin) ── */
-const PracticeHub  = lazy(() => import('./pages/PracticeHub'));
-const Matters      = lazy(() => import('./pages/Matters'));
-const Contacts     = lazy(() => import('./pages/Contacts'));
-const Tasks        = lazy(() => import('./pages/Tasks'));
-const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+const PracticeHub   = lazy(() => import('./pages/PracticeHub'));
+const Matters       = lazy(() => import('./pages/Matters'));
+const Contacts      = lazy(() => import('./pages/Contacts'));
+const Tasks         = lazy(() => import('./pages/Tasks'));
+const CalendarPage  = lazy(() => import('./pages/CalendarPage'));
+const TimeTracking  = lazy(() => import('./pages/TimeTracking'));
+const Billing       = lazy(() => import('./pages/Billing'));
+const Reports       = lazy(() => import('./pages/Reports'));
 
 /* ── Section 3: Legal Marketplace ── */
 const FindLawyer       = lazy(() => import('./pages/FindLawyer'));
@@ -129,6 +132,9 @@ function App() {
                     <Route path="/contacts/:id" element={<RoleRoute roles={['lawyer','admin']}><Contacts /></RoleRoute>} />
                     <Route path="/tasks"        element={<RoleRoute roles={['lawyer','admin']}><Tasks /></RoleRoute>} />
                     <Route path="/cal"          element={<RoleRoute roles={['lawyer','admin']}><CalendarPage /></RoleRoute>} />
+                    <Route path="/time"         element={<RoleRoute roles={['lawyer','admin']}><TimeTracking /></RoleRoute>} />
+                    <Route path="/billing"      element={<RoleRoute roles={['lawyer','admin']}><Billing /></RoleRoute>} />
+                    <Route path="/reports"      element={<RoleRoute roles={['lawyer','admin']}><Reports /></RoleRoute>} />
 
                     {/* ── Section 3: Legal Marketplace ── */}
                     <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />

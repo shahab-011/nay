@@ -29,7 +29,7 @@ function isNoSidebarPath(pathname) {
 // Practice management section — gets PracticeSidebar
 const PRACTICE_ROOTS = [
   '/practice', '/matters', '/contacts', '/tasks',
-  '/cal', '/time', '/billing', '/lawyer',
+  '/cal', '/time', '/billing', '/lawyer', '/reports',
 ];
 function isPracticePath(pathname) {
   return PRACTICE_ROOTS.some(root =>

@@ -33,6 +33,12 @@ const NAV = [
       { label: 'Invoices',      path: '/billing',   Ic: I.DollarSign },
     ],
   },
+  {
+    sec: 'REPORTS',
+    items: [
+      { label: 'Reports & Analytics', path: '/reports', Ic: I.Chart },
+    ],
+  },
 ];
 
 const LAWYER_SECTION = {
@@ -229,7 +235,7 @@ function PracticeMobileBar({ onOpen }) {
   const labels = {
     '/practice': 'Practice Hub', '/matters': 'Matters', '/contacts': 'Contacts',
     '/tasks': 'Tasks', '/cal': 'Calendar', '/time': 'Time Tracking', '/billing': 'Invoices',
-    '/lawyer': 'Lawyer Dashboard',
+    '/lawyer': 'Lawyer Dashboard', '/reports': 'Reports & Analytics',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

@@ -7,55 +7,37 @@ import { useAlertCount } from '../context/AlertContext';
 import { useMobileMenu } from '../context/MobileMenuContext';
 import { I } from './Icons';
 
-/* ─── Nav structure ───────────────────────────────────────────── */
-
-const SECTION_1 = [
+/* ─── Document Studio nav items only ─────────────────────────── */
+const STUDIO_NAV = [
+  { sec: 'DOCUMENTS' },
   { name: 'Upload Document',    path: '/upload',         Ic: I.Upload },
   { name: 'My Documents',       path: '/documents',      Ic: I.Folder },
+  { sec: 'AI TOOLS' },
   { name: 'Ask AI',             path: '/ask',            Ic: I.MessageCircle },
   { name: 'Compare Documents',  path: '/compare',        Ic: I.Copy },
-  { name: 'Contract Lifecycle', path: '/lifecycle',      Ic: I.Clock },
   { name: 'Obligation Web',     path: '/obligation-web', Ic: I.Network },
+  { sec: 'MONITORING' },
+  { name: 'Contract Lifecycle', path: '/lifecycle',      Ic: I.Clock },
   { name: 'Alerts',             path: '/alerts',         Ic: I.Bell, badge: true },
   { name: 'Client Links',       path: '/client-links',   Ic: I.Users },
 ];
 
-const SECTION_2 = [
-  { name: 'Practice Hub',   path: '/practice', Ic: I.Scale },
-];
-
-const SECTION_3 = [
-  { name: 'Find a Lawyer',  path: '/find-lawyer', Ic: I.Search },
-  { name: 'Marketplace',    path: '/marketplace', Ic: I.Star },
-];
-
-const SECTION_3_LAWYER = [
-  { name: 'Find a Lawyer',     path: '/find-lawyer', Ic: I.Search },
-  { name: 'Lawyer Dashboard',  path: '/lawyer',      Ic: I.Briefcase },
-  { name: 'Marketplace',       path: '/marketplace', Ic: I.Star },
-];
-
 const MOBILE_TABS = [
-  { name: 'Home',     path: '/',         Ic: I.Home,        end: true },
-  { name: 'Docs',     path: '/documents',Ic: I.Folder },
-  { name: 'Ask AI',   path: '/ask',      Ic: I.MessageCircle },
-  { name: 'Lawyer',   path: '/find-lawyer', Ic: I.Scale },
+  { name: 'Home',   path: '/',         Ic: I.Home,          end: true },
+  { name: 'Docs',   path: '/documents',Ic: I.Folder },
+  { name: 'Ask AI', path: '/ask',      Ic: I.MessageCircle },
+  { name: 'Alerts', path: '/alerts',   Ic: I.Bell, badge: true },
 ];
 
-/* ─── Section header ──────────────────────────────────────────── */
-function SecHeader({ icon: Ic, label, color }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '16px 14px 5px' }}>
-      <div style={{ width: 18, height: 18, borderRadius: 5, background: color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Ic size={11} style={{ color }} />
-      </div>
-      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.11em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{label}</span>
-    </div>
-  );
-}
-
-/* ─── Single nav link ─────────────────────────────────────────── */
+/* ─── Single link ─────────────────────────────────────────────── */
 function NavItem({ item, onClick, unread }) {
+  if (item.sec) {
+    return (
+      <div style={{ padding: '14px 14px 4px', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+        {item.sec}
+      </div>
+    );
+  }
   return (
     <NavLink
       to={item.path}
@@ -78,16 +60,13 @@ function NavItem({ item, onClick, unread }) {
   );
 }
 
-/* ─── Sidebar content (shared desktop + mobile drawer) ────────── */
+/* ─── Sidebar content (shared desktop + drawer) ───────────────── */
 function SidebarContent({ onItemClick }) {
   const navigate = useNavigate();
   const { user }   = useAuth();
   const { isPrivate, togglePrivacy } = usePrivacy();
   const { unreadCount: unread } = useAlertCount();
-  const isLawyer  = user?.role === 'lawyer' || user?.role === 'admin';
-  const initial   = user?.name ? user.name[0].toUpperCase() : '?';
-
-  const section3 = isLawyer ? SECTION_3_LAWYER : SECTION_3;
+  const initial = user?.name ? user.name[0].toUpperCase() : '?';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -111,46 +90,32 @@ function SidebarContent({ onItemClick }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name || 'User'}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{isPrivate ? '🔒 Private' : user?.role || 'user'}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{isPrivate ? '🔒 Private' : (user?.role || 'user')}</div>
           </div>
         </div>
       </div>
 
-      {/* Home link */}
+      {/* Home */}
       <div style={{ padding: '4px 8px 0' }}>
-        <NavItem item={{ name: 'Home', path: '/', Ic: I.Home }} onClick={onItemClick} unread={0} />
+        <NavLink to="/" end onClick={onItemClick} style={{ textDecoration: 'none', display: 'block', padding: '1px 0' }}>
+          {({ isActive }) => (
+            <div className={`sidebar-item ${isActive ? 'active' : ''}`}>
+              <I.Home size={15} />
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>Home</span>
+            </div>
+          )}
+        </NavLink>
       </div>
 
-      {/* Scrollable nav */}
+      {/* Studio nav */}
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
-
-        {/* ── SECTION 1: Document Studio ── */}
-        <SecHeader icon={I.Doc} label="Document Studio" color="#7C3AED" />
-        {SECTION_1.map(item => (
-          <NavItem key={item.path} item={item} onClick={onItemClick} unread={unread} />
+        {STUDIO_NAV.map((item, i) => (
+          <NavItem key={item.sec || item.path} item={item} onClick={onItemClick} unread={unread} />
         ))}
-
-        {/* ── SECTION 2: Practice Management (lawyer/admin) ── */}
-        {isLawyer && (
-          <>
-            <SecHeader icon={I.Briefcase} label="Practice Management" color="#0EA5E9" />
-            {SECTION_2.map(item => (
-              <NavItem key={item.path} item={item} onClick={onItemClick} unread={0} />
-            ))}
-          </>
-        )}
-
-        {/* ── SECTION 3: Legal Marketplace ── */}
-        <SecHeader icon={I.Scale} label="Find a Lawyer" color="#10B981" />
-        {section3.map(item => (
-          <NavItem key={item.path} item={item} onClick={onItemClick} unread={0} />
-        ))}
-
       </div>
 
-      {/* Bottom actions */}
+      {/* Bottom */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '10px 10px 12px', flexShrink: 0 }}>
-        {/* Upload CTA */}
         <button
           onClick={() => { navigate('/upload'); onItemClick?.(); }}
           className="btn btn-purple"
@@ -159,7 +124,6 @@ function SidebarContent({ onItemClick }) {
           <I.Plus size={14} /> New Analysis
         </button>
 
-        {/* Privacy */}
         <button
           onClick={togglePrivacy}
           style={{
@@ -176,11 +140,10 @@ function SidebarContent({ onItemClick }) {
           {isPrivate && <span className="pill pill-purple" style={{ fontSize: 9, padding: '2px 6px' }}>ON</span>}
         </button>
 
-        {/* Profile + Settings */}
         <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
           {[
             { path: '/profile', Ic: I.User, label: 'Profile' },
-            { path: '/help', Ic: I.Info, label: 'Help' },
+            { path: '/help',    Ic: I.Info, label: 'Help' },
           ].map(b => (
             <NavLink key={b.path} to={b.path} onClick={onItemClick} style={{ flex: 1, textDecoration: 'none' }}>
               {({ isActive }) => (
@@ -201,14 +164,14 @@ function SidebarContent({ onItemClick }) {
   );
 }
 
-/* ─── Sidebar ─────────────────────────────────────────────────── */
+/* ─── Exported Sidebar ────────────────────────────────────────── */
 export default function Sidebar() {
   const { isOpen, open, close } = useMobileMenu();
-  const { unreadCount: unread } = useAlertCount();
+  const { unreadCount: unread }  = useAlertCount();
 
   return (
     <>
-      {/* ── DESKTOP ─── */}
+      {/* Desktop */}
       <aside className="hidden md:flex" style={{
         position: 'fixed', left: 0, top: 0, height: '100vh', width: 236,
         zIndex: 50, flexDirection: 'column',
@@ -218,7 +181,7 @@ export default function Sidebar() {
         <SidebarContent />
       </aside>
 
-      {/* ── MOBILE OVERLAY ── */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -231,14 +194,12 @@ export default function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* ── MOBILE DRAWER ── */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            initial={{ x: -280, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -280, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: 'fixed', top: 0, left: 0, height: '100vh', width: 280,
               zIndex: 70, background: 'var(--surface)', borderRight: '1px solid var(--border)',
@@ -251,16 +212,13 @@ export default function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* ── MOBILE BOTTOM TAB BAR ── */}
-      <nav
-        className="md:hidden"
-        style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, height: 60,
-          display: 'flex', alignItems: 'stretch',
-          background: 'var(--surface)', borderTop: '1px solid var(--border)',
-          boxShadow: '0 -4px 20px rgba(11,11,20,0.06)',
-        }}
-      >
+      {/* Mobile bottom tab bar */}
+      <nav className="md:hidden" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, height: 60,
+        display: 'flex', alignItems: 'stretch',
+        background: 'var(--surface)', borderTop: '1px solid var(--border)',
+        boxShadow: '0 -4px 20px rgba(11,11,20,0.06)',
+      }}>
         {MOBILE_TABS.map(tab => (
           <NavLink key={tab.path} to={tab.path} end={tab.end} style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
             {({ isActive }) => (
@@ -269,19 +227,21 @@ export default function Sidebar() {
                 alignItems: 'center', justifyContent: 'center', gap: 3,
                 color: isActive ? 'var(--purple)' : 'var(--text-muted)', position: 'relative',
               }}>
-                {isActive && (
-                  <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 28, height: 2, borderRadius: '0 0 2px 2px', background: 'var(--purple)' }} />
-                )}
-                <tab.Ic size={20} />
+                {isActive && <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 28, height: 2, borderRadius: '0 0 2px 2px', background: 'var(--purple)' }} />}
+                <div style={{ position: 'relative' }}>
+                  <tab.Ic size={20} />
+                  {tab.badge && unread > 0 && (
+                    <span style={{ position: 'absolute', top: -4, right: -6, background: 'var(--red)', color: '#fff', fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 6, minWidth: 14, textAlign: 'center' }}>
+                      {unread > 9 ? '9+' : unread}
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{tab.name}</span>
               </div>
             )}
           </NavLink>
         ))}
-        <button
-          onClick={open}
-          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
-        >
+        <button onClick={open} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
           <I.Menu size={20} />
           <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>More</span>
         </button>

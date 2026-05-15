@@ -39,6 +39,7 @@ const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
 const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
 
 /* ── Practice management pages (lawyer/admin) ── */
+const PracticeHub  = lazy(() => import('./pages/PracticeHub'));
 const Matters      = lazy(() => import('./pages/Matters'));
 const Contacts     = lazy(() => import('./pages/Contacts'));
 const Tasks        = lazy(() => import('./pages/Tasks'));
@@ -124,7 +125,8 @@ function App() {
                     <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
                     <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
 
-                    {/* ── Practice management (lawyer/admin) ── */}
+                    {/* ── Practice management hub + sub-pages (lawyer/admin) ── */}
+                    <Route path="/practice"    element={<RoleRoute roles={['lawyer','admin']}><PracticeHub /></RoleRoute>} />
                     <Route path="/matters"     element={<RoleRoute roles={['lawyer','admin']}><Matters /></RoleRoute>} />
                     <Route path="/matters/:id" element={<RoleRoute roles={['lawyer','admin']}><Matters /></RoleRoute>} />
                     <Route path="/contacts"    element={<RoleRoute roles={['lawyer','admin']}><Contacts /></RoleRoute>} />

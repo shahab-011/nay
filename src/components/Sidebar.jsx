@@ -28,18 +28,6 @@ const BOTTOM_ITEMS = [
   { name: 'Help',        path: '/help',        Ic: I.Info },
 ];
 
-const PRACTICE_ITEMS = [
-  { name: 'Matters',      path: '/matters',  Ic: I.Briefcase },
-  { name: 'Contacts',     path: '/contacts', Ic: I.Users },
-  { name: 'Tasks',        path: '/tasks',    Ic: I.CheckSquare },
-  { name: 'Calendar',     path: '/cal',      Ic: I.Calendar },
-];
-
-const REVENUE_ITEMS = [
-  { name: 'Time Tracking', path: '/time',    Ic: I.Timer },
-  { name: 'Billing',       path: '/billing', Ic: I.DollarSign },
-];
-
 const LAWYER_ITEMS = [
   { name: 'Lawyer Dashboard', path: '/lawyer',       Ic: I.Briefcase },
   { name: 'Client Links',     path: '/client-links', Ic: I.Users },
@@ -137,20 +125,22 @@ export default function Sidebar() {
         {isLawyer && (
           <>
             <div style={{ padding: '14px 12px 4px', fontSize: 10, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-              PRACTICE
-            </div>
-            {PRACTICE_ITEMS.map(item => (
-              <SidebarLink key={item.path} item={item} onClick={onItemClick} unread={0} />
-            ))}
-            <div style={{ padding: '14px 12px 4px', fontSize: 10, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-              REVENUE
-            </div>
-            {REVENUE_ITEMS.map(item => (
-              <SidebarLink key={item.path} item={item} onClick={onItemClick} unread={0} />
-            ))}
-            <div style={{ padding: '14px 12px 4px', fontSize: 10, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
               LEGAL PRO
             </div>
+            {/* Single entry point to all practice management features */}
+            <NavLink to="/practice" style={{ textDecoration: 'none', display: 'block' }} onClick={onItemClick}>
+              {({ isActive }) => (
+                <div className={`sidebar-item ${isActive ? 'active' : ''}`} style={{ margin: '2px 8px', borderRadius: 10 }}>
+                  <I.Scale size={16} />
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>Practice Management</span>
+                  <span style={{
+                    fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 20,
+                    background: 'rgba(124,58,237,0.1)', color: 'var(--purple)',
+                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                  }}>New</span>
+                </div>
+              )}
+            </NavLink>
             {LAWYER_ITEMS.map(item => (
               <SidebarLink key={item.path} item={item} onClick={onItemClick} unread={0} />
             ))}

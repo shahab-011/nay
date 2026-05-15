@@ -38,6 +38,12 @@ const LawyerDashboard  = lazy(() => import('./pages/LawyerDashboard'));
 const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
 const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
 
+/* ── Practice management pages (lawyer/admin) ── */
+const Matters      = lazy(() => import('./pages/Matters'));
+const Contacts     = lazy(() => import('./pages/Contacts'));
+const Tasks        = lazy(() => import('./pages/Tasks'));
+const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+
 /* ── Page-level loading fallback ── */
 function PageLoader() {
   return (
@@ -117,6 +123,14 @@ function App() {
                     <Route path="/obligation-web"  element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
                     <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
                     <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
+
+                    {/* ── Practice management (lawyer/admin) ── */}
+                    <Route path="/matters"     element={<RoleRoute roles={['lawyer','admin']}><Matters /></RoleRoute>} />
+                    <Route path="/matters/:id" element={<RoleRoute roles={['lawyer','admin']}><Matters /></RoleRoute>} />
+                    <Route path="/contacts"    element={<RoleRoute roles={['lawyer','admin']}><Contacts /></RoleRoute>} />
+                    <Route path="/contacts/:id" element={<RoleRoute roles={['lawyer','admin']}><Contacts /></RoleRoute>} />
+                    <Route path="/tasks"       element={<RoleRoute roles={['lawyer','admin']}><Tasks /></RoleRoute>} />
+                    <Route path="/cal"         element={<RoleRoute roles={['lawyer','admin']}><CalendarPage /></RoleRoute>} />
 
                     {/* ── Lawyer-only pages ── */}
                     <Route

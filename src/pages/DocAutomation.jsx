@@ -1,123 +1,31 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
+import { templatesApi } from '../api/templates.api';
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 function extractFields(content) {
-  const m = content.match(/\{\{(\w+)\}\}/g) || [];
+  const m = (content || '').match(/\{\{(\w+)\}\}/g) || [];
   return [...new Set(m.map(s => s.replace(/\{\{|\}\}/g, '')))];
 }
 function fieldLabel(k) {
   return k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 function fillTemplate(content, vals) {
-  return content.replace(/\{\{(\w+)\}\}/g, (_, k) => vals[k] || `[${fieldLabel(k)}]`);
+  return (content || '').replace(/\{\{(\w+)\}\}/g, (_, k) => vals[k] || `[${fieldLabel(k)}]`);
 }
-
-/* ─── seed data ───────────────────────────────────────────────── */
-const SEED = [
-  {
-    id: 1, name: 'Non-Disclosure Agreement', category: 'NDA',
-    description: 'Standard bilateral NDA for business relationships.',
-    content: `NON-DISCLOSURE AGREEMENT
-
-This Agreement is entered into as of {{effective_date}} between {{disclosing_party}} ("Disclosing Party") and {{receiving_party}} ("Receiving Party").
-
-1. CONFIDENTIAL INFORMATION means any data proprietary to the Disclosing Party.
-2. The Receiving Party shall hold all Confidential Information in strict confidence for {{duration_years}} years.
-3. Governing law: {{jurisdiction}}.
-
-__________________________          __________________________
-{{disclosing_party}}                {{receiving_party}}`,
-  },
-  {
-    id: 2, name: 'Client Retainer Agreement', category: 'Retainer',
-    description: 'Standard retainer for legal services.',
-    content: `RETAINER AGREEMENT — {{date}}
-
-Client: {{client_name}}
-Firm:   {{firm_name}} (Attorney: {{attorney_name}})
-
-SCOPE: {{matter_description}}
-
-FEES: ${{hourly_rate}}/hr. Initial retainer: ${{retainer_amount}}.
-
-__________________________
-{{client_name}} (Client)
-
-__________________________
-{{attorney_name}}, {{firm_name}}`,
-  },
-  {
-    id: 3, name: 'Employment Offer Letter', category: 'Employment',
-    description: 'Formal offer letter with compensation and start date.',
-    content: `OFFER OF EMPLOYMENT
-
-Dear {{candidate_name}},
-
-We are pleased to offer you the position of {{position}} in {{department}} at {{company_name}}, reporting to {{manager_name}}.
-
-Start Date: {{start_date}}
-Salary: ${{salary}}/year
-
-Sincerely,
-{{manager_name}}, {{company_name}}
-
-__________________________
-{{candidate_name}} — Accepted`,
-  },
-  {
-    id: 4, name: 'Commercial Lease Agreement', category: 'Lease',
-    description: 'Short-form commercial property lease.',
-    content: `COMMERCIAL LEASE
-
-Landlord: {{landlord_name}}
-Tenant:   {{tenant_name}}
-Premises: {{property_address}}
-Term:     {{lease_start}} to {{lease_end}}
-Rent:     ${{monthly_rent}}/month
-Deposit:  ${{security_deposit}}`,
-  },
-  {
-    id: 5, name: 'Settlement Agreement', category: 'Settlement',
-    description: 'Full and final settlement of dispute.',
-    content: `SETTLEMENT AGREEMENT AND RELEASE
-
-Case No. {{case_number}} — {{court_name}}
-
-Plaintiff: {{plaintiff_name}}
-Defendant: {{defendant_name}}
-
-Settlement Amount: ${{settlement_amount}}, due {{payment_date}}.
-Upon receipt, Plaintiff releases all related claims.
-
-__________________________          __________________________
-{{plaintiff_name}}                  {{defendant_name}}`,
-  },
-  {
-    id: 6, name: 'Independent Contractor Agreement', category: 'Corporate',
-    description: 'Contractor services agreement with IP assignment.',
-    content: `INDEPENDENT CONTRACTOR AGREEMENT — {{date}}
-
-Client:     {{client_company}}
-Contractor: {{contractor_name}}
-
-SERVICES: {{services_description}}
-RATE:     ${{rate}} per {{rate_unit}}
-TERM:     {{start_date}} to {{end_date}}
-
-All work product is assigned to {{client_company}}.
-
-__________________________          __________________________
-{{client_company}}                  {{contractor_name}}`,
-  },
-];
 
 const CATS = ['All', 'NDA', 'Retainer', 'Employment', 'Lease', 'Settlement', 'Corporate', 'Custom'];
 const CAT_COLOR = {
   NDA: '#7C3AED', Retainer: '#3B82F6', Employment: '#10B981',
   Lease: '#F59E0B', Settlement: '#EF4444', Corporate: '#8B5CF6', Custom: '#6B7280',
 };
+
+/* ─── Shared styles ───────────────────────────────────────────── */
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
+const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
+const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
 
 /* ─── TemplateCard ────────────────────────────────────────────── */
 function TemplateCard({ t, onUse, onEdit, onDelete }) {
@@ -130,11 +38,7 @@ function TemplateCard({ t, onUse, onEdit, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.10)' }}
-      style={{
-        background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB',
-        padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 12,
-        cursor: 'default', boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-      }}
+      style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB', padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'default', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ width: 42, height: 42, borderRadius: 11, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -161,7 +65,7 @@ function TemplateCard({ t, onUse, onEdit, onDelete }) {
         <button onClick={() => onEdit(t)} style={{ padding: '8px 12px', borderRadius: 8, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
           <I.Edit size={13} />
         </button>
-        <button onClick={() => onDelete(t.id)} style={{ padding: '8px 12px', borderRadius: 8, background: '#FEF2F2', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: 12 }}>
+        <button onClick={() => onDelete(t._id)} style={{ padding: '8px 12px', borderRadius: 8, background: '#FEF2F2', color: '#EF4444', border: 'none', cursor: 'pointer', fontSize: 12 }}>
           <I.X size={13} />
         </button>
       </div>
@@ -172,8 +76,20 @@ function TemplateCard({ t, onUse, onEdit, onDelete }) {
 /* ─── TemplateModal (new / edit) ──────────────────────────────── */
 function TemplateModal({ template, onClose, onSave }) {
   const [form, setForm] = useState(template || { name: '', category: 'Custom', description: '', content: '' });
+  const [saving, setSaving] = useState(false);
   const fields = useMemo(() => extractFields(form.content), [form.content]);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function save() {
+    if (!form.name || !form.content) return;
+    setSaving(true);
+    try {
+      await onSave(form);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(11,11,20,0.55)', backdropFilter: 'blur(4px)' }}>
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
@@ -219,7 +135,9 @@ function TemplateModal({ template, onClose, onSave }) {
         )}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnGhost}>Cancel</button>
-          <button onClick={() => { if (form.name && form.content) onSave(form); }} style={btnPurple}>Save Template</button>
+          <button onClick={save} disabled={saving} style={{ ...btnPurple, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Saving…' : 'Save Template'}
+          </button>
         </div>
       </motion.div>
     </div>
@@ -231,15 +149,26 @@ function GenerateModal({ template, onClose, onGenerate }) {
   const fields = useMemo(() => extractFields(template.content), [template]);
   const [vals, setVals] = useState({});
   const [preview, setPreview] = useState(false);
-  const filled = fillTemplate(template.content, vals);
+  const [generating, setGenerating] = useState(false);
+  const localFilled = fillTemplate(template.content, vals);
 
-  function download() {
-    const blob = new Blob([filled], { type: 'text/plain' });
+  async function download() {
+    setGenerating(true);
+    let content = localFilled;
+    try {
+      const res = await templatesApi.generate(template._id, vals);
+      content = res.data.data?.generatedContent || localFilled;
+    } catch {
+      // fallback to local fill
+    } finally {
+      setGenerating(false);
+    }
+    const blob = new Blob([content], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${template.name.replace(/\s+/g, '_')}.txt`;
     a.click();
-    onGenerate({ template: template.name, date: new Date().toLocaleDateString(), content: filled });
+    onGenerate({ template: template.name, date: new Date().toLocaleDateString(), content });
     onClose();
   }
 
@@ -270,13 +199,17 @@ function GenerateModal({ template, onClose, onGenerate }) {
             ))}
           </div>
         ) : (
-          <pre style={{ background: '#F9FAFB', borderRadius: 10, padding: 18, fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: 1.7, maxHeight: 380, overflowY: 'auto', border: '1px solid #E5E7EB' }}>{filled}</pre>
+          <pre style={{ background: '#F9FAFB', borderRadius: 10, padding: 18, fontSize: 12, fontFamily: 'monospace', whiteSpace: 'pre-wrap', lineHeight: 1.7, maxHeight: 380, overflowY: 'auto', border: '1px solid #E5E7EB' }}>{localFilled}</pre>
         )}
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 22 }}>
           <button onClick={onClose} style={btnGhost}>Cancel</button>
-          <button onClick={() => setPreview(true)} style={{ ...btnGhost, display: preview ? 'none' : undefined }}>Preview →</button>
-          {preview && <button onClick={download} style={btnPurple}><I.Download size={14} /> Download .txt</button>}
+          {!preview && <button onClick={() => setPreview(true)} style={btnGhost}>Preview →</button>}
+          {preview && (
+            <button onClick={download} disabled={generating} style={{ ...btnPurple, opacity: generating ? 0.7 : 1 }}>
+              <I.Download size={14} /> {generating ? 'Generating…' : 'Download .txt'}
+            </button>
+          )}
         </div>
       </motion.div>
     </div>
@@ -311,15 +244,10 @@ function GeneratedList({ docs, onDownload }) {
   );
 }
 
-/* ─── Shared styles ───────────────────────────────────────────── */
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
-const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
-const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
-const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
-
 /* ─── Main page ───────────────────────────────────────────────── */
 export default function DocAutomation() {
-  const [templates, setTemplates] = useState(SEED);
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [generated, setGenerated] = useState([]);
   const [tab, setTab] = useState('templates');
   const [cat, setCat] = useState('All');
@@ -328,18 +256,48 @@ export default function DocAutomation() {
   const [editTpl, setEditTpl] = useState(null);
   const [genTpl, setGenTpl] = useState(null);
 
+  const load = useCallback(async () => {
+    try {
+      const res = await templatesApi.list();
+      setTemplates(res.data.data || []);
+    } catch (e) {
+      console.error('Failed to load templates:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
   const filtered = templates.filter(t =>
     (cat === 'All' || t.category === cat) &&
-    (t.name.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase()))
+    ((t.name || '').toLowerCase().includes(search.toLowerCase()) || (t.description || '').toLowerCase().includes(search.toLowerCase()))
   );
 
-  function saveTemplate(form) {
-    if (editTpl) {
-      setTemplates(ts => ts.map(t => t.id === editTpl.id ? { ...t, ...form } : t));
-      setEditTpl(null);
-    } else {
-      setTemplates(ts => [...ts, { ...form, id: Date.now() }]);
-      setShowNew(false);
+  async function saveTemplate(form) {
+    try {
+      if (editTpl) {
+        const res = await templatesApi.update(editTpl._id, form);
+        setTemplates(ts => ts.map(t => t._id === editTpl._id ? (res.data.data || { ...t, ...form }) : t));
+        setEditTpl(null);
+      } else {
+        const res = await templatesApi.create(form);
+        setTemplates(ts => [res.data.data, ...ts]);
+        setShowNew(false);
+      }
+    } catch (e) {
+      console.error('Failed to save template:', e);
+      throw e;
+    }
+  }
+
+  async function deleteTemplate(id) {
+    const prev = templates;
+    setTemplates(ts => ts.filter(t => t._id !== id));
+    try {
+      await templatesApi.remove(id);
+    } catch {
+      setTemplates(prev);
     }
   }
 
@@ -347,7 +305,7 @@ export default function DocAutomation() {
     const blob = new Blob([d.content], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${d.template.replace(/\s+/g, '_')}.txt`;
+    a.download = `${(d.template || 'document').replace(/\s+/g, '_')}.txt`;
     a.click();
   }
 
@@ -395,19 +353,24 @@ export default function DocAutomation() {
               </div>
             </div>
 
-            {/* Template grid */}
-            <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-              <AnimatePresence>
-                {filtered.map(t => (
-                  <TemplateCard key={t.id} t={t} onUse={setGenTpl} onEdit={setEditTpl} onDelete={id => setTemplates(ts => ts.filter(t => t.id !== id))} />
-                ))}
-              </AnimatePresence>
-            </motion.div>
-            {!filtered.length && (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9CA3AF' }}>
-                <I.Layers size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
-                <p style={{ margin: 0 }}>No templates found</p>
-              </div>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9CA3AF', fontSize: 14 }}>Loading templates…</div>
+            ) : (
+              <>
+                <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                  <AnimatePresence>
+                    {filtered.map(t => (
+                      <TemplateCard key={t._id} t={t} onUse={setGenTpl} onEdit={setEditTpl} onDelete={deleteTemplate} />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+                {!filtered.length && (
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9CA3AF' }}>
+                    <I.Layers size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
+                    <p style={{ margin: 0 }}>No templates found</p>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

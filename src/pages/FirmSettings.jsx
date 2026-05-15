@@ -1,37 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { I } from '../components/Icons';
-
-/* ─── Initial state ───────────────────────────────────────────── */
-const INIT_FIRM = {
-  name: 'Nyaya Law Associates', address: '42 Justice Avenue, F-7/2, Islamabad',
-  phone: '+92 51 1234567', email: 'info@nyayalaw.pk', website: 'www.nyayalaw.pk',
-  barNumber: 'ISB-LAW-2019-0042', jurisdiction: 'Islamabad High Court',
-  taxId: '1234567-8', description: 'Full-service law firm specializing in corporate, family, and criminal law.',
-};
-
-const INIT_TEAM = [
-  { id: 1, name: 'Adnan Mirza', email: 'adnan@nyayalaw.pk', role: 'admin', status: 'active', joined: '2022-01-15' },
-  { id: 2, name: 'Sadia Farooq', email: 'sadia@nyayalaw.pk', role: 'lawyer', status: 'active', joined: '2022-06-01' },
-  { id: 3, name: 'Kamran Ali', email: 'kamran@nyayalaw.pk', role: 'lawyer', status: 'active', joined: '2023-03-10' },
-  { id: 4, name: 'Aisha Qureshi', email: 'aisha@nyayalaw.pk', role: 'paralegal', status: 'active', joined: '2023-09-20' },
-  { id: 5, name: 'Tariq Zaman', email: 'tariq@nyayalaw.pk', role: 'lawyer', status: 'inactive', joined: '2021-11-05' },
-];
-
-const INIT_BILLING = {
-  currency: 'PKR', defaultRate: '15000', taxRate: '16', invoicePrefix: 'INV',
-  paymentTerms: '30', lateFeePercent: '1.5', trustAccountBank: 'Meezan Bank — IBAN PK36MEZN',
-};
-
-const INIT_NOTIFS = {
-  newLead: true, matterUpdate: true, invoicePaid: true, taskDue: true,
-  appointmentReminder: true, documentShared: false, systemUpdates: false, weeklyReport: true,
-};
+import { firmApi } from '../api/firm.api';
 
 const ROLES = ['admin', 'lawyer', 'paralegal', 'client', 'viewer'];
 const ROLE_COLOR = { admin: '#7C3AED', lawyer: '#3B82F6', paralegal: '#10B981', client: '#F59E0B', viewer: '#9CA3AF' };
 
-/* ─── Shared styles ───────────────────────────────────────────── */
 const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
 const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
 const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
@@ -40,11 +14,20 @@ const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', 
 /* ─── Firm Profile tab ────────────────────────────────────────── */
 function FirmProfile({ firm, setFirm }) {
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const set = (k, v) => setFirm(f => ({ ...f, [k]: v }));
 
-  function save() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function save() {
+    setSaving(true);
+    try {
+      await firmApi.updateSettings(firm);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      console.error('Failed to save firm settings:', e);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -62,8 +45,8 @@ function FirmProfile({ firm, setFirm }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={save} style={btnPurple}>
-          {saved ? <><I.Check size={14} /> Saved!</> : 'Save Changes'}
+        <button onClick={save} disabled={saving} style={{ ...btnPurple, opacity: saving ? 0.7 : 1 }}>
+          {saved ? <><I.Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
     </div>
@@ -71,19 +54,50 @@ function FirmProfile({ firm, setFirm }) {
 }
 
 /* ─── Team Members tab ────────────────────────────────────────── */
-function TeamMembers({ team, setTeam }) {
+function TeamMembers() {
+  const [team, setTeam] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [invite, setInvite] = useState({ name: '', email: '', role: 'lawyer' });
 
-  function sendInvite() {
+  useEffect(() => {
+    firmApi.listTeam()
+      .then(res => setTeam(res.data.data || []))
+      .catch(e => console.error('Failed to load team:', e))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function sendInvite() {
     if (!invite.email || !invite.name) return;
-    setTeam(t => [...t, { ...invite, id: Date.now(), status: 'pending', joined: new Date().toISOString().slice(0, 10) }]);
-    setInvite({ name: '', email: '', role: 'lawyer' });
-    setShowInvite(false);
+    try {
+      const res = await firmApi.inviteMember(invite);
+      setTeam(t => [...t, res.data.data]);
+      setInvite({ name: '', email: '', role: 'lawyer' });
+      setShowInvite(false);
+    } catch (e) {
+      console.error('Failed to invite member:', e);
+    }
   }
 
-  function toggleStatus(id) {
-    setTeam(t => t.map(m => m.id === id ? { ...m, status: m.status === 'active' ? 'inactive' : 'active' } : m));
+  async function toggleStatus(memberId) {
+    const prev = team;
+    setTeam(t => t.map(m => m._id === memberId ? { ...m, status: m.status === 'active' ? 'inactive' : 'active' } : m));
+    try {
+      await firmApi.toggleMember(memberId);
+    } catch {
+      setTeam(prev);
+    }
+  }
+
+  async function removeMember(memberId) {
+    if (!window.confirm('Remove this team member?')) return;
+    const prev = team;
+    setTeam(t => t.filter(m => m._id !== memberId));
+    try {
+      await firmApi.removeMember(memberId);
+    } catch {
+      setTeam(prev);
+    }
   }
 
   return (
@@ -117,40 +131,54 @@ function TeamMembers({ team, setTeam }) {
       )}
 
       <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-              {['Name', 'Email', 'Role', 'Joined', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {team.map((m, i) => (
-              <tr key={m.id} style={{ borderBottom: i < team.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <td style={{ padding: '13px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: ROLE_COLOR[m.role] + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: ROLE_COLOR[m.role] }}>{m.name[0]}</div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{m.name}</span>
-                  </div>
-                </td>
-                <td style={{ padding: '13px 16px', fontSize: 13, color: '#6B7280' }}>{m.email}</td>
-                <td style={{ padding: '13px 16px' }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: ROLE_COLOR[m.role] + '18', color: ROLE_COLOR[m.role], textTransform: 'capitalize' }}>{m.role}</span>
-                </td>
-                <td style={{ padding: '13px 16px', fontSize: 12, color: '#9CA3AF' }}>{m.joined}</td>
-                <td style={{ padding: '13px 16px' }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: m.status === 'active' ? '#ECFDF5' : m.status === 'pending' ? '#FFF7ED' : '#F3F4F6', color: m.status === 'active' ? '#059669' : m.status === 'pending' ? '#D97706' : '#6B7280' }}>{m.status}</span>
-                </td>
-                <td style={{ padding: '13px 16px' }}>
-                  <button onClick={() => toggleStatus(m.id)} style={{ padding: '5px 12px', borderRadius: 7, border: '1.5px solid #E5E7EB', background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
-                    {m.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </button>
-                </td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontSize: 14 }}>Loading team…</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                {['Name', 'Email', 'Role', 'Joined', 'Status', 'Actions'].map(h => (
+                  <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {team.map((m, i) => (
+                <tr key={m._id} style={{ borderBottom: i < team.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                  <td style={{ padding: '13px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: (ROLE_COLOR[m.role] || '#9CA3AF') + '20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: ROLE_COLOR[m.role] || '#9CA3AF' }}>{(m.name || '?')[0]}</div>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{m.name}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '13px 16px', fontSize: 13, color: '#6B7280' }}>{m.email}</td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: (ROLE_COLOR[m.role] || '#9CA3AF') + '18', color: ROLE_COLOR[m.role] || '#9CA3AF', textTransform: 'capitalize' }}>{m.role}</span>
+                  </td>
+                  <td style={{ padding: '13px 16px', fontSize: 12, color: '#9CA3AF' }}>
+                    {m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : m.joined || '—'}
+                  </td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: m.status === 'active' ? '#ECFDF5' : m.status === 'pending' ? '#FFF7ED' : '#F3F4F6', color: m.status === 'active' ? '#059669' : m.status === 'pending' ? '#D97706' : '#6B7280' }}>{m.status}</span>
+                  </td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => toggleStatus(m._id)} style={{ padding: '5px 12px', borderRadius: 7, border: '1.5px solid #E5E7EB', background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
+                        {m.status === 'active' ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button onClick={() => removeMember(m._id)} style={{ padding: '5px 10px', borderRadius: 7, border: '1.5px solid #FECDD3', background: '#FFF1F2', color: '#DC2626', cursor: 'pointer', fontSize: 11 }}>
+                        <I.X size={12} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {!loading && !team.length && (
+          <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF', fontSize: 14 }}>No team members yet. Invite someone above.</div>
+        )}
       </div>
     </div>
   );
@@ -159,6 +187,7 @@ function TeamMembers({ team, setTeam }) {
 /* ─── Billing Config tab ──────────────────────────────────────── */
 function BillingConfig({ billing, setBilling }) {
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const set = (k, v) => setBilling(b => ({ ...b, [k]: v }));
   const fields = [
     ['currency', 'Currency', ['PKR', 'USD', 'GBP', 'EUR', 'AED']],
@@ -169,6 +198,20 @@ function BillingConfig({ billing, setBilling }) {
     ['lateFeePercent', 'Late Fee (% per month)'],
     ['trustAccountBank', 'Trust Account Bank Details'],
   ];
+
+  async function save() {
+    setSaving(true);
+    try {
+      await firmApi.updateBilling(billing);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      console.error('Failed to save billing settings:', e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div style={{ maxWidth: 600 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
@@ -185,8 +228,8 @@ function BillingConfig({ billing, setBilling }) {
           </div>
         ))}
       </div>
-      <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }} style={btnPurple}>
-        {saved ? <><I.Check size={14} /> Saved!</> : 'Save Billing Settings'}
+      <button onClick={save} disabled={saving} style={{ ...btnPurple, opacity: saving ? 0.7 : 1 }}>
+        {saved ? <><I.Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Billing Settings'}
       </button>
     </div>
   );
@@ -194,6 +237,8 @@ function BillingConfig({ billing, setBilling }) {
 
 /* ─── Notifications tab ───────────────────────────────────────── */
 function Notifications({ notifs, setNotifs }) {
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const toggle = k => setNotifs(n => ({ ...n, [k]: !n[k] }));
   const items = [
     ['newLead', 'New Lead Submitted', 'Get notified when a new intake form is submitted'],
@@ -205,9 +250,23 @@ function Notifications({ notifs, setNotifs }) {
     ['weeklyReport', 'Weekly Performance Report', 'Receive a weekly summary of firm activity'],
     ['systemUpdates', 'System Updates', 'Product news and feature announcements'],
   ];
+
+  async function save() {
+    setSaving(true);
+    try {
+      await firmApi.updateNotifications(notifs);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) {
+      console.error('Failed to save notification settings:', e);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div style={{ maxWidth: 600 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 0, background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0, background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', overflow: 'hidden', marginBottom: 16 }}>
         {items.map(([key, title, desc], i) => (
           <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', borderBottom: i < items.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
             <div style={{ flex: 1 }}>
@@ -223,6 +282,9 @@ function Notifications({ notifs, setNotifs }) {
           </div>
         ))}
       </div>
+      <button onClick={save} disabled={saving} style={{ ...btnPurple, opacity: saving ? 0.7 : 1 }}>
+        {saved ? <><I.Check size={14} /> Saved!</> : saving ? 'Saving…' : 'Save Preferences'}
+      </button>
     </div>
   );
 }
@@ -237,10 +299,26 @@ const TABS = [
 
 export default function FirmSettings() {
   const [tab, setTab] = useState('profile');
-  const [firm, setFirm] = useState(INIT_FIRM);
-  const [team, setTeam] = useState(INIT_TEAM);
-  const [billing, setBilling] = useState(INIT_BILLING);
-  const [notifs, setNotifs] = useState(INIT_NOTIFS);
+  const [firm, setFirm] = useState({});
+  const [billing, setBilling] = useState({});
+  const [notifs, setNotifs] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    firmApi.getSettings()
+      .then(res => {
+        const d = res.data.data || {};
+        setFirm({
+          name: d.name || '', email: d.email || '', phone: d.phone || '',
+          website: d.website || '', barNumber: d.barNumber || '', jurisdiction: d.jurisdiction || '',
+          taxId: d.taxId || '', address: d.address || '', description: d.description || '',
+        });
+        setBilling(d.billing || { currency: 'PKR', defaultRate: '', taxRate: '', invoicePrefix: 'INV', paymentTerms: '30', lateFeePercent: '', trustAccountBank: '' });
+        setNotifs(d.notifications || { newLead: true, matterUpdate: true, invoicePaid: true, taskDue: true, appointmentReminder: true, documentShared: false, systemUpdates: false, weeklyReport: true });
+      })
+      .catch(e => console.error('Failed to load firm settings:', e))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
@@ -268,13 +346,16 @@ export default function FirmSettings() {
           ))}
         </div>
 
-        {/* Content */}
-        <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          {tab === 'profile'       && <FirmProfile firm={firm} setFirm={setFirm} />}
-          {tab === 'team'          && <TeamMembers team={team} setTeam={setTeam} />}
-          {tab === 'billing'       && <BillingConfig billing={billing} setBilling={setBilling} />}
-          {tab === 'notifications' && <Notifications notifs={notifs} setNotifs={setNotifs} />}
-        </motion.div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF', fontSize: 14 }}>Loading settings…</div>
+        ) : (
+          <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            {tab === 'profile'       && <FirmProfile firm={firm} setFirm={setFirm} />}
+            {tab === 'team'          && <TeamMembers />}
+            {tab === 'billing'       && <BillingConfig billing={billing} setBilling={setBilling} />}
+            {tab === 'notifications' && <Notifications notifs={notifs} setNotifs={setNotifs} />}
+          </motion.div>
+        )}
       </div>
     </div>
   );

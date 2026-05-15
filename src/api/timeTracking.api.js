@@ -9,6 +9,6 @@ export const timeApi = {
 
   // Active timer
   startTimer:  (data) => api.post('/timers', data),
-  stopTimer:   (id, data) => api.patch(`/timers/${id}/stop`, data),
-  activeTimer: () => api.get('/timers/active'),
+  stopTimer:   (id, data) => api.post(`/timers/${id}/stop`, data),
+  activeTimer: () => api.get('/timers'),
 };

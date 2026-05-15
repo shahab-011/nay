@@ -12,6 +12,8 @@ export const mattersApi = {
   addNote:    (id, data) => api.post(`/matters/${id}/notes`, data),
   deleteNote: (id, noteId) => api.delete(`/matters/${id}/notes/${noteId}`),
 
-  stages: () => api.get('/matter-stages'),
-  practiceAreas: () => api.get('/practice-areas'),
+  stages: () => api.get('/matters/matter-stages'),
+  practiceAreas: () => api.get('/matters/practice-areas'),
+  taskTemplates: () => api.get('/matters/task-templates'),
+  applyTemplate: (id, data) => api.post(`/matters/${id}/apply-template`, data),
 };

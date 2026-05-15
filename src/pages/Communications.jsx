@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
+import { communicationsApi } from '../api/communications.api';
+import { mattersApi } from '../api/matters.api';
 
 const TYPE_META = {
   Call:    { icon: I.Phone,         color: '#3B82F6', bg: '#EFF6FF' },
@@ -9,28 +11,33 @@ const TYPE_META = {
   Note:    { icon: I.MessageSquare, color: '#F59E0B', bg: '#FFF7ED' },
 };
 
-const MATTERS = ['All Matters', 'M-2024-001 — Al-Rashid v. Hassan', 'M-2024-002 — Khan Corp', 'M-2024-003 — Malik Property', 'M-2024-005 — Hussain Defense', 'Internal'];
-
-const SEED = [
-  { id: 1, type: 'Call', direction: 'Inbound', contact: 'Ahmed Al-Rashid', matter: 'M-2024-001 — Al-Rashid v. Hassan', date: '2026-05-14', time: '10:30', duration: '22 min', summary: 'Client called to discuss next court date. Requested update on discovery documents. Advised to gather bank statements from 2023.', attorney: 'Adnan Mirza' },
-  { id: 2, type: 'Email', direction: 'Outbound', contact: 'Sarah Khan', matter: 'M-2024-002 — Khan Corp', date: '2026-05-13', time: '15:00', duration: '', summary: 'Sent draft shareholder agreement for review. Requested feedback by May 20. CC\'d opposing counsel.', attorney: 'Sadia Farooq' },
-  { id: 3, type: 'Meeting', direction: 'Outbound', contact: 'Farhan Malik', matter: 'M-2024-003 — Malik Property', date: '2026-05-12', time: '14:00', duration: '1 hr 15 min', summary: 'In-person consultation at office. Client presented land registry documents. Agreed to file injunction by end of week.', attorney: 'Kamran Ali' },
-  { id: 4, type: 'Note', direction: 'Inbound', contact: 'Internal', matter: 'M-2024-005 — Hussain Defense', date: '2026-05-12', time: '09:15', duration: '', summary: 'Court confirmed hearing rescheduled to June 10. Need to notify client and prepare witnesses.', attorney: 'Adnan Mirza' },
-  { id: 5, type: 'Call', direction: 'Outbound', contact: 'Opposing Counsel — Habib Shah', matter: 'M-2024-001 — Al-Rashid v. Hassan', date: '2026-05-10', time: '11:00', duration: '8 min', summary: 'Brief call to confirm receipt of motion. Counsel agreed to 7-day extension for filing response.', attorney: 'Adnan Mirza' },
-  { id: 6, type: 'Email', direction: 'Inbound', contact: 'Bilal Hussain', matter: 'M-2024-005 — Hussain Defense', date: '2026-05-09', time: '18:45', duration: '', summary: 'Client sent additional financial records requested last week. 12 attachments received. Forwarded to forensic accountant.', attorney: 'Kamran Ali' },
-  { id: 7, type: 'Meeting', direction: 'Inbound', contact: 'FBR Officer — Asif Shah', matter: 'M-2024-005 — Hussain Defense', date: '2026-05-07', time: '10:00', duration: '45 min', summary: 'Meeting with FBR investigator at their office. Presented exculpatory evidence. Officer indicated timeline for decision by June.', attorney: 'Adnan Mirza' },
-];
-
-/* ─── Shared styles ───────────────────────────────────────────── */
 const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
 const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
 const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
 const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
 
 /* ─── Log Entry Modal ─────────────────────────────────────────── */
-function LogModal({ onClose, onSave }) {
-  const [form, setForm] = useState({ type: 'Call', direction: 'Inbound', contact: '', matter: MATTERS[1], date: new Date().toISOString().slice(0, 10), time: '', duration: '', summary: '', attorney: '' });
+function LogModal({ onClose, onSave, matters }) {
+  const [form, setForm] = useState({
+    type: 'Call', direction: 'Inbound', contact: '', matterId: '',
+    date: new Date().toISOString().slice(0, 10), time: '',
+    duration: '', summary: '', attorney: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const submit = async () => {
+    if (!form.contact || !form.summary) { setErr('Contact and summary are required'); return; }
+    setSaving(true);
+    try {
+      const r = await communicationsApi.create(form);
+      onSave(r.data.data || r.data);
+      onClose();
+    } catch (e) {
+      setErr(e.response?.data?.message || 'Failed to save');
+    } finally { setSaving(false); }
+  };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(11,11,20,0.55)', backdropFilter: 'blur(4px)' }}>
@@ -39,8 +46,8 @@ function LogModal({ onClose, onSave }) {
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>Log Communication</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={20} /></button>
         </div>
+        {err && <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '10px 14px', borderRadius: 9, fontSize: 13, marginBottom: 14 }}>{err}</div>}
 
-        {/* Type selector */}
         <div style={{ marginBottom: 14 }}>
           <label style={lbl}>Type</label>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -56,8 +63,7 @@ function LogModal({ onClose, onSave }) {
           <div>
             <label style={lbl}>Direction</label>
             <select value={form.direction} onChange={e => set('direction', e.target.value)} style={inp}>
-              <option>Inbound</option>
-              <option>Outbound</option>
+              <option>Inbound</option><option>Outbound</option>
             </select>
           </div>
           <div>
@@ -73,7 +79,7 @@ function LogModal({ onClose, onSave }) {
             <input type="time" value={form.time} onChange={e => set('time', e.target.value)} style={inp} />
           </div>
           <div>
-            <label style={lbl}>Duration (if applicable)</label>
+            <label style={lbl}>Duration</label>
             <input value={form.duration} onChange={e => set('duration', e.target.value)} style={inp} placeholder="e.g. 30 min" />
           </div>
           <div>
@@ -82,8 +88,9 @@ function LogModal({ onClose, onSave }) {
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
             <label style={lbl}>Linked Matter</label>
-            <select value={form.matter} onChange={e => set('matter', e.target.value)} style={inp}>
-              {MATTERS.slice(1).map(m => <option key={m}>{m}</option>)}
+            <select value={form.matterId} onChange={e => set('matterId', e.target.value)} style={inp}>
+              <option value="">— No matter —</option>
+              {matters.map(m => <option key={m._id} value={m._id}>{m.matterNumber} — {m.title}</option>)}
             </select>
           </div>
         </div>
@@ -93,7 +100,9 @@ function LogModal({ onClose, onSave }) {
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnGhost}>Cancel</button>
-          <button onClick={() => { if (form.contact && form.summary) { onSave({ ...form, id: Date.now() }); onClose(); } }} style={btnPurple}><I.Check size={14} /> Save Entry</button>
+          <button onClick={submit} disabled={saving} style={{ ...btnPurple, opacity: saving ? 0.7 : 1 }}>
+            <I.Check size={14} /> {saving ? 'Saving…' : 'Save Entry'}
+          </button>
         </div>
       </motion.div>
     </div>
@@ -102,13 +111,13 @@ function LogModal({ onClose, onSave }) {
 
 /* ─── Entry card ──────────────────────────────────────────────── */
 function EntryCard({ entry, onDelete }) {
-  const meta = TYPE_META[entry.type];
+  const meta = TYPE_META[entry.type] || TYPE_META.Note;
+  const matterLabel = entry.matterId?.matterNumber
+    ? `${entry.matterId.matterNumber} — ${entry.matterId.title}`
+    : entry.matterId?.title || '';
+
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
+    <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
       style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '16px 18px', display: 'flex', gap: 16 }}
     >
       <div style={{ width: 42, height: 42, borderRadius: 12, background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -122,14 +131,16 @@ function EntryCard({ entry, onDelete }) {
               <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: meta.bg, color: meta.color }}>{entry.type}</span>
               <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: entry.direction === 'Inbound' ? '#EFF6FF' : '#F0FDF4', color: entry.direction === 'Inbound' ? '#1D4ED8' : '#15803D' }}>{entry.direction}</span>
             </div>
-            <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 3 }}>{entry.matter}</div>
+            {matterLabel && <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 3 }}>{matterLabel}</div>}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{entry.date} {entry.time}</div>
-              {entry.duration && <div style={{ fontSize: 11, color: '#9CA3AF' }}>{entry.duration}</div>}
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{entry.date?.slice(0, 10)} {entry.time}</div>
+              {entry.duration && <div style={{ fontSize: 11, color: '#9CA3AF' }}>{entry.duration} min</div>}
             </div>
-            <button onClick={() => onDelete(entry.id)} style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid #E5E7EB', background: '#fff', color: '#9CA3AF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><I.X size={12} /></button>
+            <button onClick={() => onDelete(entry._id)} style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid #E5E7EB', background: '#fff', color: '#9CA3AF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <I.X size={12} />
+            </button>
           </div>
         </div>
         <div style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.55 }}>{entry.summary}</div>
@@ -141,22 +152,46 @@ function EntryCard({ entry, onDelete }) {
 
 /* ─── Main ────────────────────────────────────────────────────── */
 export default function Communications() {
-  const [entries, setEntries] = useState(SEED);
+  const [entries, setEntries] = useState([]);
+  const [matters, setMatters] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('All');
-  const [matterFilter, setMatterFilter] = useState('All Matters');
   const [search, setSearch] = useState('');
   const [showLog, setShowLog] = useState(false);
 
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [commsRes, mattersRes] = await Promise.all([
+        communicationsApi.list({ limit: 200 }),
+        mattersApi.list({ limit: 200 }),
+      ]);
+      const commsBody = commsRes.data.data || commsRes.data;
+      setEntries(commsBody.logs || commsBody || []);
+      const mattersBody = mattersRes.data.data || mattersRes.data;
+      setMatters(mattersBody.matters || mattersBody || []);
+    } catch { /* empty */ } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleDelete = async (id) => {
+    setEntries(es => es.filter(e => e._id !== id));
+    try { await communicationsApi.remove(id); } catch { load(); }
+  };
+
   const filtered = useMemo(() => entries.filter(e =>
     (typeFilter === 'All' || e.type === typeFilter) &&
-    (matterFilter === 'All Matters' || e.matter === matterFilter) &&
-    (e.contact.toLowerCase().includes(search.toLowerCase()) || e.summary.toLowerCase().includes(search.toLowerCase()))
-  ), [entries, typeFilter, matterFilter, search]);
+    (e.contact?.toLowerCase().includes(search.toLowerCase()) || e.summary?.toLowerCase().includes(search.toLowerCase()))
+  ), [entries, typeFilter, search]);
 
-  // Group by date
   const grouped = useMemo(() => {
     const map = {};
-    filtered.forEach(e => { if (!map[e.date]) map[e.date] = []; map[e.date].push(e); });
+    filtered.forEach(e => {
+      const day = (e.date || e.createdAt || '').slice(0, 10);
+      if (!map[day]) map[day] = [];
+      map[day].push(e);
+    });
     return Object.entries(map).sort(([a], [b]) => b.localeCompare(a));
   }, [filtered]);
 
@@ -171,7 +206,6 @@ export default function Communications() {
     <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '32px 24px 60px' }}>
 
-        {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -213,13 +247,14 @@ export default function Communications() {
               <button key={t} onClick={() => setTypeFilter(t)} style={{ padding: '7px 14px', borderRadius: 20, border: '1.5px solid', borderColor: typeFilter === t ? '#7C3AED' : '#E5E7EB', background: typeFilter === t ? '#EDE9FE' : '#fff', color: typeFilter === t ? '#7C3AED' : '#6B7280', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>{t}</button>
             ))}
           </div>
-          <select value={matterFilter} onChange={e => setMatterFilter(e.target.value)} style={{ ...inp, width: 'auto', minWidth: 180 }}>
-            {MATTERS.map(m => <option key={m}>{m}</option>)}
-          </select>
         </div>
 
         {/* Timeline */}
-        {grouped.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9CA3AF' }}>
+            <div style={{ width: 28, height: 28, border: '3px solid #EDE9FE', borderTopColor: '#7C3AED', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto' }} />
+          </div>
+        ) : grouped.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9CA3AF' }}>
             <I.MessageSquare size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
             <p style={{ margin: 0, fontSize: 14 }}>No communications found</p>
@@ -228,14 +263,13 @@ export default function Communications() {
           grouped.map(([date, dayEntries]) => (
             <div key={date} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 12, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <I.Calendar size={13} /> {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                <I.Calendar size={13} />
+                {date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Unknown date'}
                 <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <AnimatePresence>
-                  {dayEntries.map(e => (
-                    <EntryCard key={e.id} entry={e} onDelete={id => setEntries(es => es.filter(x => x.id !== id))} />
-                  ))}
+                  {dayEntries.map(e => <EntryCard key={e._id} entry={e} onDelete={handleDelete} />)}
                 </AnimatePresence>
               </div>
             </div>
@@ -243,7 +277,7 @@ export default function Communications() {
         )}
       </div>
 
-      {showLog && <LogModal onClose={() => setShowLog(false)} onSave={e => setEntries(es => [e, ...es])} />}
+      {showLog && <LogModal onClose={() => setShowLog(false)} matters={matters} onSave={e => setEntries(es => [e, ...es])} />}
     </div>
   );
 }

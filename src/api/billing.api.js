@@ -15,8 +15,9 @@ export const billingApi = {
   createPaymentLink: (invoiceId) => api.post(`/invoices/${invoiceId}/payment-link`),
 
   // Trust
-  listTrustAccounts:  ()     => api.get('/trust-accounts'),
-  trustDeposit:       (data) => api.post('/trust-deposits', data),
-  trustTransfer:      (data) => api.post('/trust-transfers', data),
+  listTrustAccounts:  ()               => api.get('/trust-accounts'),
+  trustDeposit:       (accountId, data) => api.post(`/trust-accounts/${accountId}/deposit`, data),
+  trustTransfer:      (accountId, data) => api.post(`/trust-accounts/${accountId}/transfer`, data),
   reconciliation:     (accountId, params) => api.get(`/trust-accounts/${accountId}/reconciliation`, { params }),
+  listTransactions:   (accountId, params) => api.get(`/trust-accounts/${accountId}/transactions`, { params }),
 };

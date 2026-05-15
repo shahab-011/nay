@@ -1,74 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
-
-/* ─── Mock data for conflict checking ────────────────────────── */
-const MOCK_CONTACTS = [
-  { id: 1, name: 'Ahmed Al-Rashid', role: 'Client', matter: 'Al-Rashid v. Hassan — Family', phone: '+92 300 1234567', email: 'ahmed@email.com' },
-  { id: 2, name: 'Hassan Al-Rashid', role: 'Opposing Party', matter: 'Al-Rashid v. Hassan — Family', phone: '+92 321 1111111', email: 'hassan@email.com' },
-  { id: 3, name: 'Sarah Khan', role: 'Client', matter: 'Khan Corp Restructuring', phone: '+92 321 9876543', email: 'sarah@corp.pk' },
-  { id: 4, name: 'Khan Industries Ltd', role: 'Opposing Party', matter: 'Malik v. Khan Industries', phone: '+92 51 8887766', email: 'legal@khan.pk' },
-  { id: 5, name: 'Farhan Malik', role: 'Client', matter: 'Malik Property Dispute', phone: '+92 333 5551234', email: 'farhan@gmail.com' },
-  { id: 6, name: 'Bilal Hussain', role: 'Client', matter: 'Hussain Fraud Defense', phone: '+92 311 2223344', email: 'bilal@email.com' },
-  { id: 7, name: 'Hussain & Sons', role: 'Witness', matter: 'Commercial Lease Dispute', phone: '+92 42 5559999', email: 'info@hussain.pk' },
-  { id: 8, name: 'Nadia Sheikh', role: 'Client', matter: 'Sheikh IP Registration', phone: '+92 322 6667788', email: 'nadia@tech.com' },
-  { id: 9, name: 'Sheikh Law Associates', role: 'Opposing Counsel', matter: 'Property Rights Case', phone: '+92 51 1234567', email: 'info@sheikh-law.pk' },
-];
-
-const MOCK_MATTERS = [
-  { id: 1, title: 'Al-Rashid v. Hassan — Family Proceedings', number: 'M-2024-001', client: 'Ahmed Al-Rashid', parties: ['Ahmed Al-Rashid', 'Hassan Al-Rashid'], status: 'Active' },
-  { id: 2, title: 'Khan Corp Restructuring', number: 'M-2024-002', client: 'Sarah Khan', parties: ['Sarah Khan', 'Khan Industries Ltd'], status: 'Active' },
-  { id: 3, title: 'Malik Property Dispute', number: 'M-2024-003', client: 'Farhan Malik', parties: ['Farhan Malik', 'City Council'], status: 'Active' },
-  { id: 4, title: 'Malik v. Khan Industries', number: 'M-2024-004', client: 'Farhan Malik', parties: ['Farhan Malik', 'Khan Industries Ltd'], status: 'Active' },
-  { id: 5, title: 'Hussain Fraud Defense', number: 'M-2024-005', client: 'Bilal Hussain', parties: ['Bilal Hussain', 'Federal Board of Revenue'], status: 'Active' },
-  { id: 6, title: 'Sheikh IP Registration', number: 'M-2024-006', client: 'Nadia Sheikh', parties: ['Nadia Sheikh'], status: 'Closed' },
-];
-
-function normalize(s) { return s.toLowerCase().trim(); }
-
-function runCheck(query) {
-  if (!query || query.length < 2) return null;
-  const q = normalize(query);
-
-  const contactMatches = MOCK_CONTACTS.filter(c =>
-    normalize(c.name).includes(q) || normalize(c.email).includes(q)
-  );
-
-  const matterMatches = MOCK_MATTERS.filter(m =>
-    normalize(m.title).includes(q) ||
-    normalize(m.client).includes(q) ||
-    m.parties.some(p => normalize(p).includes(q))
-  );
-
-  // Detect conflicts: same name appears as client in one matter and opposing in another
-  const conflicts = [];
-  contactMatches.forEach(c => {
-    const asClient = MOCK_CONTACTS.filter(x => normalize(x.name).includes(normalize(c.name)) && x.role === 'Client');
-    const asOpposing = MOCK_CONTACTS.filter(x => normalize(x.name).includes(normalize(c.name)) && x.role === 'Opposing Party');
-    if (asClient.length > 0 && asOpposing.length > 0) {
-      conflicts.push({
-        name: c.name,
-        clientMatters: asClient.map(x => x.matter),
-        opposingMatters: asOpposing.map(x => x.matter),
-      });
-    }
-    // Check if query name appears as both client and opposing across matters
-    const asClientInMatter = MOCK_MATTERS.filter(m => normalize(m.client).includes(q));
-    const asOpposingInMatter = MOCK_MATTERS.filter(m => m.parties.slice(1).some(p => normalize(p).includes(q)));
-    if (asClientInMatter.length > 0 && asOpposingInMatter.length > 0) {
-      const key = query;
-      if (!conflicts.find(x => x.name === key)) {
-        conflicts.push({
-          name: query,
-          clientMatters: asClientInMatter.map(m => m.title),
-          opposingMatters: asOpposingInMatter.map(m => m.title),
-        });
-      }
-    }
-  });
-
-  return { contactMatches, matterMatches, conflicts, query };
-}
+import { conflictsApi } from '../api/conflicts.api';
 
 /* ─── Result components ───────────────────────────────────────── */
 function ConflictFlag({ conflict }) {
@@ -84,25 +17,40 @@ function ConflictFlag({ conflict }) {
         </div>
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, color: '#DC2626' }}>POTENTIAL CONFLICT DETECTED</div>
-          <div style={{ fontSize: 12, color: '#9CA3AF' }}>"{conflict.name}" appears in conflicting roles</div>
+          <div style={{ fontSize: 12, color: '#9CA3AF' }}>{conflict.description || '"' + conflict.name + '" appears in conflicting roles'}</div>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div style={{ background: '#fff', borderRadius: 10, padding: '10px 12px' }}>
-          <div style={{ fontSize: 10, fontWeight: 800, color: '#059669', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>As Client In</div>
-          {conflict.clientMatters.map((m, i) => <div key={i} style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>• {m}</div>)}
+      {(conflict.clientMatters || conflict.asClientIn) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ background: '#fff', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: '#059669', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>As Client In</div>
+            {(conflict.clientMatters || conflict.asClientIn || []).map((m, i) => (
+              <div key={i} style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>• {typeof m === 'string' ? m : m.title || m.matterNumber}</div>
+            ))}
+          </div>
+          <div style={{ background: '#fff', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: '#DC2626', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>As Opposing In</div>
+            {(conflict.opposingMatters || conflict.asOpposingIn || []).map((m, i) => (
+              <div key={i} style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>• {typeof m === 'string' ? m : m.title || m.matterNumber}</div>
+            ))}
+          </div>
         </div>
-        <div style={{ background: '#fff', borderRadius: 10, padding: '10px 12px' }}>
-          <div style={{ fontSize: 10, fontWeight: 800, color: '#DC2626', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>As Opposing In</div>
-          {conflict.opposingMatters.map((m, i) => <div key={i} style={{ fontSize: 12, color: '#374151', marginBottom: 3 }}>• {m}</div>)}
+      )}
+      {conflict.matters && !conflict.clientMatters && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+          {conflict.matters.map((m, i) => (
+            <span key={i} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: '#fff', border: '1px solid #FECDD3', color: '#374151' }}>
+              {typeof m === 'string' ? m : m.title || m.matterNumber}
+            </span>
+          ))}
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
 
 function ResultSection({ title, icon: Ic, color, items, renderItem }) {
-  if (!items.length) return null;
+  if (!items || !items.length) return null;
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -116,31 +64,45 @@ function ResultSection({ title, icon: Ic, color, items, renderItem }) {
   );
 }
 
+const RISK_COLOR = { none: '#059669', low: '#D97706', medium: '#EA580C', high: '#DC2626' };
+const RISK_BG = { none: '#ECFDF5', low: '#FFF7ED', medium: '#FFF4ED', high: '#FEE2E2' };
+const RISK_BORDER = { none: '#6EE7B7', low: '#FED7AA', medium: '#FDBA74', high: '#FCA5A5' };
+
 /* ─── Main ────────────────────────────────────────────────────── */
 export default function ConflictChecker() {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState(null);
-  const [recent, setRecent] = useState(['Ahmed Al-Rashid', 'Khan Industries', 'Hussain']);
+  const [loading, setLoading] = useState(false);
+  const [recent, setRecent] = useState([]);
 
-  const search = useCallback(() => {
-    if (!query.trim()) return;
-    const r = runCheck(query.trim());
-    setResult(r);
-    setRecent(prev => [query.trim(), ...prev.filter(x => x !== query.trim())].slice(0, 6));
+  const search = useCallback(async (q) => {
+    const searchQuery = q || query.trim();
+    if (!searchQuery) return;
+    setLoading(true);
+    try {
+      const res = await conflictsApi.check({ name: searchQuery, email: searchQuery });
+      setResult({ ...res.data.data, query: searchQuery });
+      setRecent(prev => [searchQuery, ...prev.filter(x => x !== searchQuery)].slice(0, 6));
+    } catch (e) {
+      console.error('Conflict check failed:', e);
+    } finally {
+      setLoading(false);
+    }
   }, [query]);
 
   function exportReport() {
     if (!result) return;
-    let txt = `CONFLICT CHECK REPORT\nQuery: "${result.query}"\nDate: ${new Date().toLocaleString()}\n\n`;
-    if (result.conflicts.length) {
-      txt += `⚠ CONFLICTS DETECTED (${result.conflicts.length})\n`;
-      result.conflicts.forEach(c => {
-        txt += `\n• ${c.name}\n  Client in: ${c.clientMatters.join(', ')}\n  Opposing in: ${c.opposingMatters.join(', ')}\n`;
+    const conflicts = buildConflicts(result);
+    let txt = `CONFLICT CHECK REPORT\nQuery: "${result.query}"\nDate: ${new Date().toLocaleString()}\nRisk Level: ${result.riskLevel || 'unknown'}\n\n`;
+    if (conflicts.length) {
+      txt += `⚠ CONFLICTS DETECTED (${conflicts.length})\n`;
+      conflicts.forEach(c => {
+        txt += `\n• ${c.description || c.name || 'Conflict'}\n`;
       });
     } else {
       txt += '✓ NO CONFLICTS DETECTED\n';
     }
-    txt += `\nContact matches: ${result.contactMatches.length}\nMatter matches: ${result.matterMatches.length}\n`;
+    txt += `\nContacts found: ${(result.contacts || []).length}\nMatters found: ${(result.matters || []).length}\n`;
     const blob = new Blob([txt], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -148,8 +110,21 @@ export default function ConflictChecker() {
     a.click();
   }
 
-  const hasConflict = result && result.conflicts.length > 0;
-  const hasResult = result && (result.contactMatches.length > 0 || result.matterMatches.length > 0);
+  function buildConflicts(res) {
+    const list = [];
+    if (res.directConflict && typeof res.directConflict === 'object') {
+      list.push({ ...res.directConflict, description: res.directConflict.description || 'Direct conflict: same entity appears as client and opposing party' });
+    }
+    if (Array.isArray(res.matterConflicts)) {
+      list.push(...res.matterConflicts);
+    }
+    return list;
+  }
+
+  const conflicts = result ? buildConflicts(result) : [];
+  const hasConflict = result && (result.riskLevel === 'high' || result.riskLevel === 'medium' || conflicts.length > 0);
+  const hasResult = result && ((result.contacts || []).length > 0 || (result.matters || []).length > 0);
+  const riskLevel = result?.riskLevel || 'none';
 
   return (
     <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
@@ -181,8 +156,8 @@ export default function ConflictChecker() {
                 style={{ width: '100%', padding: '13px 14px 13px 44px', borderRadius: 12, border: '1.5px solid #E5E7EB', fontSize: 14, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
-            <button onClick={search} style={{ padding: '13px 28px', borderRadius: 12, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap' }}>
-              Run Check
+            <button onClick={() => search()} disabled={loading} style={{ padding: '13px 28px', borderRadius: 12, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', opacity: loading ? 0.7 : 1 }}>
+              {loading ? 'Checking…' : 'Run Check'}
             </button>
           </div>
 
@@ -191,7 +166,7 @@ export default function ConflictChecker() {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Recent Searches</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {recent.map(r => (
-                  <button key={r} onClick={() => { setQuery(r); setResult(runCheck(r)); }} style={{ padding: '5px 12px', borderRadius: 20, border: '1.5px solid #E5E7EB', background: '#F9FAFB', color: '#4B5563', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                  <button key={r} onClick={() => { setQuery(r); search(r); }} style={{ padding: '5px 12px', borderRadius: 20, border: '1.5px solid #E5E7EB', background: '#F9FAFB', color: '#4B5563', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                     <I.Search size={10} style={{ marginRight: 4 }} />{r}
                   </button>
                 ))}
@@ -207,10 +182,12 @@ export default function ConflictChecker() {
               {/* Summary bar */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, background: hasConflict ? '#FEE2E2' : '#ECFDF5', border: `1.5px solid ${hasConflict ? '#FCA5A5' : '#6EE7B7'}` }}>
-                    {hasConflict ? <I.Alert size={16} style={{ color: '#DC2626' }} /> : <I.Check size={16} style={{ color: '#059669' }} />}
-                    <span style={{ fontSize: 13, fontWeight: 800, color: hasConflict ? '#DC2626' : '#059669' }}>
-                      {hasConflict ? `${result.conflicts.length} Conflict${result.conflicts.length > 1 ? 's' : ''} Found` : 'No Conflicts Detected'}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, background: RISK_BG[riskLevel] || '#ECFDF5', border: `1.5px solid ${RISK_BORDER[riskLevel] || '#6EE7B7'}` }}>
+                    {hasConflict ? <I.Alert size={16} style={{ color: RISK_COLOR[riskLevel] }} /> : <I.Check size={16} style={{ color: '#059669' }} />}
+                    <span style={{ fontSize: 13, fontWeight: 800, color: RISK_COLOR[riskLevel] || '#059669' }}>
+                      {hasConflict
+                        ? `${conflicts.length} Conflict${conflicts.length !== 1 ? 's' : ''} Found (${riskLevel} risk)`
+                        : 'No Conflicts Detected'}
                     </span>
                   </div>
                   <span style={{ fontSize: 12, color: '#9CA3AF' }}>for "{result.query}"</span>
@@ -224,22 +201,22 @@ export default function ConflictChecker() {
               </div>
 
               {/* Conflict flags */}
-              {result.conflicts.map((c, i) => <ConflictFlag key={i} conflict={c} />)}
+              {conflicts.map((c, i) => <ConflictFlag key={i} conflict={c} />)}
 
               {/* Contact matches */}
               <ResultSection
                 title="Contact Matches" icon={I.Users} color="#3B82F6"
-                items={result.contactMatches}
+                items={result.contacts}
                 renderItem={c => (
-                  <div key={c.id} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div key={c._id || c.id} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <I.User size={18} style={{ color: '#3B82F6' }} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{c.name}</div>
-                      <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>{c.matter}</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>{c.email || c.phone || ''}</div>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: c.role === 'Client' ? '#ECFDF5' : c.role === 'Opposing Party' ? '#FEF2F2' : '#F3F4F6', color: c.role === 'Client' ? '#059669' : c.role === 'Opposing Party' ? '#DC2626' : '#6B7280' }}>{c.role}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#F3F4F6', color: '#6B7280' }}>Contact</span>
                   </div>
                 )}
               />
@@ -247,15 +224,15 @@ export default function ConflictChecker() {
               {/* Matter matches */}
               <ResultSection
                 title="Matter Matches" icon={I.Briefcase} color="#7C3AED"
-                items={result.matterMatches}
+                items={result.matters}
                 renderItem={m => (
-                  <div key={m.id} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div key={m._id || m.id} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 10, background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <I.Briefcase size={18} style={{ color: '#7C3AED' }} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{m.title}</div>
-                      <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>#{m.number} · Client: {m.client}</div>
+                      <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>#{m.matterNumber} · {m.practiceArea || ''}</div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: m.status === 'Active' ? '#ECFDF5' : '#F3F4F6', color: m.status === 'Active' ? '#059669' : '#6B7280' }}>{m.status}</span>
                   </div>
@@ -273,14 +250,18 @@ export default function ConflictChecker() {
         </AnimatePresence>
 
         {/* Info box */}
-        {!result && (
+        {!result && !loading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
               <I.Info size={16} style={{ color: '#7C3AED' }} />
               <span style={{ fontSize: 14, fontWeight: 700, color: '#374151' }}>How Conflict Checking Works</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-              {[['Search by name or email', 'Enter any person or company name to scan all active matters and contacts.'], ['Role analysis', 'The checker identifies if the same party appears as client in one matter and opposing in another.'], ['Instant report', 'Export a timestamped conflict check report as a text file for your records.']].map(([title, desc]) => (
+              {[
+                ['Search by name or email', 'Enter any person or company name to scan all active matters, contacts, and leads.'],
+                ['Risk analysis', 'The checker identifies if the same party appears as client in one matter and opposing in another, and computes a risk level.'],
+                ['Instant report', 'Export a timestamped conflict check report as a text file for your records.'],
+              ].map(([title, desc]) => (
                 <div key={title} style={{ background: '#F9FAFB', borderRadius: 10, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{title}</div>
                   <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>{desc}</div>

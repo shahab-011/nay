@@ -1,134 +1,143 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { tasksApi } from '../api/tasks.api';
 
-const ease = [0.22, 1, 0.36, 1];
+/* ─── Constants ─────────────────────────────────────────────────── */
+const STATUSES = [
+  { value: 'to_do',       label: 'To Do',       color: '#6B7280', bg: '#F3F4F6' },
+  { value: 'in_progress', label: 'In Progress',  color: '#3B82F6', bg: '#DBEAFE' },
+  { value: 'in_review',   label: 'In Review',    color: '#8B5CF6', bg: '#EDE9FE' },
+  { value: 'blocked',     label: 'Blocked',      color: '#EF4444', bg: '#FEE2E2' },
+  { value: 'completed',   label: 'Completed',    color: '#10B981', bg: '#D1FAE5' },
+];
 
-const PRIORITIES = ['Low', 'Medium', 'High'];
-const STATUSES   = ['Pending', 'In Progress', 'Completed'];
-const TASK_TYPES = ['Research', 'Drafting', 'Filing', 'Call', 'Meeting', 'Review', 'Hearing', 'Admin', 'Other'];
+const PRIORITIES = [
+  { value: 'urgent', label: 'Urgent', color: '#EF4444', bg: '#FEE2E2' },
+  { value: 'high',   label: 'High',   color: '#F97316', bg: '#FFEDD5' },
+  { value: 'medium', label: 'Medium', color: '#F59E0B', bg: '#FEF3C7' },
+  { value: 'low',    label: 'Low',    color: '#6B7280', bg: '#F3F4F6' },
+];
 
-const PRIORITY_STYLE = {
-  Low:    { color: 'var(--green)',  bg: 'var(--green-bg)' },
-  Medium: { color: 'var(--amber)',  bg: 'var(--amber-bg)' },
-  High:   { color: 'var(--red)',    bg: 'var(--red-bg)' },
-};
-const STATUS_STYLE = {
-  Pending:     { color: 'var(--amber)',       bg: 'var(--amber-bg)' },
-  'In Progress':{ color: 'var(--blue)',       bg: 'var(--blue-bg)' },
-  Completed:   { color: 'var(--green)',       bg: 'var(--green-bg)' },
-};
+const ACTIVITY_TYPES = [
+  { value: 'research',       label: 'Research' },
+  { value: 'drafting',       label: 'Drafting' },
+  { value: 'review',         label: 'Review' },
+  { value: 'court',          label: 'Court' },
+  { value: 'client_meeting', label: 'Client Meeting' },
+  { value: 'calls',          label: 'Calls' },
+  { value: 'admin',          label: 'Admin' },
+  { value: 'other',          label: 'Other' },
+];
 
-function PriorityDot({ priority }) {
-  const s = PRIORITY_STYLE[priority] || PRIORITY_STYLE.Low;
-  return <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: s.color, flexShrink: 0 }} />;
+const statusMeta  = v => STATUSES.find(s => s.value === v)  || STATUSES[0];
+const priorityMeta = v => PRIORITIES.find(p => p.value === v) || PRIORITIES[2];
+
+function isOverdue(task) {
+  return task.dueDate && task.status !== 'completed' && new Date(task.dueDate) < new Date();
 }
 
+/* ─── Shared UI ──────────────────────────────────────────────────── */
 function StatusBadge({ status }) {
-  const s = STATUS_STYLE[status] || STATUS_STYLE.Pending;
+  const m = statusMeta(status);
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: s.bg, color: s.color }}>
-      {status}
+    <span style={{ display:'inline-flex', alignItems:'center', padding:'2px 9px', borderRadius:999, fontSize:11, fontWeight:600, background: m.bg, color: m.color }}>
+      {m.label}
     </span>
   );
 }
 
-function isOverdue(task) {
-  return task.due_date && task.status !== 'Completed' && new Date(task.due_date) < new Date();
+function PriorityDot({ priority }) {
+  const m = priorityMeta(priority);
+  return <span style={{ display:'inline-block', width:8, height:8, borderRadius:4, background: m.color, flexShrink:0 }} />;
 }
 
-/* ── Task Form Modal ─────────────────────────────────────── */
+function Field({ label, children }) {
+  return (
+    <div style={{ marginBottom:14 }}>
+      <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:5 }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Task Modal ─────────────────────────────────────────────────── */
+const BLANK = { title:'', description:'', priority:'medium', status:'to_do', activityType:'admin', dueDate:'', estimatedHours:'', matterId:'' };
+
 function TaskModal({ task, onClose, onSave }) {
-  const [form, setForm] = useState({
-    title:         task?.title || '',
-    description:   task?.description || '',
-    matter_name:   task?.matter_name || '',
-    priority:      task?.priority || 'Medium',
-    status:        task?.status || 'Pending',
-    task_type:     task?.task_type || 'Research',
-    due_date:      task?.due_date ? task.due_date.slice(0, 10) : '',
-    time_estimate: task?.time_estimate || '',
-  });
+  const [form, setForm] = useState(task ? {
+    ...BLANK, ...task,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    matterId: task.matterId?._id || task.matterId || '',
+  } : { ...BLANK });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [err, setErr] = useState('');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.title.trim()) { setError('Task title is required'); return; }
+    if (!form.title.trim()) { setErr('Title is required'); return; }
     setSaving(true);
     try {
-      const result = task
-        ? await tasksApi.update(task._id, form)
-        : await tasksApi.create(form);
-      onSave(result.data);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save task');
+      if (task?._id) {
+        await tasksApi.update(task._id, form);
+      } else {
+        await tasksApi.create(form);
+      }
+      onSave();
+    } catch (e) {
+      setErr(e.response?.data?.message || 'Failed to save');
     } finally { setSaving(false); }
   }
 
-  const Field = ({ label, children }) => (
-    <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</label>
-      {children}
-    </div>
-  );
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(11,11,20,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    <div style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(11,11,20,0.45)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ duration: 0.25, ease }}
-        style={{ width: '100%', maxWidth: 520, background: 'var(--surface)', borderRadius: 24, boxShadow: '0 32px 80px rgba(11,11,20,0.18)', border: '1px solid var(--border)', maxHeight: '90vh', overflowY: 'auto' }}
-      >
-        <div style={{ padding: '24px 28px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="h-title" style={{ fontSize: 22 }}>{task ? 'Edit Task' : 'New Task'}</div>
-          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--active)', display: 'grid', placeItems: 'center', color: 'var(--text-secondary)' }}><I.X size={16} /></button>
-        </div>
-        <form onSubmit={handleSubmit} style={{ padding: 28 }}>
-          {error && <div style={{ background: 'var(--red-bg)', color: 'var(--red)', borderRadius: 10, padding: '10px 14px', fontSize: 13, marginBottom: 16 }}>{error}</div>}
+      <motion.div initial={{ opacity:0, scale:0.95, y:20 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.95 }}
+        style={{ width:'100%', maxWidth:540, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', maxHeight:'90vh', overflowY:'auto' }}>
 
-          <Field label="Task Title *">
-            <input className="input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Draft employment contract" autoFocus />
+        <div style={{ padding:'24px 28px 0', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <h3 style={{ margin:0, fontSize:20, fontWeight:700 }}>{task?._id ? 'Edit Task' : 'New Task'}</h3>
+          <button onClick={onClose} style={{ width:34, height:34, borderRadius:10, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}><I.X size={15} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ padding:28 }}>
+          {err && <div style={{ background:'#FEE2E2', color:'#991B1B', borderRadius:10, padding:'10px 14px', fontSize:13, marginBottom:14 }}>{err}</div>}
+
+          <Field label="Title *">
+            <input className="input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="Task title" autoFocus />
           </Field>
           <Field label="Description">
-            <textarea className="input" rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder="What needs to be done…" style={{ resize: 'vertical' }} />
-          </Field>
-          <Field label="Related Matter">
-            <input className="input" value={form.matter_name} onChange={e => set('matter_name', e.target.value)} placeholder="Matter name (optional)" />
+            <textarea className="input" rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder="What needs to be done…" style={{ resize:'vertical' }} />
           </Field>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
             <Field label="Priority">
-              <select className="input" value={form.priority} onChange={e => set('priority', e.target.value)} style={{ cursor: 'pointer' }}>
-                {PRIORITIES.map(p => <option key={p}>{p}</option>)}
+              <select className="input" value={form.priority} onChange={e => set('priority', e.target.value)}>
+                {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </Field>
             <Field label="Status">
-              <select className="input" value={form.status} onChange={e => set('status', e.target.value)} style={{ cursor: 'pointer' }}>
-                {STATUSES.map(s => <option key={s}>{s}</option>)}
+              <select className="input" value={form.status} onChange={e => set('status', e.target.value)}>
+                {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </Field>
-            <Field label="Task Type">
-              <select className="input" value={form.task_type} onChange={e => set('task_type', e.target.value)} style={{ cursor: 'pointer' }}>
-                {TASK_TYPES.map(t => <option key={t}>{t}</option>)}
+            <Field label="Activity Type">
+              <select className="input" value={form.activityType} onChange={e => set('activityType', e.target.value)}>
+                {ACTIVITY_TYPES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </Field>
             <Field label="Due Date">
-              <input className="input" type="date" value={form.due_date} onChange={e => set('due_date', e.target.value)} />
+              <input className="input" type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} />
             </Field>
-            <Field label="Time Estimate (hrs)">
-              <input className="input" type="number" min="0" step="0.25" value={form.time_estimate} onChange={e => set('time_estimate', e.target.value)} placeholder="2.5" />
+            <Field label="Est. Hours">
+              <input className="input" type="number" min="0" step="0.25" value={form.estimatedHours} onChange={e => set('estimatedHours', e.target.value)} placeholder="2.5" />
             </Field>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+          <div style={{ display:'flex', gap:10, justifyContent:'flex-end', marginTop:8 }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : task ? 'Update Task' : 'Create Task'}</button>
+            <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : task?._id ? 'Update' : 'Create Task'}</button>
           </div>
         </form>
       </motion.div>
@@ -136,100 +145,125 @@ function TaskModal({ task, onClose, onSave }) {
   );
 }
 
-/* ── Task Row (list view) ────────────────────────────────── */
+/* ─── Task List Modal ────────────────────────────────────────────── */
+function TaskListModal({ list, onClose, onSave }) {
+  const [form, setForm] = useState({ name: list?.name || '', description: list?.description || '', isTemplate: list?.isTemplate || false });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.name.trim()) return;
+    setSaving(true);
+    try {
+      if (list?._id) await tasksApi.updateTaskList(list._id, form);
+      else await tasksApi.createTaskList(form);
+      onSave();
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(11,11,20,0.45)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }}
+        style={{ width:'100%', maxWidth:440, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', padding:28 }}>
+        <h3 style={{ margin:'0 0 20px', fontSize:18, fontWeight:700 }}>{list?._id ? 'Edit Task List' : 'New Task List'}</h3>
+        <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          <Field label="Name *">
+            <input className="input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Discovery Checklist" autoFocus />
+          </Field>
+          <Field label="Description">
+            <textarea className="input" rows={2} value={form.description} onChange={e => set('description', e.target.value)} style={{ resize:'vertical' }} />
+          </Field>
+          <label style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer' }}>
+            <input type="checkbox" checked={form.isTemplate} onChange={e => set('isTemplate', e.target.checked)} />
+            <span style={{ fontSize:13 }}>Save as reusable template</span>
+          </label>
+          <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : list?._id ? 'Update' : 'Create'}</button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── Task Row ───────────────────────────────────────────────────── */
 function TaskRow({ task, onToggle, onEdit, onDelete }) {
   const overdue = isOverdue(task);
+  const pm = priorityMeta(task.priority);
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}
-    >
-      {/* Checkbox */}
-      <button
-        onClick={() => onToggle(task)}
-        style={{
-          width: 20, height: 20, borderRadius: 6, border: `2px solid ${task.status === 'Completed' ? 'var(--purple)' : 'var(--border-active)'}`,
-          background: task.status === 'Completed' ? 'var(--purple)' : 'transparent',
-          display: 'grid', placeItems: 'center', flexShrink: 0, marginTop: 2, transition: 'all 0.15s',
-        }}
-      >
-        {task.status === 'Completed' && <I.Check size={11} style={{ color: '#fff' }} />}
+    <motion.div layout initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-16 }}
+      style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'13px 18px', borderBottom:'1px solid var(--border)' }}>
+      <button onClick={() => onToggle(task)} style={{
+        width:20, height:20, borderRadius:6, flexShrink:0, marginTop:2, transition:'all 0.15s',
+        border: `2px solid ${task.status === 'completed' ? 'var(--purple)' : 'var(--border)'}`,
+        background: task.status === 'completed' ? 'var(--purple)' : 'transparent',
+        display:'grid', placeItems:'center',
+      }}>
+        {task.status === 'completed' && <I.Check size={11} style={{ color:'#fff' }} />}
       </button>
 
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4, flexWrap:'wrap' }}>
           <PriorityDot priority={task.priority} />
-          <span style={{
-            fontSize: 14, fontWeight: 600,
-            textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
-            color: task.status === 'Completed' ? 'var(--text-muted)' : 'var(--ink)',
-          }}>{task.title}</span>
+          <span style={{ fontSize:14, fontWeight:600, color: task.status === 'completed' ? 'var(--text-muted)' : 'var(--ink)', textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>{task.title}</span>
           <StatusBadge status={task.status} />
-          {task.task_type && (
-            <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 6, background: 'var(--active)', color: 'var(--text-secondary)', fontWeight: 500 }}>{task.task_type}</span>
-          )}
+          {task.status === 'blocked' && <span style={{ fontSize:11, color:'#EF4444', fontWeight:700 }}>⚠ Blocked</span>}
         </div>
-        {task.description && (
-          <div className="t-secondary" style={{ fontSize: 13, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.description}</div>
-        )}
-        <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-          {task.matter_name && <span><I.Briefcase size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />{task.matter_name}</span>}
-          {task.due_date && (
-            <span style={{ color: overdue ? 'var(--red)' : 'var(--text-muted)', fontWeight: overdue ? 600 : 400 }}>
-              <I.Calendar size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
-              {overdue ? 'Overdue · ' : ''}{new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        {task.description && <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:5, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{task.description}</div>}
+        <div style={{ display:'flex', gap:14, fontSize:11, color:'var(--text-muted)', flexWrap:'wrap' }}>
+          {task.matterId?.title && <span><I.Briefcase size={10} style={{ marginRight:4, verticalAlign:'middle' }} />{task.matterId.title}</span>}
+          {task.dueDate && (
+            <span style={{ color: overdue ? '#EF4444' : 'var(--text-muted)', fontWeight: overdue ? 600 : 400 }}>
+              <I.Calendar size={10} style={{ marginRight:4, verticalAlign:'middle' }} />
+              {overdue ? 'Overdue · ' : ''}{new Date(task.dueDate).toLocaleDateString('en-US', { month:'short', day:'numeric' })}
             </span>
           )}
-          {task.time_estimate && <span><I.Clock size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />{task.time_estimate}h est.</span>}
+          {task.estimatedHours > 0 && <span><I.Clock size={10} style={{ marginRight:4, verticalAlign:'middle' }} />{task.estimatedHours}h est.</span>}
+          {task.assignedTo?.length > 0 && <span>→ {task.assignedTo.map(u => u.name || u).join(', ')}</span>}
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-        <button onClick={() => onEdit(task)} style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--active)', display: 'grid', placeItems: 'center', color: 'var(--text-secondary)', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--purple-soft)'; e.currentTarget.style.color = 'var(--purple)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--active)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-          <I.Settings size={13} />
+      <div style={{ display:'flex', gap:5, flexShrink:0 }}>
+        <button onClick={() => onEdit(task)} style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
+          onMouseEnter={e => { e.currentTarget.style.background='var(--purple-soft)'; e.currentTarget.style.color='var(--purple)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
+          <I.Settings size={12} />
         </button>
-        <button onClick={() => onDelete(task._id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--active)', display: 'grid', placeItems: 'center', color: 'var(--text-secondary)', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--red-bg)'; e.currentTarget.style.color = 'var(--red)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--active)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-          <I.X size={13} />
+        <button onClick={() => onDelete(task._id)} style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
+          onMouseEnter={e => { e.currentTarget.style.background='#FEE2E2'; e.currentTarget.style.color='#EF4444'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
+          <I.X size={12} />
         </button>
       </div>
     </motion.div>
   );
 }
 
-/* ── Kanban Card ─────────────────────────────────────────── */
+/* ─── Kanban Card ────────────────────────────────────────────────── */
 function KanbanCard({ task, onEdit, onDragStart }) {
   const overdue = isOverdue(task);
+  const pm = priorityMeta(task.priority);
   return (
-    <motion.div
-      layout
-      draggable
-      onDragStart={() => onDragStart(task)}
-      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(11,11,20,0.10)' }}
-      className="card"
-      style={{ padding: 16, marginBottom: 10, cursor: 'grab', transition: 'box-shadow 0.2s, transform 0.2s' }}
-      onClick={() => onEdit(task)}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+    <motion.div layout draggable onDragStart={() => onDragStart(task)}
+      whileHover={{ y:-2, boxShadow:'0 8px 24px rgba(11,11,20,0.10)' }}
+      className="card" onClick={() => onEdit(task)}
+      style={{ padding:14, marginBottom:8, cursor:'grab', borderLeft: task.status === 'blocked' ? '3px solid #EF4444' : 'none' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
         <PriorityDot priority={task.priority} />
-        <span style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{task.title}</span>
+        <span style={{ fontSize:13, fontWeight:600, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{task.title}</span>
       </div>
       {task.description && (
-        <div className="t-secondary" style={{ fontSize: 12, marginBottom: 10, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{task.description}</div>
+        <div style={{ fontSize:11, color:'var(--text-muted)', marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{task.description}</div>
       )}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        {task.task_type && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, background: 'var(--active)', color: 'var(--text-muted)', fontWeight: 600 }}>{task.task_type}</span>}
-        {task.due_date && (
-          <span style={{ fontSize: 10, color: overdue ? 'var(--red)' : 'var(--text-muted)', fontWeight: overdue ? 700 : 400, marginLeft: 'auto' }}>
-            {overdue ? '⚠ ' : ''}{new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+      <div style={{ display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
+        <span style={{ fontSize:10, padding:'2px 7px', borderRadius:6, background: pm.bg, color: pm.color, fontWeight:600 }}>{pm.label}</span>
+        {task.matterId?.title && <span style={{ fontSize:10, color:'var(--text-muted)' }}>{task.matterId.title}</span>}
+        {task.dueDate && (
+          <span style={{ fontSize:10, color: overdue ? '#EF4444' : 'var(--text-muted)', fontWeight: overdue ? 700 : 400, marginLeft:'auto' }}>
+            {overdue ? '⚠ ' : ''}{new Date(task.dueDate).toLocaleDateString('en-US', { month:'short', day:'numeric' })}
           </span>
         )}
       </div>
@@ -237,57 +271,33 @@ function KanbanCard({ task, onEdit, onDragStart }) {
   );
 }
 
-/* ── Kanban Board ────────────────────────────────────────── */
+/* ─── Kanban Board ───────────────────────────────────────────────── */
 function KanbanBoard({ tasks, onMove, onEdit }) {
   const [dragTask, setDragTask] = useState(null);
   const [dragOver, setDragOver] = useState(null);
 
-  const columns = STATUSES.map(s => ({
-    id: s,
-    tasks: tasks.filter(t => t.status === s),
-  }));
-
-  const COLUMN_COLORS = {
-    Pending: 'var(--amber)',
-    'In Progress': 'var(--blue)',
-    Completed: 'var(--green)',
-  };
-
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'start' }}>
-      {columns.map(col => (
-        <div
-          key={col.id}
-          onDragOver={e => { e.preventDefault(); setDragOver(col.id); }}
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, alignItems:'start' }}>
+      {STATUSES.map(col => (
+        <div key={col.value}
+          onDragOver={e => { e.preventDefault(); setDragOver(col.value); }}
           onDragLeave={() => setDragOver(null)}
-          onDrop={() => {
-            if (dragTask && dragTask.status !== col.id) onMove(dragTask, col.id);
-            setDragTask(null); setDragOver(null);
-          }}
-          style={{
-            background: dragOver === col.id ? 'var(--purple-soft)' : 'var(--bg)',
-            borderRadius: 16, padding: 14,
-            border: `2px dashed ${dragOver === col.id ? 'var(--purple)' : 'transparent'}`,
-            transition: 'all 0.15s', minHeight: 200,
-          }}
-        >
-          {/* Column header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 5, background: COLUMN_COLORS[col.id] }} />
-            <span style={{ fontWeight: 700, fontSize: 13 }}>{col.id}</span>
-            <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', background: 'var(--surface)', padding: '2px 8px', borderRadius: 8 }}>{col.tasks.length}</span>
+          onDrop={() => { if (dragTask && dragTask.status !== col.value) onMove(dragTask, col.value); setDragTask(null); setDragOver(null); }}
+          style={{ background: dragOver === col.value ? col.bg : 'var(--bg)', borderRadius:14, padding:12, border:`2px dashed ${dragOver === col.value ? col.color : 'transparent'}`, transition:'all 0.15s', minHeight:180 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+            <span style={{ width:9, height:9, borderRadius:5, background: col.color }} />
+            <span style={{ fontWeight:700, fontSize:12 }}>{col.label}</span>
+            <span style={{ marginLeft:'auto', fontSize:11, fontWeight:700, color:'var(--text-muted)', background:'var(--surface)', padding:'1px 7px', borderRadius:7 }}>
+              {tasks.filter(t => t.status === col.value).length}
+            </span>
           </div>
-
-          {/* Cards */}
           <AnimatePresence>
-            {col.tasks.map(t => (
+            {tasks.filter(t => t.status === col.value).map(t => (
               <KanbanCard key={t._id} task={t} onEdit={onEdit} onDragStart={setDragTask} />
             ))}
           </AnimatePresence>
-          {col.tasks.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              Drop tasks here
-            </div>
+          {tasks.filter(t => t.status === col.value).length === 0 && (
+            <div style={{ textAlign:'center', padding:'20px 0', color:'var(--text-muted)', fontSize:12 }}>Drop here</div>
           )}
         </div>
       ))}
@@ -295,176 +305,293 @@ function KanbanBoard({ tasks, onMove, onEdit }) {
   );
 }
 
-/* ── Main Tasks Page ─────────────────────────────────────── */
-export default function Tasks() {
-  const [tasks, setTasks] = useState([]);
+/* ─── Task Lists Panel ───────────────────────────────────────────── */
+function TaskListsPanel({ onSelectList }) {
+  const [lists, setLists]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [view, setView] = useState('list'); // 'list' | 'kanban'
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [filterPriority, setFilterPriority] = useState('All');
-  const [filterDue, setFilterDue] = useState('All');
-  const [showModal, setShowModal] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
+  const [modal, setModal]   = useState(null);
+  const [editing, setEditing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    try {
-      const r = await tasksApi.list();
-      setTasks(r.data || []);
-    } catch {
-      setError('Failed to load tasks. Make sure the backend is running.');
-    } finally { setLoading(false); }
+    try { const r = await tasksApi.listTaskLists(); setLists(r.data.data || []); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleSave(saved) {
-    setShowModal(false);
-    setEditingTask(null);
-    await load();
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this task list and all its tasks?')) return;
+    await tasksApi.deleteTaskList(id);
+    load();
   }
 
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+        <h2 style={{ margin:0, fontSize:18, fontWeight:700 }}>Task Lists</h2>
+        <button className="btn btn-purple" onClick={() => { setEditing(null); setModal(true); }} style={{ fontSize:13, padding:'8px 16px' }}>
+          <I.Plus size={13} /> New List
+        </button>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign:'center', padding:40, color:'var(--text-muted)' }}>Loading…</div>
+      ) : lists.length === 0 ? (
+        <div style={{ textAlign:'center', padding:40, color:'var(--text-muted)' }}>
+          <p>No task lists yet. Create one to group related tasks.</p>
+        </div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {lists.map(list => {
+            const pct = list.progress?.total > 0 ? Math.round((list.progress.completed / list.progress.total) * 100) : 0;
+            return (
+              <div key={list._id} className="card" style={{ padding:'16px 20px', display:'flex', alignItems:'center', gap:16, cursor:'pointer' }}
+                onClick={() => onSelectList(list)}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
+                    <span style={{ fontSize:15, fontWeight:600 }}>{list.name}</span>
+                    {list.isTemplate && <span style={{ fontSize:10, padding:'2px 8px', borderRadius:999, background:'#EDE9FE', color:'#7C3AED', fontWeight:700 }}>TEMPLATE</span>}
+                  </div>
+                  {list.description && <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:8 }}>{list.description}</div>}
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <div style={{ flex:1, height:5, borderRadius:3, background:'var(--border)', overflow:'hidden' }}>
+                      <div style={{ height:'100%', width:`${pct}%`, background:'var(--purple)', borderRadius:3, transition:'width 0.3s' }} />
+                    </div>
+                    <span style={{ fontSize:11, color:'var(--text-muted)', whiteSpace:'nowrap' }}>
+                      {list.progress?.completed || 0} / {list.progress?.total || 0} tasks
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button onClick={e => { e.stopPropagation(); setEditing(list); setModal(true); }}
+                    style={{ width:30, height:30, borderRadius:8, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}>
+                    <I.Settings size={13} />
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); handleDelete(list._id); }}
+                    style={{ width:30, height:30, borderRadius:8, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}>
+                    <I.X size={13} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {modal && (
+          <TaskListModal
+            list={editing}
+            onClose={() => { setModal(null); setEditing(null); }}
+            onSave={() => { setModal(null); setEditing(null); load(); }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── Main Tasks Page ────────────────────────────────────────────── */
+const TABS = ['Tasks', 'Task Lists'];
+const VIEWS = ['list', 'board'];
+
+export default function Tasks() {
+  const [tab, setTab]               = useState('Tasks');
+  const [view, setView]             = useState('list');
+  const [tasks, setTasks]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [search, setSearch]         = useState('');
+  const [filterStatus, setFilterStatus]     = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
+  const [filterDue, setFilterDue]           = useState('');
+  const [showModal, setShowModal]   = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [selectedList, setSelectedList] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (filterStatus)   params.status   = filterStatus;
+      if (filterPriority) params.priority  = filterPriority;
+      if (filterDue)      params.due       = filterDue;
+      if (selectedList)   params.taskListId = selectedList._id;
+      const r = await tasksApi.list(params);
+      setTasks(r.data.data?.tasks || []);
+    } catch { setTasks([]); }
+    finally { setLoading(false); }
+  }, [filterStatus, filterPriority, filterDue, selectedList]);
+
+  useEffect(() => { load(); }, [load]);
+
   async function handleToggle(task) {
-    const newStatus = task.status === 'Completed' ? 'Pending' : 'Completed';
+    const newStatus = task.status === 'completed' ? 'to_do' : 'completed';
     setTasks(ts => ts.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
-    try { await tasksApi.update(task._id, { status: newStatus }); } catch { await load(); }
+    try {
+      if (newStatus === 'completed') await tasksApi.complete(task._id);
+      else await tasksApi.reopen(task._id);
+    } catch { load(); }
   }
 
   async function handleMove(task, newStatus) {
     setTasks(ts => ts.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
-    try { await tasksApi.update(task._id, { status: newStatus }); } catch { await load(); }
+    try { await tasksApi.update(task._id, { status: newStatus }); }
+    catch { load(); }
   }
 
   async function handleDelete(id) {
     if (!window.confirm('Delete this task?')) return;
     setTasks(ts => ts.filter(t => t._id !== id));
-    try { await tasksApi.remove(id); } catch { await load(); }
+    try { await tasksApi.remove(id); } catch { load(); }
   }
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today   = new Date(); today.setHours(0,0,0,0);
   const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate() + 7);
 
   const filtered = tasks.filter(t => {
-    const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.matter_name?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === 'All' || t.status === filterStatus;
-    const matchPriority = filterPriority === 'All' || t.priority === filterPriority;
-    let matchDue = true;
-    if (filterDue === 'Overdue') matchDue = isOverdue(t);
-    else if (filterDue === 'Today') matchDue = t.due_date && new Date(t.due_date).toDateString() === today.toDateString();
-    else if (filterDue === 'This Week') matchDue = t.due_date && new Date(t.due_date) >= today && new Date(t.due_date) <= weekEnd;
-    return matchSearch && matchStatus && matchPriority && matchDue;
+    if (search && !t.title.toLowerCase().includes(search.toLowerCase()) &&
+        !t.matterId?.title?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterDue === 'overdue' && !isOverdue(t)) return false;
+    if (filterDue === 'today'   && !(t.dueDate && new Date(t.dueDate).toDateString() === today.toDateString())) return false;
+    if (filterDue === 'week'    && !(t.dueDate && new Date(t.dueDate) >= today && new Date(t.dueDate) <= weekEnd)) return false;
+    return true;
   });
 
-  const overdue = tasks.filter(isOverdue).length;
-  const byStatus = s => tasks.filter(t => t.status === s).length;
+  const byStatus = v => tasks.filter(t => t.status === v).length;
+  const overdueCount = tasks.filter(isOverdue).length;
 
   return (
-    <div style={{ padding: '80px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
+    <div style={{ padding:'80px 28px 100px', maxWidth:1400, margin:'0 auto' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:14 }}>
         <div>
-          <h1 className="h-title" style={{ fontSize: 30, marginBottom: 4 }}>Tasks</h1>
-          <p className="t-secondary" style={{ fontSize: 14 }}>Track and manage tasks across all your matters</p>
+          <h1 style={{ margin:0, fontSize:28, fontWeight:800, color:'var(--ink)' }}>Tasks</h1>
+          <p style={{ margin:'4px 0 0', fontSize:13, color:'var(--text-muted)' }}>Track and manage tasks across all matters</p>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {/* View toggle */}
-          <div style={{ display: 'flex', gap: 4, background: 'var(--active)', borderRadius: 10, padding: 4 }}>
-            {[{ id: 'list', icon: <I.Doc size={14} />, label: 'List' }, { id: 'kanban', icon: <I.Chart size={14} />, label: 'Board' }].map(v => (
-              <button key={v.id} onClick={() => setView(v.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 12px', borderRadius: 7, fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
-                  background: view === v.id ? 'var(--surface)' : 'transparent',
-                  color: view === v.id ? 'var(--purple)' : 'var(--text-muted)',
-                  boxShadow: view === v.id ? '0 1px 4px rgba(11,11,20,0.08)' : 'none',
-                }}
-              >{v.icon} {v.label}</button>
-            ))}
-          </div>
-          <button className="btn btn-purple" onClick={() => { setEditingTask(null); setShowModal(true); }}>
-            <I.Check size={14} /> New Task
-          </button>
-        </div>
-      </div>
-
-      {/* Stats strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 14, marginBottom: 24 }}>
-        {[
-          { l: 'Total Tasks', v: tasks.length, col: 'var(--ink)' },
-          { l: 'Pending',     v: byStatus('Pending'), col: 'var(--amber)' },
-          { l: 'In Progress', v: byStatus('In Progress'), col: 'var(--blue)' },
-          { l: 'Completed',   v: byStatus('Completed'), col: 'var(--green)' },
-          { l: 'Overdue',     v: overdue, col: 'var(--red)' },
-        ].map(({ l, v, col }) => (
-          <div key={l} className="card" style={{ padding: '14px 18px' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{l}</div>
-            <div className="h-title" style={{ fontSize: 26, color: col }}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <I.Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-          <input className="input" placeholder="Search tasks or matters…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 40 }} />
-        </div>
-        {[
-          { label: 'Status', value: filterStatus, set: setFilterStatus, options: ['All', ...STATUSES] },
-          { label: 'Priority', value: filterPriority, set: setFilterPriority, options: ['All', ...PRIORITIES] },
-          { label: 'Due', value: filterDue, set: setFilterDue, options: ['All', 'Overdue', 'Today', 'This Week'] },
-        ].map(f => (
-          <select key={f.label} className="input" value={f.value} onChange={e => f.set(e.target.value)} style={{ width: 130, cursor: 'pointer' }}>
-            {f.options.map(o => <option key={o}>{o}</option>)}
-          </select>
-        ))}
-      </div>
-
-      {error && <div style={{ background: 'var(--amber-bg)', color: 'var(--amber)', borderRadius: 12, padding: '12px 18px', marginBottom: 20, fontSize: 14 }}>{error}</div>}
-
-      {/* Content */}
-      {loading ? (
-        <div className="card" style={{ overflow: 'hidden' }}>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 18px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
-              <div className="skeleton" style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div className="skeleton" style={{ height: 14, width: '50%', marginBottom: 8 }} />
-                <div className="skeleton" style={{ height: 11, width: '30%' }} />
+        <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+          {tab === 'Tasks' && (
+            <>
+              <div style={{ display:'flex', gap:3, background:'var(--elevated)', borderRadius:10, padding:3 }}>
+                {[{ id:'list', icon:<I.Doc size={13} />, label:'List' }, { id:'board', icon:<I.Chart size={13} />, label:'Board' }].map(v => (
+                  <button key={v.id} onClick={() => setView(v.id)} style={{
+                    display:'flex', alignItems:'center', gap:5, padding:'5px 12px', borderRadius:7, fontSize:12, fontWeight:600,
+                    background: view === v.id ? 'var(--surface)' : 'transparent',
+                    color: view === v.id ? 'var(--purple)' : 'var(--text-muted)',
+                    border:'none', cursor:'pointer', transition:'all 0.15s',
+                    boxShadow: view === v.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                  }}>{v.icon} {v.label}</button>
+                ))}
               </div>
-            </div>
-          ))}
+              <button className="btn btn-purple" onClick={() => { setEditingTask(null); setShowModal(true); }} style={{ fontSize:13 }}>
+                <I.Plus size={14} /> New Task
+              </button>
+            </>
+          )}
         </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '64px 24px' }}>
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: 'var(--purple-soft)', color: 'var(--purple)', display: 'grid', placeItems: 'center', margin: '0 auto 20px' }}>
-            <I.Check size={30} />
-          </div>
-          <div className="h-title" style={{ fontSize: 20, marginBottom: 8 }}>{tasks.length === 0 ? 'No tasks yet' : 'No matches found'}</div>
-          <p className="t-secondary" style={{ fontSize: 14, marginBottom: 24 }}>{tasks.length === 0 ? 'Create your first task to get started.' : 'Try adjusting your filters.'}</p>
-          {tasks.length === 0 && <button className="btn btn-purple" onClick={() => { setEditingTask(null); setShowModal(true); }}>Create First Task</button>}
-        </div>
-      ) : view === 'list' ? (
-        <div className="card" style={{ overflow: 'hidden' }}>
-          <AnimatePresence>
-            {filtered.map(t => (
-              <TaskRow key={t._id} task={t}
-                onToggle={handleToggle}
-                onEdit={t => { setEditingTask(t); setShowModal(true); }}
-                onDelete={handleDelete}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border)', marginBottom:24 }}>
+        {TABS.map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding:'10px 20px', fontSize:13, fontWeight:600, border:'none', cursor:'pointer', background:'none',
+            color: tab === t ? 'var(--purple)' : 'var(--text-muted)',
+            borderBottom: tab === t ? '2px solid var(--purple)' : '2px solid transparent',
+            marginBottom:-2, transition:'all 0.15s',
+          }}>{t}</button>
+        ))}
+      </div>
+
+      {tab === 'Task Lists' ? (
+        <TaskListsPanel onSelectList={list => { setSelectedList(list); setTab('Tasks'); }} />
       ) : (
-        <KanbanBoard
-          tasks={filtered}
-          onMove={handleMove}
-          onEdit={t => { setEditingTask(t); setShowModal(true); }}
-        />
+        <>
+          {/* Stats */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, marginBottom:20 }}>
+            {[
+              { l:'Total',       v: tasks.length,         c:'var(--ink)' },
+              { l:'To Do',       v: byStatus('to_do'),    c:'#6B7280' },
+              { l:'In Progress', v: byStatus('in_progress'), c:'#3B82F6' },
+              { l:'In Review',   v: byStatus('in_review'),   c:'#8B5CF6' },
+              { l:'Blocked',     v: byStatus('blocked'),      c:'#EF4444' },
+              { l:'Overdue',     v: overdueCount,             c:'#EF4444' },
+            ].map(({ l, v, c }) => (
+              <div key={l} className="card" style={{ padding:'12px 16px' }}>
+                <div style={{ fontSize:22, fontWeight:800, color:c }}>{v}</div>
+                <div style={{ fontSize:11, color:'var(--text-muted)', marginTop:2 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Filters */}
+          {selectedList && (
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, background:'var(--purple-soft)', padding:'10px 16px', borderRadius:10 }}>
+              <span style={{ fontSize:13, fontWeight:600, color:'var(--purple)' }}>Filtered by: {selectedList.name}</span>
+              <button onClick={() => setSelectedList(null)} style={{ marginLeft:'auto', fontSize:12, color:'var(--purple)', background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>Clear</button>
+            </div>
+          )}
+
+          <div style={{ display:'flex', gap:10, marginBottom:18, flexWrap:'wrap' }}>
+            <div style={{ position:'relative', flex:1, minWidth:200 }}>
+              <I.Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)', pointerEvents:'none' }} />
+              <input className="input" placeholder="Search tasks…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft:38 }} />
+            </div>
+            <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width:140, cursor:'pointer' }}>
+              <option value="">All Statuses</option>
+              {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+            <select className="input" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ width:130, cursor:'pointer' }}>
+              <option value="">All Priorities</option>
+              {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select>
+            <select className="input" value={filterDue} onChange={e => setFilterDue(e.target.value)} style={{ width:130, cursor:'pointer' }}>
+              <option value="">All Dates</option>
+              <option value="overdue">Overdue</option>
+              <option value="today">Due Today</option>
+              <option value="week">Due This Week</option>
+            </select>
+          </div>
+
+          {/* Content */}
+          {loading ? (
+            <div className="card" style={{ overflow:'hidden' }}>
+              {[...Array(5)].map((_, i) => (
+                <div key={i} style={{ display:'flex', gap:12, padding:'13px 18px', borderBottom:'1px solid var(--border)', alignItems:'center' }}>
+                  <div className="skeleton" style={{ width:20, height:20, borderRadius:6 }} />
+                  <div style={{ flex:1 }}>
+                    <div className="skeleton" style={{ height:13, width:'45%', marginBottom:8 }} />
+                    <div className="skeleton" style={{ height:10, width:'25%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'56px 24px' }}>
+              <div style={{ width:60, height:60, borderRadius:16, background:'var(--purple-soft)', color:'var(--purple)', display:'grid', placeItems:'center', margin:'0 auto 16px' }}>
+                <I.Check size={28} />
+              </div>
+              <div style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>{tasks.length === 0 ? 'No tasks yet' : 'No matches'}</div>
+              <p style={{ fontSize:13, color:'var(--text-muted)', marginBottom:20 }}>{tasks.length === 0 ? 'Create your first task to get started.' : 'Try adjusting your filters.'}</p>
+              {tasks.length === 0 && <button className="btn btn-purple" onClick={() => setShowModal(true)}>Create First Task</button>}
+            </div>
+          ) : view === 'list' ? (
+            <div className="card" style={{ overflow:'hidden' }}>
+              <AnimatePresence>
+                {filtered.map(t => (
+                  <TaskRow key={t._id} task={t}
+                    onToggle={handleToggle}
+                    onEdit={t => { setEditingTask(t); setShowModal(true); }}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <KanbanBoard tasks={filtered} onMove={handleMove} onEdit={t => { setEditingTask(t); setShowModal(true); }} />
+          )}
+        </>
       )}
 
       <AnimatePresence>
@@ -472,7 +599,7 @@ export default function Tasks() {
           <TaskModal
             task={editingTask}
             onClose={() => { setShowModal(false); setEditingTask(null); }}
-            onSave={handleSave}
+            onSave={() => { setShowModal(false); setEditingTask(null); load(); }}
           />
         )}
       </AnimatePresence>

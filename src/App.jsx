@@ -64,6 +64,7 @@ const FirmSettings    = lazy(() => import('./pages/FirmSettings'));
 const ESign           = lazy(() => import('./pages/ESign'));
 const Communications  = lazy(() => import('./pages/Communications'));
 const ClientPortal    = lazy(() => import('./pages/ClientPortal'));
+const ManageAI        = lazy(() => import('./pages/ManageAI'));
 
 /* ── Loading spinner ── */
 function PageLoader() {
@@ -158,6 +159,7 @@ function App() {
                     <Route path="/leads"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LeadPipeline /></RoleRoute>} />
                     <Route path="/conflicts"       element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ConflictChecker /></RoleRoute>} />
                     <Route path="/firm-settings"   element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><FirmSettings /></RoleRoute>} />
+                    <Route path="/manage-ai"       element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><ManageAI /></RoleRoute>} />
                     <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
                     <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
 

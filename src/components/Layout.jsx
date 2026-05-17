@@ -32,7 +32,7 @@ const PRACTICE_ROOTS = [
   '/practice', '/matters', '/contacts', '/tasks',
   '/cal', '/time', '/billing', '/lawyer', '/reports',
   '/doc-automation', '/leads', '/conflicts', '/firm-settings',
-  '/esign', '/communications', '/manage-ai', '/notifications',
+  '/esign', '/communications', '/manage-ai', '/notifications', '/accounting',
 ];
 function isPracticePath(pathname) {
   return PRACTICE_ROOTS.some(root =>

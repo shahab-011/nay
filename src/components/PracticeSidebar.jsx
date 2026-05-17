@@ -56,6 +56,12 @@ const NAV = [
       { label: 'AI Assistant', path: '/manage-ai', Ic: I.Zap },
     ],
   },
+  {
+    sec: 'ACCOUNTING',
+    items: [
+      { label: 'Accounting', path: '/accounting', Ic: I.DollarSign },
+    ],
+  },
 ];
 
 const LAWYER_SECTION = {
@@ -259,6 +265,7 @@ function PracticeMobileBar({ onOpen }) {
     '/firm-settings': 'Firm Settings', '/esign': 'E-Signatures', '/communications': 'Communications',
     '/manage-ai': 'AI Assistant',
     '/notifications': 'Notifications',
+    '/accounting': 'Accounting',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

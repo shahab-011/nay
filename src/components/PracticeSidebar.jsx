@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { I } from './Icons';
+import NotificationBell from './NotificationBell';
 
 /* ─── Nav structure ───────────────────────────────────────────── */
 const NAV = [
@@ -137,10 +138,11 @@ function PracticeSidebarContent({ onItemClick }) {
           <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <I.Scale size={17} style={{ color: '#fff' }} />
           </div>
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Practice</div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Management</div>
           </div>
+          <NotificationBell light />
         </div>
 
         {/* User pill */}
@@ -256,6 +258,7 @@ function PracticeMobileBar({ onOpen }) {
     '/doc-automation': 'Doc Automation', '/leads': 'Lead Pipeline', '/conflicts': 'Conflict Check',
     '/firm-settings': 'Firm Settings', '/esign': 'E-Signatures', '/communications': 'Communications',
     '/manage-ai': 'AI Assistant',
+    '/notifications': 'Notifications',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

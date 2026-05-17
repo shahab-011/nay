@@ -10,6 +10,7 @@ import { PrivacyProvider } from './context/PrivacyContext';
 import { AlertProvider } from './context/AlertContext';
 import { SocketProvider } from './context/SocketContext';
 import { MobileMenuProvider } from './context/MobileMenuContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 /* ── Public pages (eager) ── */
 import Landing    from './pages/Landing';
@@ -65,6 +66,7 @@ const ESign           = lazy(() => import('./pages/ESign'));
 const Communications  = lazy(() => import('./pages/Communications'));
 const ClientPortal    = lazy(() => import('./pages/ClientPortal'));
 const ManageAI        = lazy(() => import('./pages/ManageAI'));
+const Notifications   = lazy(() => import('./pages/Notifications'));
 
 /* ── Loading spinner ── */
 function PageLoader() {
@@ -103,6 +105,7 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
+        <NotificationProvider>
         <AlertProvider>
           <PrivacyProvider>
             <Router>
@@ -160,6 +163,7 @@ function App() {
                     <Route path="/conflicts"       element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ConflictChecker /></RoleRoute>} />
                     <Route path="/firm-settings"   element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><FirmSettings /></RoleRoute>} />
                     <Route path="/manage-ai"       element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><ManageAI /></RoleRoute>} />
+                    <Route path="/notifications"   element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><Notifications /></RoleRoute>} />
                     <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
                     <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
 
@@ -184,6 +188,7 @@ function App() {
             </Router>
           </PrivacyProvider>
         </AlertProvider>
+        </NotificationProvider>
       </SocketProvider>
     </AuthProvider>
   );

@@ -19,8 +19,9 @@ export function SocketProvider({ children }) {
       return;
     }
 
+    const firmId = user.firmId || user._id;
     const s = io(SOCKET_URL, {
-      auth:            { token, userName: user.name },
+      auth:            { token, userName: user.name, firmId },
       reconnection:    true,
       reconnectionDelay: 1000,
       transports:      ['websocket', 'polling'],

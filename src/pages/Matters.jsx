@@ -144,6 +144,12 @@ function MatterModal({ matter, onClose, onSave }) {
     courtCaseNumber: matter?.courtCaseNumber || '',
     opposingParty:   matter?.opposingParty || '',
     opposingCounsel: matter?.opposingCounsel || '',
+    budgetHours:        matter?.budgetHours        || '',
+    budgetFees:         matter?.budgetFees         || '',
+    budgetAlertPercent: matter?.budgetAlertPercent || 80,
+    solDate:      matter?.solDate ? new Date(matter.solDate).toISOString().slice(0, 10) : '',
+    solNotes:     matter?.solNotes     || '',
+    solAlertDays: matter?.solAlertDays || 30,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -246,6 +252,38 @@ function MatterModal({ matter, onClose, onSave }) {
               </Field>
             </div>
           </div>
+          {/* Budget */}
+          <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0 16px', paddingTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Budget</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+              <Field label="Hour Budget" half>
+                <input className="input" type="number" min="0" step="0.5" value={form.budgetHours} onChange={e => set('budgetHours', e.target.value)} placeholder="0" />
+              </Field>
+              <Field label="Fee Budget ($)" half>
+                <input className="input" type="number" min="0" value={form.budgetFees} onChange={e => set('budgetFees', e.target.value)} placeholder="0" />
+              </Field>
+              <Field label="Alert at %" half>
+                <input className="input" type="number" min="1" max="100" value={form.budgetAlertPercent} onChange={e => set('budgetAlertPercent', e.target.value)} placeholder="80" />
+              </Field>
+            </div>
+          </div>
+
+          {/* SOL */}
+          <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0 16px', paddingTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Statute of Limitations</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 16, marginBottom: 12 }}>
+              <Field label="SOL Date" half>
+                <input className="input" type="date" value={form.solDate} onChange={e => set('solDate', e.target.value)} />
+              </Field>
+              <Field label="Alert Days Before" half>
+                <input className="input" type="number" min="1" max="365" value={form.solAlertDays} onChange={e => set('solAlertDays', e.target.value)} placeholder="30" />
+              </Field>
+            </div>
+            <Field label="SOL Notes">
+              <textarea className="input" rows={2} value={form.solNotes} onChange={e => set('solNotes', e.target.value)} placeholder="Notes about statute of limitations…" style={{ resize: 'vertical' }} />
+            </Field>
+          </div>
+
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : matter ? 'Update Matter' : 'Create Matter'}</button>
@@ -560,6 +598,72 @@ function MatterDetail({ matter, onEdit, onBack, onMatterChange }) {
                     })}
                   </div>
                 </div>
+                {/* Budget */}
+                {(matter.budgetHours > 0 || matter.budgetFees > 0) && (() => {
+                  const u = matter.budgetUtilization || {};
+                  const hPct = Math.min(u.hoursPercent || 0, 100);
+                  const fPct = Math.min(u.feesPercent  || 0, 100);
+                  const alert = matter.budgetAlertPercent || 80;
+                  const hColor = hPct >= 100 ? '#EF4444' : hPct >= alert ? '#F59E0B' : 'var(--purple)';
+                  const fColor = fPct >= 100 ? '#EF4444' : fPct >= alert ? '#F59E0B' : 'var(--purple)';
+                  return (
+                    <div className="card" style={{ padding: 20 }}>
+                      <div className="h-title" style={{ fontSize: 15, marginBottom: 14 }}>Budget</div>
+                      {matter.budgetHours > 0 && (
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, marginBottom: 5 }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Hours</span>
+                            <span style={{ color: hColor }}>{(u.hoursUsed || 0).toFixed(1)} / {matter.budgetHours}h ({hPct}%)</span>
+                          </div>
+                          <div style={{ height: 7, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${hPct}%`, background: hColor, borderRadius: 4, transition: 'width 0.4s' }} />
+                          </div>
+                        </div>
+                      )}
+                      {matter.budgetFees > 0 && (
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, marginBottom: 5 }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Fees</span>
+                            <span style={{ color: fColor }}>${(u.feesBilled || 0).toLocaleString()} / ${matter.budgetFees.toLocaleString()} ({fPct}%)</span>
+                          </div>
+                          <div style={{ height: 7, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${fPct}%`, background: fColor, borderRadius: 4, transition: 'width 0.4s' }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* SOL */}
+                {matter.solDate && (() => {
+                  const daysLeft = Math.ceil((new Date(matter.solDate) - new Date()) / 86400000);
+                  const isPast   = daysLeft < 0;
+                  const isUrgent = !isPast && daysLeft <= 7;
+                  const isWarn   = !isPast && daysLeft <= 14;
+                  const bgColor  = isPast ? '#FEF2F2' : isUrgent ? '#FEF2F2' : isWarn ? '#FFF7ED' : '#F0FDF4';
+                  const bdColor  = isPast ? '#EF4444' : isUrgent ? '#EF4444' : isWarn ? '#F59E0B' : '#22C55E';
+                  const txColor  = isPast ? '#991B1B' : isUrgent ? '#991B1B' : isWarn ? '#92400E' : '#166534';
+                  const icon     = isPast ? '🚫' : isUrgent ? '🚨' : isWarn ? '⚠️' : '⚖️';
+                  return (
+                    <div className="card" style={{ padding: 20, border: `1.5px solid ${bdColor}`, background: bgColor }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <span style={{ fontSize: 18 }}>{icon}</span>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: txColor }}>Statute of Limitations</span>
+                      </div>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: txColor, marginBottom: 4 }}>
+                        {isPast ? 'Expired' : `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`}
+                      </div>
+                      <div style={{ fontSize: 12, color: txColor, opacity: 0.8 }}>
+                        {new Date(matter.solDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </div>
+                      {matter.solNotes && (
+                        <div style={{ marginTop: 10, fontSize: 12, color: txColor, opacity: 0.75, borderTop: `1px solid ${bdColor}`, paddingTop: 10 }}>{matter.solNotes}</div>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Tags */}
                 {matter.tags?.length > 0 && (
                   <div className="card" style={{ padding: 20 }}>

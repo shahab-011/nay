@@ -21,4 +21,9 @@ export const trustApi = {
 
   // Reconciliation
   reconcile: (id, data) => api.post(`/trust-accounts/${id}/reconcile`, data),
+
+  // Payment requests
+  requestPayment:      (id, data)       => api.post(`/trust-accounts/${id}/request-payment`, data),
+  listPaymentRequests: (id)             => api.get(`/trust-accounts/${id}/payment-requests`),
+  cancelPaymentRequest:(id, reqId)      => api.patch(`/trust-accounts/${id}/payment-requests/${reqId}/cancel`, {}),
 };

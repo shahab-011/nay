@@ -263,6 +263,51 @@ function BillingConfig({ billing, setBilling }) {
           </div>
         ))}
       </div>
+
+      {/* Time Rounding */}
+      <div style={{ background:'#F9FAFB', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'16px 18px', marginBottom:20 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div>
+            <div style={{ fontSize:12, fontWeight:800, color:'#374151' }}>Time Rounding</div>
+            <div style={{ fontSize:11, color:'#9CA3AF', marginTop:2 }}>Round time entries up to the nearest increment when saving</div>
+          </div>
+          <Toggle value={!!billing.timeRounding?.enabled} onChange={v=>set('timeRounding',{...billing.timeRounding,enabled:v})} />
+        </div>
+        {billing.timeRounding?.enabled && (
+          <div>
+            <label style={lbl}>Round to nearest (minutes)</label>
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:6 }}>
+              {[1,6,10,15,30].map(n=>(
+                <button key={n} onClick={()=>set('timeRounding',{...billing.timeRounding,roundTo:n})}
+                  style={{ padding:'6px 14px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', border:'1.5px solid', transition:'all 150ms',
+                    background: billing.timeRounding?.roundTo===n ? '#7C3AED' : '#fff',
+                    borderColor: billing.timeRounding?.roundTo===n ? '#7C3AED' : '#E5E7EB',
+                    color: billing.timeRounding?.roundTo===n ? '#fff' : '#374151',
+                  }}>
+                  {n === 1 ? 'None (1 min)' : `${n} min`}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Invoice Payment Reminders */}
+      <div style={{ background:'#F9FAFB', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'16px 18px', marginBottom:20 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div>
+            <div style={{ fontSize:12, fontWeight:800, color:'#374151' }}>Automatic Invoice Reminders</div>
+            <div style={{ fontSize:11, color:'#9CA3AF', marginTop:2 }}>Automatically email clients about unpaid invoices via the daily 08:00 cron job</div>
+          </div>
+          <Toggle value={!!billing.invoiceReminders?.enabled} onChange={v=>set('invoiceReminders',{...billing.invoiceReminders,enabled:v})} />
+        </div>
+        {billing.invoiceReminders?.enabled && (
+          <div style={{ marginTop:8, padding:'10px 14px', borderRadius:8, background:'#EDE9FE', border:'1px solid #DDD6FE', fontSize:12, color:'#6D28D9' }}>
+            Reminders are sent automatically every 7 days to clients with outstanding invoices (sent, partially paid, or overdue).
+          </div>
+        )}
+      </div>
+
       <SaveButton onClick={save} saving={saving} saved={saved} />
     </div>
   );
@@ -676,6 +721,8 @@ export default function FirmSettings() {
         showRatesOnInvoice:d.showRatesOnInvoice!==false,
         showTimekeeperNames:d.showTimekeeperNames!==false,
         showEntryDates:d.showEntryDates!==false,
+        timeRounding: d.timeRounding || { enabled: false, roundTo: 6 },
+        invoiceReminders: d.invoiceReminders || { enabled: false, schedules: [] },
       });
       setNotifs(d.notifications||{});
       setSecurity(d.security||{});

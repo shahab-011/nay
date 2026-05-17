@@ -88,6 +88,7 @@ const BLANK = {
   startTime: '09:00', endTime: '10:00', allDay: false,
   matterId: '', location: '', description: '',
   reminders: [{ method: 'email', minutesBefore: 30 }],
+  recurrence: null,
 };
 
 function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
@@ -237,6 +238,55 @@ function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
               <option value={1440}>1 day before</option>
               <option value={10080}>1 week before</option>
             </select>
+          </div>
+
+          {/* Recurrence */}
+          <div style={{ border:'1px solid var(--border)', borderRadius:10, padding:14 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}
+              onClick={() => set('recurrence', form.recurrence ? null : { frequency:'weekly', interval:1, endDate:'' })}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <I.Calendar size={14} style={{ color: form.recurrence ? 'var(--purple)' : 'var(--text-muted)' }} />
+                <span style={{ fontSize:13, fontWeight:600, color: form.recurrence ? 'var(--purple)' : 'var(--text-muted)' }}>Recurring Event</span>
+                {form.recurrence && (
+                  <span style={{ fontSize:11, padding:'1px 7px', borderRadius:999, background:'#EDE9FE', color:'#7C3AED', fontWeight:700 }}>
+                    {form.recurrence.frequency}
+                  </span>
+                )}
+              </div>
+              <div style={{ width:38, height:21, borderRadius:999, position:'relative', background: form.recurrence ? 'var(--purple)' : 'var(--border)', transition:'background 0.2s' }}>
+                <div style={{ position:'absolute', top:3, left: form.recurrence ? 19 : 3, width:15, height:15, borderRadius:999, background:'#fff', transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }} />
+              </div>
+            </div>
+
+            {form.recurrence && (
+              <div style={{ marginTop:14, display:'grid', gridTemplateColumns:'1fr 80px 1fr', gap:10 }}>
+                <div>
+                  <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Frequency</label>
+                  <select value={form.recurrence.frequency || 'weekly'}
+                    onChange={e => set('recurrence', { ...form.recurrence, frequency: e.target.value })}
+                    style={{ width:'100%', marginTop:4, padding:'8px 10px', borderRadius:8, border:'1.5px solid var(--border)', fontSize:13, background:'var(--bg)', cursor:'pointer', boxSizing:'border-box' }}>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Every</label>
+                  <input type="number" min="1" max="99"
+                    value={form.recurrence.interval || 1}
+                    onChange={e => set('recurrence', { ...form.recurrence, interval: parseInt(e.target.value) || 1 })}
+                    style={{ width:'100%', marginTop:4, padding:'8px 10px', borderRadius:8, border:'1.5px solid var(--border)', fontSize:13, background:'var(--bg)', boxSizing:'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>End Date</label>
+                  <input type="date"
+                    value={form.recurrence.endDate || ''}
+                    onChange={e => set('recurrence', { ...form.recurrence, endDate: e.target.value })}
+                    style={{ width:'100%', marginTop:4, padding:'8px 10px', borderRadius:8, border:'1.5px solid var(--border)', fontSize:13, background:'var(--bg)', boxSizing:'border-box' }} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

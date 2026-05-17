@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
-import { tasksApi }  from '../api/tasks.api';
-import { mattersApi } from '../api/matters.api';
+import { tasksApi }    from '../api/tasks.api';
+import { mattersApi }  from '../api/matters.api';
+import { timeApi }     from '../api/timeTracking.api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const STATUSES = [
@@ -31,7 +32,14 @@ const ACTIVITY_TYPES = [
   { value: 'other',          label: 'Other' },
 ];
 
-const statusMeta  = v => STATUSES.find(s => s.value === v)  || STATUSES[0];
+const RECURRENCE_FREQUENCIES = [
+  { value: 'daily',   label: 'Daily' },
+  { value: 'weekly',  label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly',  label: 'Yearly' },
+];
+
+const statusMeta   = v => STATUSES.find(s => s.value === v)   || STATUSES[0];
 const priorityMeta = v => PRIORITIES.find(p => p.value === v) || PRIORITIES[2];
 
 function isOverdue(task) {
@@ -62,42 +70,173 @@ function Field({ label, children }) {
   );
 }
 
-/* ─── Task Modal ─────────────────────────────────────────────────── */
-const BLANK = { title:'', description:'', priority:'medium', status:'to_do', activityType:'admin', dueDate:'', estimatedHours:'', matterId:'' };
+/* ─── Log Time Modal ─────────────────────────────────────────────── */
+function LogTimeModal({ task, onClose, onSave, matters = [] }) {
+  const [form, setForm] = useState({
+    hours:        '',
+    description:  task.title || '',
+    matterId:     task.matterId?._id || task.matterId || '',
+    activityType: task.activityType || 'admin',
+    date:         new Date().toISOString().split('T')[0],
+  });
+  const [saving, setSaving] = useState(false);
+  const [err,    setErr]    = useState('');
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-function TaskModal({ task, onClose, onSave, matters = [] }) {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const hrs = parseFloat(form.hours);
+    if (!hrs || hrs <= 0) { setErr('Enter valid hours'); return; }
+    setSaving(true);
+    try {
+      await timeApi.create({ ...form, hours: hrs });
+      onSave();
+    } catch (ex) {
+      setErr(ex.response?.data?.message || 'Failed to log time');
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(11,11,20,0.45)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ opacity:0, scale:0.95, y:20 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.95 }}
+        style={{ width:'100%', maxWidth:440, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', padding:28 }}>
+
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ width:36, height:36, borderRadius:10, background:'var(--purple-soft)', display:'grid', placeItems:'center', color:'var(--purple)' }}>
+              <I.Timer size={17} />
+            </div>
+            <div>
+              <h3 style={{ margin:0, fontSize:17, fontWeight:700 }}>Log Time</h3>
+              <p style={{ margin:0, fontSize:11, color:'var(--text-muted)' }}>{task.title}</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width:32, height:32, borderRadius:9, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}><I.X size={14} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          {err && <div style={{ background:'#FEE2E2', color:'#991B1B', borderRadius:8, padding:'9px 13px', fontSize:13 }}>{err}</div>}
+
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <Field label="Hours *">
+              <input className="input" type="number" min="0.1" step="0.25" value={form.hours} onChange={e => set('hours', e.target.value)} placeholder="1.5" autoFocus />
+            </Field>
+            <Field label="Date">
+              <input className="input" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
+            </Field>
+          </div>
+
+          <Field label="Description">
+            <input className="input" value={form.description} onChange={e => set('description', e.target.value)} placeholder="What did you work on?" />
+          </Field>
+
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <Field label="Activity Type">
+              <select className="input" value={form.activityType} onChange={e => set('activityType', e.target.value)}>
+                {ACTIVITY_TYPES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+              </select>
+            </Field>
+            {matters.length > 0 && (
+              <Field label="Matter">
+                <select className="input" value={form.matterId} onChange={e => set('matterId', e.target.value)}>
+                  <option value="">— None —</option>
+                  {matters.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+                </select>
+              </Field>
+            )}
+          </div>
+
+          <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : 'Log Time'}</button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── Task Modal ─────────────────────────────────────────────────── */
+const BLANK = {
+  title: '', description: '', priority: 'medium', status: 'to_do',
+  activityType: 'admin', dueDate: '', estimatedHours: '', matterId: '',
+  subtasks: [], recurrence: null, dependencies: [],
+};
+
+function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
   const [form, setForm] = useState(task ? {
     ...BLANK, ...task,
-    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-    matterId: task.matterId?._id || task.matterId || '',
+    dueDate:      task.dueDate      ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+    matterId:     task.matterId?._id || task.matterId || '',
+    subtasks:     task.subtasks     || [],
+    recurrence:   task.recurrence   || null,
+    dependencies: task.dependencies || [],
   } : { ...BLANK });
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
+
+  const [newSubtask,   setNewSubtask]   = useState('');
+  const [saving,       setSaving]       = useState(false);
+  const [err,          setErr]          = useState('');
+  const subtaskRef = useRef(null);
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  /* ── subtask helpers ── */
+  function addSubtask() {
+    if (!newSubtask.trim()) return;
+    set('subtasks', [...form.subtasks, { title: newSubtask.trim(), completed: false }]);
+    setNewSubtask('');
+    subtaskRef.current?.focus();
+  }
+  function toggleSubtask(i) {
+    set('subtasks', form.subtasks.map((s, idx) => idx === i ? { ...s, completed: !s.completed } : s));
+  }
+  function removeSubtask(i) {
+    set('subtasks', form.subtasks.filter((_, idx) => idx !== i));
+  }
+
+  /* ── recurrence helpers ── */
+  function toggleRecurrence() {
+    set('recurrence', form.recurrence ? null : { frequency: 'weekly', interval: 1, endDate: '' });
+  }
+  function setRec(k, v) {
+    set('recurrence', { ...form.recurrence, [k]: v });
+  }
+
+  /* ── dependency helpers ── */
+  function toggleDep(taskId) {
+    const existing = form.dependencies.find(d => d.taskId === taskId || d.taskId?._id === taskId);
+    if (existing) {
+      set('dependencies', form.dependencies.filter(d => (d.taskId?._id || d.taskId) !== taskId));
+    } else {
+      set('dependencies', [...form.dependencies, { taskId, type: 'blocked_by' }]);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.title.trim()) { setErr('Title is required'); return; }
     setSaving(true);
     try {
-      if (task?._id) {
-        await tasksApi.update(task._id, form);
-      } else {
-        await tasksApi.create(form);
-      }
+      const payload = { ...form };
+      if (task?._id) await tasksApi.update(task._id, payload);
+      else await tasksApi.create(payload);
       onSave();
-    } catch (e) {
-      setErr(e.response?.data?.message || 'Failed to save');
+    } catch (ex) {
+      setErr(ex.response?.data?.message || 'Failed to save');
     } finally { setSaving(false); }
   }
+
+  const depTaskIds = new Set(form.dependencies.map(d => d.taskId?._id || d.taskId));
+  const otherTasks = allTasks.filter(t => t._id !== task?._id);
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(11,11,20,0.45)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity:0, scale:0.95, y:20 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.95 }}
-        style={{ width:'100%', maxWidth:540, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', maxHeight:'90vh', overflowY:'auto' }}>
+        style={{ width:'100%', maxWidth:580, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', maxHeight:'92vh', overflowY:'auto' }}>
 
-        <div style={{ padding:'24px 28px 0', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ padding:'24px 28px 0', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, background:'var(--surface)', zIndex:1, borderBottom:'1px solid var(--border)', paddingBottom:16 }}>
           <h3 style={{ margin:0, fontSize:20, fontWeight:700 }}>{task?._id ? 'Edit Task' : 'New Task'}</h3>
           <button onClick={onClose} style={{ width:34, height:34, borderRadius:10, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}><I.X size={15} /></button>
         </div>
@@ -134,19 +273,116 @@ function TaskModal({ task, onClose, onSave, matters = [] }) {
             <Field label="Est. Hours">
               <input className="input" type="number" min="0" step="0.25" value={form.estimatedHours} onChange={e => set('estimatedHours', e.target.value)} placeholder="2.5" />
             </Field>
+            {matters.length > 0 && (
+              <Field label="Linked Matter">
+                <select className="input" value={form.matterId?._id || form.matterId || ''} onChange={e => set('matterId', e.target.value)}>
+                  <option value="">— No matter —</option>
+                  {matters.map(m => (
+                    <option key={m._id} value={m._id}>
+                      {m.matterNumber ? `[${m.matterNumber}] ` : ''}{m.title}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
           </div>
 
-          {matters.length > 0 && (
-            <Field label="Linked Matter">
-              <select className="input" value={form.matterId?._id || form.matterId || ''} onChange={e => set('matterId', e.target.value)}>
-                <option value="">— No matter —</option>
-                {matters.map(m => (
-                  <option key={m._id} value={m._id}>
-                    {m.matterNumber ? `[${m.matterNumber}] ` : ''}{m.title}
-                  </option>
+          {/* ── Subtasks ── */}
+          <div style={{ marginTop:8, marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>
+              Subtasks {form.subtasks.length > 0 && <span style={{ background:'var(--purple-soft)', color:'var(--purple)', borderRadius:999, padding:'1px 7px', fontSize:10 }}>{form.subtasks.filter(s => s.completed).length}/{form.subtasks.length}</span>}
+            </div>
+            {form.subtasks.length > 0 && (
+              <div style={{ border:'1px solid var(--border)', borderRadius:10, overflow:'hidden', marginBottom:8 }}>
+                {form.subtasks.map((st, i) => (
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderBottom: i < form.subtasks.length - 1 ? '1px solid var(--border)' : 'none', background: st.completed ? 'var(--bg)' : 'var(--surface)' }}>
+                    <button type="button" onClick={() => toggleSubtask(i)} style={{
+                      width:18, height:18, borderRadius:5, flexShrink:0, border:`2px solid ${st.completed ? 'var(--purple)' : 'var(--border)'}`,
+                      background: st.completed ? 'var(--purple)' : 'transparent', display:'grid', placeItems:'center', cursor:'pointer',
+                    }}>
+                      {st.completed && <I.Check size={10} style={{ color:'#fff' }} />}
+                    </button>
+                    <span style={{ flex:1, fontSize:13, color: st.completed ? 'var(--text-muted)' : 'var(--ink)', textDecoration: st.completed ? 'line-through' : 'none' }}>{st.title}</span>
+                    <button type="button" onClick={() => removeSubtask(i)} style={{ width:22, height:22, borderRadius:6, background:'transparent', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)', flexShrink:0 }}>
+                      <I.X size={11} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display:'flex', gap:8 }}>
+              <input
+                ref={subtaskRef}
+                className="input" style={{ flex:1, fontSize:13 }}
+                value={newSubtask}
+                onChange={e => setNewSubtask(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubtask(); } }}
+                placeholder="Add a subtask…"
+              />
+              <button type="button" onClick={addSubtask} className="btn btn-secondary" style={{ padding:'0 14px', fontSize:13 }}>Add</button>
+            </div>
+          </div>
+
+          {/* ── Recurrence ── */}
+          <div style={{ marginBottom:14, border:'1px solid var(--border)', borderRadius:10, padding:14 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }} onClick={toggleRecurrence}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <I.Calendar size={14} style={{ color: form.recurrence ? 'var(--purple)' : 'var(--text-muted)' }} />
+                <span style={{ fontSize:13, fontWeight:600, color: form.recurrence ? 'var(--purple)' : 'var(--text-muted)' }}>Recurring Task</span>
+              </div>
+              <div style={{
+                width:38, height:21, borderRadius:999, position:'relative', cursor:'pointer',
+                background: form.recurrence ? 'var(--purple)' : 'var(--border)', transition:'background 0.2s',
+              }}>
+                <div style={{
+                  position:'absolute', top:3, left: form.recurrence ? 19 : 3,
+                  width:15, height:15, borderRadius:999, background:'#fff', transition:'left 0.2s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)',
+                }} />
+              </div>
+            </div>
+
+            {form.recurrence && (
+              <div style={{ marginTop:14, display:'grid', gridTemplateColumns:'1fr 80px 1fr', gap:10 }}>
+                <Field label="Frequency">
+                  <select className="input" style={{ fontSize:13 }} value={form.recurrence.frequency || 'weekly'} onChange={e => setRec('frequency', e.target.value)}>
+                    {RECURRENCE_FREQUENCIES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                </Field>
+                <Field label="Every">
+                  <input className="input" style={{ fontSize:13 }} type="number" min="1" max="99" value={form.recurrence.interval || 1} onChange={e => setRec('interval', parseInt(e.target.value) || 1)} />
+                </Field>
+                <Field label="End Date">
+                  <input className="input" style={{ fontSize:13 }} type="date" value={form.recurrence.endDate || ''} onChange={e => setRec('endDate', e.target.value)} />
+                </Field>
+              </div>
+            )}
+          </div>
+
+          {/* ── Dependencies ── */}
+          {otherTasks.length > 0 && (
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:8 }}>Blocked By</div>
+              {depTaskIds.size > 0 && (
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:8 }}>
+                  {Array.from(depTaskIds).map(id => {
+                    const t = otherTasks.find(t => t._id === id);
+                    if (!t) return null;
+                    return (
+                      <span key={id} style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'3px 10px', borderRadius:999, background:'#FEE2E2', color:'#991B1B', fontSize:12, fontWeight:600 }}>
+                        {t.title}
+                        <button type="button" onClick={() => toggleDep(id)} style={{ background:'none', border:'none', cursor:'pointer', display:'grid', placeItems:'center', padding:0, color:'#EF4444' }}><I.X size={10} /></button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              <select className="input" style={{ fontSize:13 }} value="" onChange={e => { if (e.target.value) toggleDep(e.target.value); }}>
+                <option value="">+ Add dependency…</option>
+                {otherTasks.filter(t => !depTaskIds.has(t._id)).map(t => (
+                  <option key={t._id} value={t._id}>{t.title}</option>
                 ))}
               </select>
-            </Field>
+            </div>
           )}
 
           <div style={{ display:'flex', gap:10, justifyContent:'flex-end', marginTop:8 }}>
@@ -204,9 +440,11 @@ function TaskListModal({ list, onClose, onSave }) {
 }
 
 /* ─── Task Row ───────────────────────────────────────────────────── */
-function TaskRow({ task, onToggle, onEdit, onDelete }) {
+function TaskRow({ task, onToggle, onEdit, onDelete, onLogTime }) {
   const overdue = isOverdue(task);
-  const pm = priorityMeta(task.priority);
+  const subtasksDone  = task.subtasks?.filter(s => s.completed).length || 0;
+  const subtasksTotal = task.subtasks?.length || 0;
+
   return (
     <motion.div layout initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, x:-16 }}
       style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'13px 18px', borderBottom:'1px solid var(--border)' }}>
@@ -225,6 +463,14 @@ function TaskRow({ task, onToggle, onEdit, onDelete }) {
           <span style={{ fontSize:14, fontWeight:600, color: task.status === 'completed' ? 'var(--text-muted)' : 'var(--ink)', textDecoration: task.status === 'completed' ? 'line-through' : 'none' }}>{task.title}</span>
           <StatusBadge status={task.status} />
           {task.status === 'blocked' && <span style={{ fontSize:11, color:'#EF4444', fontWeight:700 }}>⚠ Blocked</span>}
+          {task.recurrence && (
+            <span title="Recurring" style={{ fontSize:10, padding:'1px 7px', borderRadius:999, background:'#EDE9FE', color:'#7C3AED', fontWeight:700 }}>↻ Recurring</span>
+          )}
+          {subtasksTotal > 0 && (
+            <span style={{ fontSize:10, padding:'1px 7px', borderRadius:999, background: subtasksDone === subtasksTotal ? '#D1FAE5' : '#F3F4F6', color: subtasksDone === subtasksTotal ? '#065F46' : '#6B7280', fontWeight:600 }}>
+              {subtasksDone}/{subtasksTotal}
+            </span>
+          )}
         </div>
         {task.description && <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:5, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{task.description}</div>}
         <div style={{ display:'flex', gap:14, fontSize:11, color:'var(--text-muted)', flexWrap:'wrap' }}>
@@ -241,12 +487,20 @@ function TaskRow({ task, onToggle, onEdit, onDelete }) {
       </div>
 
       <div style={{ display:'flex', gap:5, flexShrink:0 }}>
-        <button onClick={() => onEdit(task)} style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
+        <button onClick={() => onLogTime(task)} title="Log Time"
+          style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
+          onMouseEnter={e => { e.currentTarget.style.background='#D1FAE5'; e.currentTarget.style.color='#065F46'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
+          <I.Timer size={12} />
+        </button>
+        <button onClick={() => onEdit(task)} title="Edit"
+          style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
           onMouseEnter={e => { e.currentTarget.style.background='var(--purple-soft)'; e.currentTarget.style.color='var(--purple)'; }}
           onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
           <I.Settings size={12} />
         </button>
-        <button onClick={() => onDelete(task._id)} style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
+        <button onClick={() => onDelete(task._id)} title="Delete"
+          style={{ width:28, height:28, borderRadius:7, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)' }}
           onMouseEnter={e => { e.currentTarget.style.background='#FEE2E2'; e.currentTarget.style.color='#EF4444'; }}
           onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
           <I.X size={12} />
@@ -257,23 +511,45 @@ function TaskRow({ task, onToggle, onEdit, onDelete }) {
 }
 
 /* ─── Kanban Card ────────────────────────────────────────────────── */
-function KanbanCard({ task, onEdit, onDragStart }) {
-  const overdue = isOverdue(task);
-  const pm = priorityMeta(task.priority);
+function KanbanCard({ task, onEdit, onDragStart, onLogTime }) {
+  const overdue       = isOverdue(task);
+  const pm            = priorityMeta(task.priority);
+  const subtasksDone  = task.subtasks?.filter(s => s.completed).length || 0;
+  const subtasksTotal = task.subtasks?.length || 0;
+
   return (
     <motion.div layout draggable onDragStart={() => onDragStart(task)}
       whileHover={{ y:-2, boxShadow:'0 8px 24px rgba(11,11,20,0.10)' }}
-      className="card" onClick={() => onEdit(task)}
+      className="card"
       style={{ padding:14, marginBottom:8, cursor:'grab', borderLeft: task.status === 'blocked' ? '3px solid #EF4444' : 'none' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6 }}>
-        <PriorityDot priority={task.priority} />
-        <span style={{ fontSize:13, fontWeight:600, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{task.title}</span>
+
+      <div style={{ display:'flex', alignItems:'flex-start', gap:6, marginBottom:6 }}>
+        <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => onEdit(task)}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+            <PriorityDot priority={task.priority} />
+            <span style={{ fontSize:13, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{task.title}</span>
+          </div>
+        </div>
+        <button onClick={e => { e.stopPropagation(); onLogTime(task); }} title="Log Time"
+          style={{ width:24, height:24, borderRadius:6, background:'var(--elevated)', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)', flexShrink:0 }}
+          onMouseEnter={e => { e.currentTarget.style.background='#D1FAE5'; e.currentTarget.style.color='#065F46'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--elevated)'; e.currentTarget.style.color='var(--text-muted)'; }}>
+          <I.Timer size={11} />
+        </button>
       </div>
+
       {task.description && (
-        <div style={{ fontSize:11, color:'var(--text-muted)', marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>{task.description}</div>
+        <div style={{ fontSize:11, color:'var(--text-muted)', marginBottom:8, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', cursor:'pointer' }} onClick={() => onEdit(task)}>{task.description}</div>
       )}
+
       <div style={{ display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
         <span style={{ fontSize:10, padding:'2px 7px', borderRadius:6, background: pm.bg, color: pm.color, fontWeight:600 }}>{pm.label}</span>
+        {task.recurrence && <span style={{ fontSize:10, padding:'2px 6px', borderRadius:6, background:'#EDE9FE', color:'#7C3AED', fontWeight:700 }}>↻</span>}
+        {subtasksTotal > 0 && (
+          <span style={{ fontSize:10, padding:'2px 7px', borderRadius:6, background: subtasksDone === subtasksTotal ? '#D1FAE5' : '#F3F4F6', color: subtasksDone === subtasksTotal ? '#065F46' : '#6B7280', fontWeight:600 }}>
+            {subtasksDone}/{subtasksTotal}
+          </span>
+        )}
         {task.matterId?.title && <span style={{ fontSize:10, color:'var(--text-muted)' }}>{task.matterId.title}</span>}
         {task.dueDate && (
           <span style={{ fontSize:10, color: overdue ? '#EF4444' : 'var(--text-muted)', fontWeight: overdue ? 700 : 400, marginLeft:'auto' }}>
@@ -286,7 +562,7 @@ function KanbanCard({ task, onEdit, onDragStart }) {
 }
 
 /* ─── Kanban Board ───────────────────────────────────────────────── */
-function KanbanBoard({ tasks, onMove, onEdit }) {
+function KanbanBoard({ tasks, onMove, onEdit, onLogTime }) {
   const [dragTask, setDragTask] = useState(null);
   const [dragOver, setDragOver] = useState(null);
 
@@ -307,7 +583,7 @@ function KanbanBoard({ tasks, onMove, onEdit }) {
           </div>
           <AnimatePresence>
             {tasks.filter(t => t.status === col.value).map(t => (
-              <KanbanCard key={t._id} task={t} onEdit={onEdit} onDragStart={setDragTask} />
+              <KanbanCard key={t._id} task={t} onEdit={onEdit} onDragStart={setDragTask} onLogTime={onLogTime} />
             ))}
           </AnimatePresence>
           {tasks.filter(t => t.status === col.value).length === 0 && (
@@ -321,9 +597,9 @@ function KanbanBoard({ tasks, onMove, onEdit }) {
 
 /* ─── Task Lists Panel ───────────────────────────────────────────── */
 function TaskListsPanel({ onSelectList }) {
-  const [lists, setLists]   = useState([]);
+  const [lists,   setLists]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal]   = useState(null);
+  const [modal,   setModal]   = useState(null);
   const [editing, setEditing] = useState(null);
 
   const load = useCallback(async () => {
@@ -407,26 +683,27 @@ function TaskListsPanel({ onSelectList }) {
 }
 
 /* ─── Main Tasks Page ────────────────────────────────────────────── */
-const TABS = ['Tasks', 'Task Lists'];
+const TABS  = ['Tasks', 'Task Lists'];
 const VIEWS = ['list', 'board'];
 
 export default function Tasks() {
-  const [tab, setTab]               = useState('Tasks');
-  const [view, setView]             = useState('list');
-  const [tasks, setTasks]           = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [search, setSearch]         = useState('');
+  const [tab, setTab]                       = useState('Tasks');
+  const [view, setView]                     = useState('list');
+  const [tasks, setTasks]                   = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [search, setSearch]                 = useState('');
   const [filterStatus, setFilterStatus]     = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [filterDue, setFilterDue]           = useState('');
   const [filterMatter, setFilterMatter]     = useState('');
   const [myTasksOnly, setMyTasksOnly]       = useState(false);
-  const [showModal, setShowModal]   = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-  const [selectedList, setSelectedList] = useState(null);
-  const [matters, setMatters]       = useState([]);
+  const [showModal, setShowModal]           = useState(false);
+  const [editingTask, setEditingTask]       = useState(null);
+  const [logTimeTask, setLogTimeTask]       = useState(null);
+  const [selectedList, setSelectedList]     = useState(null);
+  const [matters, setMatters]               = useState([]);
 
-  /* debounced search ref */
+  /* debounced search */
   const searchTimer = useRef(null);
   const [debouncedSearch, setDebouncedSearch] = useState('');
   useEffect(() => {
@@ -438,7 +715,7 @@ export default function Tasks() {
   /* load active matters for filter + modal */
   useEffect(() => {
     mattersApi.list({ limit: 200, status: 'active' })
-      .then(r => setMatters(r.data.data || []))
+      .then(r => setMatters(r.data.data?.matters || []))
       .catch(() => {});
   }, []);
 
@@ -451,11 +728,11 @@ export default function Tasks() {
         setTasks(r.data.data || []);
       } else {
         const params = {};
-        if (filterStatus)   params.status    = filterStatus;
-        if (filterPriority) params.priority   = filterPriority;
-        if (filterDue)      params.due        = filterDue;
-        if (filterMatter)   params.matterId   = filterMatter;
-        if (selectedList)   params.taskListId = selectedList._id;
+        if (filterStatus)    params.status    = filterStatus;
+        if (filterPriority)  params.priority  = filterPriority;
+        if (filterDue)       params.due       = filterDue;
+        if (filterMatter)    params.matterId  = filterMatter;
+        if (selectedList)    params.taskListId = selectedList._id;
         if (debouncedSearch) params.q         = debouncedSearch;
         r = await tasksApi.list(params);
         setTasks(r.data.data?.tasks || []);
@@ -480,7 +757,6 @@ export default function Tasks() {
     setTasks(updated);
     try {
       await tasksApi.update(task._id, { status: newStatus });
-      /* persist order for all tasks in the destination column */
       const colTasks = updated.filter(t => t.status === newStatus);
       if (colTasks.length > 1) {
         await tasksApi.reorder(colTasks.map((t, i) => ({ id: t._id, order: i, status: newStatus })));
@@ -506,7 +782,7 @@ export default function Tasks() {
     return true;
   });
 
-  const byStatus = v => tasks.filter(t => t.status === v).length;
+  const byStatus    = v => tasks.filter(t => t.status === v).length;
   const overdueCount = tasks.filter(isOverdue).length;
 
   return (
@@ -559,12 +835,12 @@ export default function Tasks() {
           {/* Stats */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, marginBottom:20 }}>
             {[
-              { l:'Total',       v: tasks.length,         c:'var(--ink)' },
-              { l:'To Do',       v: byStatus('to_do'),    c:'#6B7280' },
-              { l:'In Progress', v: byStatus('in_progress'), c:'#3B82F6' },
-              { l:'In Review',   v: byStatus('in_review'),   c:'#8B5CF6' },
-              { l:'Blocked',     v: byStatus('blocked'),      c:'#EF4444' },
-              { l:'Overdue',     v: overdueCount,             c:'#EF4444' },
+              { l:'Total',       v: tasks.length,              c:'var(--ink)' },
+              { l:'To Do',       v: byStatus('to_do'),         c:'#6B7280' },
+              { l:'In Progress', v: byStatus('in_progress'),   c:'#3B82F6' },
+              { l:'In Review',   v: byStatus('in_review'),     c:'#8B5CF6' },
+              { l:'Blocked',     v: byStatus('blocked'),        c:'#EF4444' },
+              { l:'Overdue',     v: overdueCount,               c:'#EF4444' },
             ].map(({ l, v, c }) => (
               <div key={l} className="card" style={{ padding:'12px 16px' }}>
                 <div style={{ fontSize:22, fontWeight:800, color:c }}>{v}</div>
@@ -582,13 +858,11 @@ export default function Tasks() {
           )}
 
           <div style={{ display:'flex', gap:10, marginBottom:18, flexWrap:'wrap' }}>
-            {/* Search */}
             <div style={{ position:'relative', flex:1, minWidth:200 }}>
               <I.Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)', pointerEvents:'none' }} />
               <input className="input" placeholder="Search tasks…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft:38 }} />
             </div>
 
-            {/* My Tasks toggle */}
             <button
               onClick={() => setMyTasksOnly(v => !v)}
               style={{
@@ -602,19 +876,16 @@ export default function Tasks() {
               <I.User size={13} /> My Tasks
             </button>
 
-            {/* Status */}
             <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width:140, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Statuses</option>
               {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
 
-            {/* Priority */}
             <select className="input" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ width:130, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Priorities</option>
               {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
 
-            {/* Due */}
             <select className="input" value={filterDue} onChange={e => setFilterDue(e.target.value)} style={{ width:130, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Dates</option>
               <option value="overdue">Overdue</option>
@@ -622,7 +893,6 @@ export default function Tasks() {
               <option value="week">Due This Week</option>
             </select>
 
-            {/* Matter */}
             {matters.length > 0 && (
               <select className="input" value={filterMatter} onChange={e => setFilterMatter(e.target.value)} style={{ width:160, cursor:'pointer' }} disabled={myTasksOnly}>
                 <option value="">All Matters</option>
@@ -661,12 +931,16 @@ export default function Tasks() {
                     onToggle={handleToggle}
                     onEdit={t => { setEditingTask(t); setShowModal(true); }}
                     onDelete={handleDelete}
+                    onLogTime={setLogTimeTask}
                   />
                 ))}
               </AnimatePresence>
             </div>
           ) : (
-            <KanbanBoard tasks={filtered} onMove={handleMove} onEdit={t => { setEditingTask(t); setShowModal(true); }} />
+            <KanbanBoard tasks={filtered} onMove={handleMove}
+              onEdit={t => { setEditingTask(t); setShowModal(true); }}
+              onLogTime={setLogTimeTask}
+            />
           )}
         </>
       )}
@@ -678,6 +952,15 @@ export default function Tasks() {
             onClose={() => { setShowModal(false); setEditingTask(null); }}
             onSave={() => { setShowModal(false); setEditingTask(null); load(); }}
             matters={matters}
+            allTasks={tasks}
+          />
+        )}
+        {logTimeTask && (
+          <LogTimeModal
+            task={logTimeTask}
+            matters={matters}
+            onClose={() => setLogTimeTask(null)}
+            onSave={() => setLogTimeTask(null)}
           />
         )}
       </AnimatePresence>

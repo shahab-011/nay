@@ -242,6 +242,84 @@ function TxRow({ tx, accountId, onVoid }) {
   );
 }
 
+/* ── Trust Payment Request Modal ───────────────────────────────── */
+function PaymentRequestModal({ account, matters, onClose }) {
+  const [form, setForm] = useState({ amount: '', clientEmail: '', clientName: '', matterId: '', description: '', message: '' });
+  const [saving, setSaving]   = useState(false);
+  const [result, setResult]   = useState(null);
+  const [err,    setErr]      = useState('');
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  async function submit() {
+    if (!form.amount || !form.clientEmail) { setErr('Amount and client email are required'); return; }
+    setSaving(true);
+    setErr('');
+    try {
+      const r = await trustApi.requestPayment(account._id, { ...form, amount: parseFloat(form.amount) });
+      setResult(r.data.data);
+    } catch (e) {
+      setErr(e.response?.data?.message || 'Failed to send payment request');
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <ModalWrap onClose={onClose} title="Request Trust Payment" subtitle={`${account.accountName} — Balance: ${fmtMoney(account.balance)}`}>
+      {result ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ padding: '16px 18px', borderRadius: 12, background: '#D1FAE5', border: '1.5px solid #6EE7B7', textAlign: 'center' }}>
+            <div style={{ fontSize: 22 }}>✅</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#065F46', marginTop: 6 }}>Payment request sent!</div>
+            <div style={{ fontSize: 12, color: '#047857', marginTop: 4 }}>An email with the payment link has been sent to {form.clientEmail}</div>
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', display: 'block', marginBottom: 6 }}>Payment Link</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input readOnly value={result.payUrl || ''} style={{ ...inputStyle, fontSize: 12, flex: 1 }} onClick={e => e.target.select()} />
+              <button onClick={() => { navigator.clipboard.writeText(result.payUrl || ''); }}
+                style={{ padding: '9px 14px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--elevated)', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <I.Copy size={13} /> Copy
+              </button>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button onClick={onClose} style={{ padding: '9px 20px', borderRadius: 10, background: 'var(--purple)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Done</button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {err && <div style={{ padding: '10px 13px', borderRadius: 8, background: '#FEF2F2', color: '#991B1B', fontSize: 13 }}>{err}</div>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Field label="Amount ($) *">
+              <input type="number" min="0.01" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0.00" style={inputStyle} autoFocus />
+            </Field>
+            <Field label="Matter">
+              <select value={form.matterId} onChange={e => set('matterId', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                <option value="">No matter</option>
+                {matters.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+              </select>
+            </Field>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Field label="Client Email *">
+              <input type="email" value={form.clientEmail} onChange={e => set('clientEmail', e.target.value)} placeholder="client@example.com" style={inputStyle} />
+            </Field>
+            <Field label="Client Name">
+              <input value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="Full name" style={inputStyle} />
+            </Field>
+          </div>
+          <Field label="Purpose / Description">
+            <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="e.g. Retainer deposit — Smith matter" style={inputStyle} />
+          </Field>
+          <Field label="Message to Client (optional)">
+            <textarea value={form.message} onChange={e => set('message', e.target.value)} rows={3} placeholder="Add a personal note to the email…" style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
+          </Field>
+          <ModalFooter onClose={onClose} onSave={submit} saving={saving} disabled={!form.amount || !form.clientEmail} saveLabel="Send Payment Request" />
+        </div>
+      )}
+    </ModalWrap>
+  );
+}
+
 /* ── Main ──────────────────────────────────────────────────────── */
 const TABS = ['Transactions', 'Matter Ledger', 'Reconciliation'];
 
@@ -258,6 +336,7 @@ export default function TrustAccounting() {
   const [txModal, setTxModal]           = useState(null);
   const [reconcileModal, setReconcileModal] = useState(false);
   const [voidModal, setVoidModal]       = useState(null);
+  const [paymentReqModal, setPaymentReqModal] = useState(false);
   const [typeFilter, setTypeFilter]     = useState('');
 
   const loadAccounts = useCallback(async () => {
@@ -377,6 +456,10 @@ export default function TrustAccounting() {
                 {label}
               </button>
             ))}
+            <button onClick={() => setPaymentReqModal(true)}
+              style={{ padding: '9px 16px', borderRadius: 10, border: '1.5px solid #7C3AED', background: 'rgba(124,58,237,0.08)', color: '#7C3AED', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <I.Send size={14} /> Request Payment
+            </button>
             <button onClick={() => setReconcileModal(true)}
               style={{ marginLeft: 'auto', padding: '9px 16px', borderRadius: 10, border: '1.5px solid var(--purple)', background: 'rgba(124,58,237,0.08)', color: 'var(--purple)', cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
               <I.CheckSquare size={14} /> Reconcile
@@ -556,6 +639,9 @@ export default function TrustAccounting() {
         )}
         {voidModal && (
           <VoidModal key="void" tx={voidModal} accountId={activeAccount?._id} onClose={() => setVoidModal(null)} onVoid={handleVoid} />
+        )}
+        {paymentReqModal && activeAccount && (
+          <PaymentRequestModal key="payreq" account={activeAccount} matters={matters} onClose={() => setPaymentReqModal(false)} />
         )}
       </AnimatePresence>
     </div>

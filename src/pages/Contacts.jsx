@@ -388,7 +388,7 @@ function ContactDetail({ contact, allContacts, onEdit, onBack, onDelete, onMerge
                     {contact.email && <a href={`mailto:${contact.email}`} className="btn btn-secondary btn-sm" style={{ justifyContent: 'flex-start', gap: 10 }}><I.Mail size={14} /> Send Email</a>}
                     {contact.phone && <a href={`tel:${contact.phone}`} className="btn btn-secondary btn-sm" style={{ justifyContent: 'flex-start', gap: 10 }}><I.Bell size={14} /> Call</a>}
                     <button onClick={onDelete} className="btn btn-sm" style={{ justifyContent: 'flex-start', gap: 10, background: 'rgba(220,38,96,0.07)', color: 'var(--red)', border: '1px solid rgba(220,38,96,0.2)' }}>
-                      <I.Trash size={14} /> Delete Contact
+                      <I.X size={14} /> Delete Contact
                     </button>
                   </div>
                 </div>

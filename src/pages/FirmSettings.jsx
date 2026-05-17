@@ -422,7 +422,7 @@ function RolesTab() {
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={()=>setEditing(role)} style={{ padding:'6px 12px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#F9FAFB',color:'#374151',cursor:'pointer',fontSize:12,fontWeight:600 }}>Edit</button>
-            <button onClick={()=>deleteRole(role._id)} style={{ padding:'6px 10px',borderRadius:7,border:'1.5px solid #FECDD3',background:'#FFF1F2',color:'#DC2626',cursor:'pointer',fontSize:12 }}><I.Trash size={13}/></button>
+            <button onClick={()=>deleteRole(role._id)} style={{ padding:'6px 10px',borderRadius:7,border:'1.5px solid #FECDD3',background:'#FFF1F2',color:'#DC2626',cursor:'pointer',fontSize:12 }}><I.X size={13}/></button>
           </div>
         </div>
       ))}

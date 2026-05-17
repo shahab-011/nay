@@ -543,7 +543,7 @@ function FormModal({ form: editForm, onClose, onSave }) {
                   <select value={field.type} onChange={e => updateField(i, 'type', e.target.value)} style={{ ...inp, padding: '7px 10px', fontSize: 12 }}>
                     {FIELD_TYPES.map(t => <option key={t}>{t}</option>)}
                   </select>
-                  <button onClick={() => removeField(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4 }}><I.Trash size={14} /></button>
+                  <button onClick={() => removeField(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4 }}><I.X size={14} /></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                   <label style={{ fontSize: 12, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
@@ -649,7 +649,7 @@ function FormsView() {
 
       {forms.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF' }}>
-          <I.FileText size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
+          <I.Doc size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
           <div style={{ fontSize: 14 }}>No intake forms yet</div>
           <div style={{ fontSize: 12, marginTop: 6 }}>Create a form to capture leads from your website</div>
         </div>

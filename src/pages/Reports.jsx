@@ -156,7 +156,7 @@ const TABS = [
   { id:'time',       label:'Time',       icon:I.Clock },
   { id:'matters',    label:'Matters',    icon:I.Briefcase },
   { id:'pipeline',   label:'Pipeline',   icon:I.Star },
-  { id:'custom',     label:'Saved',      icon:I.Save },
+  { id:'custom',     label:'Saved',      icon:I.Folder },
 ];
 
 /* ─── Dashboard Tab ─────────────────────────────────────────────── */
@@ -181,9 +181,9 @@ function DashboardTab() {
         <StatCard label="Tasks Due Today" value={today.tasksDueToday||0}  icon={I.CheckSquare} color="#F59E0B" />
         <StatCard label="Month Billed"    value={fmt$(month.billed)}       icon={I.TrendingUp}  color="#3B82F6" />
         <StatCard label="Month Collected" value={fmt$(month.collected)}    icon={I.Check}       color="#10B981" />
-        <StatCard label="Outstanding"     value={fmt$(month.outstanding)}  icon={I.AlertTriangle||I.Alert} color="#EF4444" />
+        <StatCard label="Outstanding"     value={fmt$(month.outstanding)}  icon={I.Alert} color="#EF4444" />
         <StatCard label="New Matters"     value={month.newMatters||0}      icon={I.Briefcase}   color="#8B5CF6" />
-        <StatCard label="Invoices Sent"   value={month.invoicesSent||0}    icon={I.FileText}    color="#06B6D4" />
+        <StatCard label="Invoices Sent"   value={month.invoicesSent||0}    icon={I.Doc}         color="#06B6D4" />
       </div>
 
       <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20 }}>
@@ -302,7 +302,7 @@ function FinancialTab() {
             <StatCard label="Total Billed"  value={fmt$(rev.totals?.billed)}      color="#7C3AED" icon={I.DollarSign} />
             <StatCard label="Collected"     value={fmt$(rev.totals?.collected)}   color="#10B981" icon={I.Check} />
             <StatCard label="Outstanding"   value={fmt$(rev.totals?.outstanding)} color="#EF4444" icon={I.Alert} />
-            <StatCard label="Invoices"      value={rev.totals?.invoiceCount||0}   color="#3B82F6" icon={I.FileText} />
+            <StatCard label="Invoices"      value={rev.totals?.invoiceCount||0}   color="#3B82F6" icon={I.Doc} />
           </div>
           <Card title="Revenue by Month" actions={<button onClick={()=>downloadCSV(rev.byPeriod,'revenue_by_month.csv')} style={{fontSize:11,padding:'5px 10px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#F9FAFB',cursor:'pointer',fontWeight:700,color:'#374151',display:'flex',alignItems:'center',gap:4}}><I.Download size={11}/>CSV</button>}>
             <BarChart data={(rev.byPeriod||[]).map(p=>({...p,value:p.total}))} color="#7C3AED" unit="$" />
@@ -479,7 +479,7 @@ function TimeTab() {
           <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:12,marginBottom:20 }}>
             <StatCard label="Time Entries"   value={wip.summary?.timeEntries||0}       color="#7C3AED" icon={I.Clock} />
             <StatCard label="WIP Time Value" value={fmt$(wip.summary?.timeValue)}      color="#3B82F6" icon={I.DollarSign} />
-            <StatCard label="Expenses"       value={wip.summary?.expenseCount||0}      color="#F59E0B" icon={I.FileText} />
+            <StatCard label="Expenses"       value={wip.summary?.expenseCount||0}      color="#F59E0B" icon={I.Doc} />
             <StatCard label="Total WIP"      value={fmt$(wip.summary?.totalWIP)}       color="#EF4444" icon={I.TrendingUp} />
           </div>
           <Card title="Unbilled Time" actions={<button onClick={()=>downloadCSV(wip.unbilledTime,'wip_time.csv')} style={{fontSize:11,padding:'5px 10px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#F9FAFB',cursor:'pointer',fontWeight:700,color:'#374151',display:'flex',alignItems:'center',gap:4}}><I.Download size={11}/>CSV</button>}>
@@ -711,7 +711,7 @@ function CustomTab() {
         : reports.map(r => (
           <div key={r._id} style={{ background:'#fff',borderRadius:12,border:'1.5px solid #E5E7EB',padding:'14px 18px',display:'flex',alignItems:'center',gap:14,marginBottom:8 }}>
             <div style={{ width:36,height:36,borderRadius:9,background:'#F5F3FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-              <I.BarChart2 size={16} style={{ color:'#7C3AED' }} />
+              <I.Chart size={16} style={{ color:'#7C3AED' }} />
             </div>
             <div style={{ flex:1,minWidth:0 }}>
               <div style={{ fontSize:13,fontWeight:700,color:'#111827' }}>{r.name}</div>
@@ -738,7 +738,7 @@ export default function Reports() {
         <motion.div initial={{opacity:0,y:-12}} animate={{opacity:1,y:0}} style={{marginBottom:28}}>
           <div style={{display:'flex',alignItems:'center',gap:14}}>
             <div style={{width:44,height:44,borderRadius:12,background:'linear-gradient(135deg,#7C3AED,#4F46E5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <I.BarChart2 size={22} style={{color:'#fff'}} />
+              <I.Chart size={22} style={{color:'#fff'}} />
             </div>
             <div>
               <h1 style={{margin:0,fontSize:24,fontWeight:800,color:'#111827'}}>Reports & Analytics</h1>

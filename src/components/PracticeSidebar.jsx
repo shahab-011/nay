@@ -127,7 +127,7 @@ function SecLabel({ label }) {
 function PracticeSidebarContent({ onItemClick }) {
   const navigate   = useNavigate();
   const { user }   = useAuth();
-  const isLawyer   = user?.role === 'lawyer' || user?.role === 'admin';
+  const isLawyer   = ['lawyer', 'admin', 'owner'].includes(user?.role);
   const initial    = user?.name ? user.name[0].toUpperCase() : '?';
 
   const sections = isLawyer ? [...NAV, LAWYER_SECTION] : NAV;

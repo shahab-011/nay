@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { I } from './Icons';
 import NotificationBell from './NotificationBell';
+import GlobalSearch from './GlobalSearch';
 
 /* ─── Nav structure ───────────────────────────────────────────── */
 const NAV = [
@@ -161,6 +162,11 @@ function PracticeSidebarContent({ onItemClick }) {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)' }}>{user?.role || 'user'}</div>
           </div>
         </div>
+      </div>
+
+      {/* Global Search */}
+      <div style={{ padding: '10px 10px 0' }}>
+        <GlobalSearch placeholder="Search…" />
       </div>
 
       {/* Back to portal */}

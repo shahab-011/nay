@@ -488,7 +488,7 @@ export default function CalendarPage() {
   /* load active matters for the matter selector */
   useEffect(() => {
     mattersApi.list({ limit: 200, status: 'active' })
-      .then(r => setMatters(r.data.data || []))
+      .then(r => setMatters(r.data.data?.matters || []))
       .catch(() => {});
   }, []);
 

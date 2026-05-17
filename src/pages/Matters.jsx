@@ -776,7 +776,7 @@ export default function Matters() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await mattersApi.list();
+      const r = await mattersApi.list({ limit: 500 });
       setMatters(r.data.data?.matters || []);
     } catch {
       setError('Failed to load matters. Make sure the backend is running.');

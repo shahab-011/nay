@@ -37,10 +37,43 @@ function Reveal({ children, variants = containerV(0.12), style, className }) {
   );
 }
 
+/* ── Navbar product definitions ──────────────────────────── */
+const NAV_PRODUCTS = [
+  {
+    icon: I.Doc,
+    title: 'Document Studio',
+    desc: 'AI-powered document analysis & chat',
+    path: '/services',
+    color: '#7C3AED',
+    bg: 'rgba(124,58,237,0.09)',
+    tag: 'Self-Help',
+  },
+  {
+    icon: I.Briefcase,
+    title: 'Practice Management',
+    desc: 'Full law firm management platform',
+    path: '/services',
+    color: '#0EA5E9',
+    bg: 'rgba(14,165,233,0.09)',
+    tag: 'For Firms',
+  },
+  {
+    icon: I.Scale,
+    title: 'Find a Lawyer',
+    desc: 'Match with verified legal experts',
+    path: '/services',
+    color: '#10B981',
+    bg: 'rgba(16,185,129,0.09)',
+    tag: 'Marketplace',
+  },
+];
+
 /* ── Animated Glassy Navbar ──────────────────────────────── */
 function PublicNav({ navigate }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled,     setScrolled]     = useState(false);
+  const [mobileOpen,   setMobileOpen]   = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [mobileProds,  setMobileProds]  = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 44);
@@ -48,12 +81,24 @@ function PublicNav({ navigate }) {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const links = [
-    { label: 'Services',    to: '/services' },
-    { label: 'Methodology', to: null },
-    { label: 'For Lawyers', to: '/login' },
-    { label: 'Contact',     to: '/intake' },
-  ];
+  /* close Products dropdown on outside click */
+  useEffect(() => {
+    if (!productsOpen) return;
+    const fn = (e) => {
+      if (!e.target.closest('[data-products-menu]')) setProductsOpen(false);
+    };
+    document.addEventListener('mousedown', fn);
+    return () => document.removeEventListener('mousedown', fn);
+  }, [productsOpen]);
+
+  const navBtnStyle = (active) => ({
+    display: 'flex', alignItems: 'center', gap: 5,
+    padding: '8px 14px', borderRadius: 10, border: 'none',
+    background: active ? 'var(--purple-soft)' : 'transparent',
+    color: active ? 'var(--purple)' : 'var(--ink)',
+    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+    transition: 'background 150ms, color 150ms',
+  });
 
   return (
     <>
@@ -64,23 +109,24 @@ function PublicNav({ navigate }) {
         transition={{ duration: 0.7, ease }}
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-          background: scrolled ? 'rgba(255,255,255,0.78)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(22px) saturate(180%)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(22px) saturate(180%)' : 'none',
-          boxShadow: scrolled ? '0 1px 0 rgba(11,11,20,0.06), 0 8px 32px rgba(11,11,20,0.06)' : 'none',
+          background: scrolled ? 'rgba(255,255,255,0.82)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+          boxShadow: scrolled ? '0 1px 0 rgba(11,11,20,0.07), 0 8px 32px rgba(11,11,20,0.06)' : 'none',
           borderBottom: `1px solid ${scrolled ? 'rgba(232,228,238,0.7)' : 'transparent'}`,
-          transition: 'background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease',
+          transition: 'background 0.4s, box-shadow 0.4s, border-color 0.4s',
         }}
       >
         <div style={{
           maxWidth: 1280, margin: '0 auto', padding: '0 28px',
           height: 70, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          {/* Logo */}
+
+          {/* ── Logo ── */}
           <motion.div
             className="wordmark"
             onClick={() => navigate('/')}
-            style={{ cursor: 'pointer', userSelect: 'none' }}
+            style={{ cursor: 'pointer', userSelect: 'none', flexShrink: 0 }}
             initial={{ opacity: 0, x: -18 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15, duration: 0.55, ease }}
@@ -92,31 +138,151 @@ function PublicNav({ navigate }) {
             <span className="wordmark-dot">.</span>
           </motion.div>
 
-          {/* Desktop pill nav */}
+          {/* ── Centre nav (desktop only) ── */}
           <motion.div
-            className="nav-pill lp-pill-nav"
+            className="lp-pill-nav"
             initial={{ opacity: 0, y: -14, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.22, duration: 0.6, ease }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 2,
+              background: scrolled ? 'rgba(246,244,251,0.8)' : 'rgba(255,255,255,0.55)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(124,58,237,0.10)',
+              borderRadius: 14, padding: '5px 6px',
+            }}
           >
-            {links.map((link, i) => (
-              <motion.div
-                key={link.label}
-                className="nav-pill-item"
-                onClick={() => link.to && navigate(link.to)}
-                whileHover={{ color: 'var(--purple)', background: 'var(--purple-soft)' }}
+            {/* Products dropdown trigger */}
+            <div data-products-menu style={{ position: 'relative' }}>
+              <motion.button
+                onClick={() => setProductsOpen(v => !v)}
+                whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
+                style={navBtnStyle(productsOpen)}
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.28 + i * 0.07, duration: 0.4 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
               >
-                {link.label}
-              </motion.div>
-            ))}
+                Products
+                <motion.span
+                  animate={{ rotate: productsOpen ? 180 : 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ display: 'flex', color: productsOpen ? 'var(--purple)' : '#9CA3AF' }}
+                >
+                  <I.Chevron size={14} />
+                </motion.span>
+              </motion.button>
+
+              {/* ── Products dropdown panel ── */}
+              <AnimatePresence>
+                {productsOpen && (
+                  <motion.div
+                    data-products-menu
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    transition={{ duration: 0.22, ease }}
+                    style={{
+                      position: 'absolute', top: 'calc(100% + 10px)', left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 340,
+                      background: '#fff',
+                      borderRadius: 20,
+                      border: '1px solid rgba(124,58,237,0.12)',
+                      boxShadow: '0 24px 60px rgba(11,11,20,0.13), 0 4px 16px rgba(124,58,237,0.08)',
+                      padding: 10,
+                      zIndex: 300,
+                    }}
+                  >
+                    {/* Arrow */}
+                    <div style={{
+                      position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)',
+                      width: 14, height: 7, overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        width: 12, height: 12, background: '#fff',
+                        border: '1px solid rgba(124,58,237,0.12)',
+                        transform: 'rotate(45deg)', margin: '2px auto 0',
+                      }} />
+                    </div>
+
+                    {NAV_PRODUCTS.map((p, pi) => (
+                      <motion.div
+                        key={p.title}
+                        onClick={() => { navigate(p.path); setProductsOpen(false); }}
+                        whileHover={{ background: 'rgba(124,58,237,0.04)' }}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: pi * 0.05, duration: 0.2 }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 14,
+                          padding: '12px 14px', borderRadius: 13,
+                          cursor: 'pointer', transition: 'background 140ms',
+                        }}
+                      >
+                        <div style={{
+                          width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                          background: p.bg,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <p.icon size={19} style={{ color: p.color }} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                            <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1E1B4B' }}>{p.title}</span>
+                            <span style={{
+                              fontSize: 9, fontWeight: 800, padding: '2px 7px',
+                              borderRadius: 20, background: p.bg,
+                              color: p.color, textTransform: 'uppercase', letterSpacing: '0.06em',
+                            }}>{p.tag}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.4 }}>{p.desc}</div>
+                        </div>
+                        <I.ChevronRight size={14} style={{ color: '#D1D5DB', flexShrink: 0 }} />
+                      </motion.div>
+                    ))}
+
+                    <div style={{
+                      margin: '8px 14px 4px',
+                      paddingTop: 8, borderTop: '1px solid #F3F4F6',
+                      fontSize: 11, color: '#9CA3AF', fontWeight: 600,
+                      textTransform: 'uppercase', letterSpacing: '0.07em',
+                    }}>
+                      All plans include a 14-day free trial
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* For Individuals */}
+            <motion.button
+              onClick={() => navigate('/services')}
+              whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
+              style={navBtnStyle(false)}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.37, duration: 0.4 }}
+            >
+              For Individuals
+            </motion.button>
+
+            {/* For Law Firms */}
+            <motion.button
+              onClick={() => navigate('/register')}
+              whileHover={{ background: 'rgba(14,165,233,0.08)', color: '#0EA5E9' }}
+              style={navBtnStyle(false)}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.44, duration: 0.4 }}
+            >
+              <I.Briefcase size={13} style={{ opacity: 0.7 }} />
+              For Law Firms
+            </motion.button>
           </motion.div>
 
-          {/* Right: CTA + hamburger */}
+          {/* ── Right: CTAs + hamburger ── */}
           <motion.div
-            style={{ display: 'flex', gap: 10, alignItems: 'center' }}
+            style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}
             initial={{ opacity: 0, x: 18 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.22, duration: 0.55, ease }}
@@ -131,14 +297,16 @@ function PublicNav({ navigate }) {
             </motion.button>
             <motion.button
               className="btn btn-purple btn-sm"
-              onClick={() => navigate('/intake')}
+              onClick={() => navigate('/register')}
               whileHover={{ scale: 1.05, boxShadow: '0 10px 32px rgba(124,58,237,0.42)' }}
               whileTap={{ scale: 0.95 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
             >
               Get Started
+              <I.ArrowRight size={13} />
             </motion.button>
 
-            {/* Hamburger — shown on mobile via .lp-hamburger CSS class */}
+            {/* Hamburger — mobile only */}
             <motion.button
               className="lp-hamburger"
               onClick={() => setMobileOpen(v => !v)}
@@ -176,39 +344,113 @@ function PublicNav({ navigate }) {
             exit={{ opacity: 0, y: -12, scale: 0.97 }}
             transition={{ duration: 0.24, ease }}
             style={{
-              position: 'fixed', top: 82, left: 12, right: 12, zIndex: 199,
-              background: 'rgba(255,255,255,0.97)',
+              position: 'fixed', top: 80, left: 12, right: 12, zIndex: 199,
+              background: 'rgba(255,255,255,0.98)',
               backdropFilter: 'blur(28px)',
               WebkitBackdropFilter: 'blur(28px)',
-              borderRadius: 22, border: '1px solid var(--border)',
+              borderRadius: 22, border: '1px solid rgba(124,58,237,0.1)',
               boxShadow: '0 24px 64px rgba(11,11,20,0.14)',
-              padding: '12px 8px 16px',
+              padding: '10px 8px 14px',
               overflow: 'hidden',
             }}
           >
-            {links.map((link, i) => (
+            {/* Products section toggle */}
+            <motion.div
+              onClick={() => setMobileProds(v => !v)}
+              initial={{ opacity: 0, x: -14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0, duration: 0.25 }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '13px 18px', borderRadius: 14,
+                fontSize: 15, fontWeight: 600, cursor: 'pointer', color: 'var(--ink)',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <I.Layers size={16} style={{ color: 'var(--purple)' }} />
+                Products
+              </span>
+              <motion.span
+                animate={{ rotate: mobileProds ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                style={{ display: 'flex', color: '#9CA3AF' }}
+              >
+                <I.Chevron size={15} />
+              </motion.span>
+            </motion.div>
+
+            {/* Products sub-list */}
+            <AnimatePresence>
+              {mobileProds && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: 'hidden', paddingLeft: 8 }}
+                >
+                  {NAV_PRODUCTS.map((p, pi) => (
+                    <motion.div
+                      key={p.title}
+                      onClick={() => { navigate(p.path); setMobileOpen(false); setMobileProds(false); }}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: pi * 0.04 }}
+                      whileHover={{ background: 'var(--purple-soft)' }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '10px 14px', borderRadius: 12,
+                        cursor: 'pointer', transition: 'background 140ms',
+                      }}
+                    >
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                        background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <p.icon size={16} style={{ color: p.color }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1E1B4B' }}>{p.title}</div>
+                        <div style={{ fontSize: 11, color: '#9CA3AF' }}>{p.desc}</div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* For Individuals */}
+            {[
+              { label: 'For Individuals', to: '/services',  icon: I.User },
+              { label: 'For Law Firms',   to: '/register',  icon: I.Briefcase },
+            ].map((link, i) => (
               <motion.div
                 key={link.label}
-                onClick={() => { link.to && navigate(link.to); setMobileOpen(false); }}
+                onClick={() => { navigate(link.to); setMobileOpen(false); }}
                 initial={{ opacity: 0, x: -14 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.055, duration: 0.3, ease }}
+                transition={{ delay: 0.06 + i * 0.05, duration: 0.25 }}
                 whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
                 style={{
-                  padding: '14px 18px', borderRadius: 14,
-                  fontSize: 15, fontWeight: 500,
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '13px 18px', borderRadius: 14,
+                  fontSize: 15, fontWeight: 600,
                   cursor: 'pointer', color: 'var(--ink)',
                   transition: 'background 0.15s, color 0.15s',
                 }}
               >
+                <link.icon size={16} style={{ opacity: 0.6 }} />
                 {link.label}
               </motion.div>
             ))}
-            <div style={{ margin: '10px 10px 4px', display: 'flex', gap: 8 }}>
+
+            <div style={{ margin: '8px 10px 4px', display: 'flex', gap: 8 }}>
               <button className="btn btn-secondary btn-sm" style={{ flex: 1 }}
                 onClick={() => { navigate('/login'); setMobileOpen(false); }}>Sign In</button>
-              <button className="btn btn-purple btn-sm" style={{ flex: 1 }}
-                onClick={() => { navigate('/intake'); setMobileOpen(false); }}>Get Started</button>
+              <button className="btn btn-purple btn-sm" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+                onClick={() => { navigate('/register'); setMobileOpen(false); }}>
+                Get Started <I.ArrowRight size={12} />
+              </button>
             </div>
           </motion.div>
         )}

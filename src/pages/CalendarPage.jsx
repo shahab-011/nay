@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { calendarApi } from '../api/calendar.api';
+import { mattersApi }  from '../api/matters.api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -89,7 +90,7 @@ const BLANK = {
   reminders: [{ method: 'email', minutesBefore: 30 }],
 };
 
-function EventModal({ event, onClose, onSave, onDelete }) {
+function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
   const [form, setForm]   = useState(event ? { ...BLANK, ...event } : { ...BLANK });
   const [saving, setSaving] = useState(false);
 
@@ -188,6 +189,25 @@ function EventModal({ event, onClose, onSave, onDelete }) {
                 <input type="time" value={form.endTime || '10:00'} onChange={e => set('endTime', e.target.value)}
                   style={{ width:'100%', marginTop:4, padding:'8px 10px', borderRadius:8, border:'1.5px solid var(--border)', fontSize:13, background:'var(--bg)', boxSizing:'border-box' }} />
               </div>
+            </div>
+          )}
+
+          {/* Linked Matter */}
+          {matters.length > 0 && (
+            <div>
+              <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Linked Matter</label>
+              <select
+                value={form.matterId?._id || form.matterId || ''}
+                onChange={e => set('matterId', e.target.value || '')}
+                style={{ width:'100%', marginTop:4, padding:'9px 12px', borderRadius:10, border:'1.5px solid var(--border)', fontSize:13, background:'var(--bg)', cursor:'pointer', boxSizing:'border-box' }}
+              >
+                <option value=''>— No matter —</option>
+                {matters.map(m => (
+                  <option key={m._id} value={m._id}>
+                    {m.matterNumber ? `[${m.matterNumber}] ` : ''}{m.title}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 
@@ -435,7 +455,7 @@ function AgendaView({ events, onEventClick }) {
                 <div style={{ fontSize:14, fontWeight:600, color:'var(--ink)' }}>{ev.title}</div>
                 <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>
                   {timeStr}
-                  {ev.matterId?.title ? ` · ${ev.matterId.title}` : ''}
+                  {ev.matterId?.title ? ` · ${ev.matterId.title}` : ev.matterId && typeof ev.matterId === 'string' ? ` · Matter` : ''}
                   {ev.location ? ` · ${typeof ev.location === 'object' ? (ev.location.address || ev.location.virtualUrl || '') : ev.location}` : ''}
                 </div>
               </div>
@@ -453,28 +473,54 @@ function AgendaView({ events, onEventClick }) {
 /* ─── Main CalendarPage ──────────────────────────────────────────── */
 export default function CalendarPage() {
   const now = todayDate();
-  const [view, setView]     = useState('Month');
-  const [year, setYear]     = useState(now.getFullYear());
-  const [month, setMonth]   = useState(now.getMonth());
-  const [anchor, setAnchor] = useState(now);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal]   = useState(null);
-  const [prefill, setPrefill] = useState(null);
+  const [view, setView]         = useState('Month');
+  const [year, setYear]         = useState(now.getFullYear());
+  const [month, setMonth]       = useState(now.getMonth());
+  const [anchor, setAnchor]     = useState(now);
+  const [events, setEvents]     = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [modal, setModal]       = useState(null);
+  const [prefill, setPrefill]   = useState(null);
+  const [matters, setMatters]   = useState([]);
+  const [filterType, setFilterType]     = useState('');
+  const [filterMatter, setFilterMatter] = useState('');
+
+  /* load active matters for the matter selector */
+  useEffect(() => {
+    mattersApi.list({ limit: 200, status: 'active' })
+      .then(r => setMatters(r.data.data || []))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const from = new Date(year, month, 1).toISOString();
-      const to   = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
-      const r = await calendarApi.list({ from, to });
+      let from, to;
+      if (view === 'Week') {
+        const days = weekDates(anchor);
+        from = new Date(days[0].getFullYear(), days[0].getMonth(), days[0].getDate()).toISOString();
+        to   = new Date(days[6].getFullYear(), days[6].getMonth(), days[6].getDate(), 23, 59, 59).toISOString();
+      } else if (view === 'Day') {
+        from = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate()).toISOString();
+        to   = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate(), 23, 59, 59).toISOString();
+      } else if (view === 'Agenda') {
+        from = new Date().toISOString();
+        to   = new Date(Date.now() + 90 * 86400000).toISOString();
+      } else {
+        from = new Date(year, month, 1).toISOString();
+        to   = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+      }
+      const params = { from, to };
+      if (filterType)   params.eventType = filterType;
+      if (filterMatter) params.matterId  = filterMatter;
+      const r = await calendarApi.list(params);
       setEvents(r.data.data || []);
     } catch {
       setEvents([]);
     } finally {
       setLoading(false);
     }
-  }, [year, month]);
+  }, [year, month, view, anchor, filterType, filterMatter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -632,6 +678,48 @@ export default function CalendarPage() {
             </div>
           </div>
 
+          {/* Filter row */}
+          {(filterType || filterMatter || matters.length > 0) && (
+            <div style={{ padding:'8px 16px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', background:'var(--elevated)' }}>
+              <span style={{ fontSize:11, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.06em', marginRight:4 }}>Filter:</span>
+
+              {/* Type pills */}
+              {['court_date','hearing','filing_deadline','client_meeting','deposition','reminder'].map(t => {
+                const c   = typeColor(t);
+                const active = filterType === t;
+                return (
+                  <button key={t} onClick={() => setFilterType(active ? '' : t)} style={{
+                    padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer',
+                    background: active ? c.bg : 'transparent',
+                    border: `1.5px solid ${active ? c.border : 'var(--border)'}`,
+                    color: active ? c.text : 'var(--text-muted)',
+                    transition:'all 150ms',
+                  }}>{typeLabel(t)}</button>
+                );
+              })}
+
+              {/* Matter filter */}
+              {matters.length > 0 && (
+                <select
+                  value={filterMatter}
+                  onChange={e => setFilterMatter(e.target.value)}
+                  style={{ padding:'4px 10px', borderRadius:20, border:`1.5px solid ${filterMatter ? 'var(--purple)' : 'var(--border)'}`, fontSize:11, fontWeight:600, background: filterMatter ? 'var(--purple-soft)' : 'transparent', color: filterMatter ? 'var(--purple)' : 'var(--text-muted)', cursor:'pointer' }}
+                >
+                  <option value=''>All Matters</option>
+                  {matters.map(m => (
+                    <option key={m._id} value={m._id}>{m.title}</option>
+                  ))}
+                </select>
+              )}
+
+              {(filterType || filterMatter) && (
+                <button onClick={() => { setFilterType(''); setFilterMatter(''); }} style={{ padding:'3px 10px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer', background:'none', border:'1.5px solid var(--border)', color:'var(--text-muted)' }}>
+                  Clear ×
+                </button>
+              )}
+            </div>
+          )}
+
           {/* View area */}
           {loading ? (
             <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -655,6 +743,7 @@ export default function CalendarPage() {
             onClose={() => { setModal(null); setPrefill(null); }}
             onSave={handleSave}
             onDelete={handleDelete}
+            matters={matters}
           />
         )}
       </AnimatePresence>

@@ -52,8 +52,8 @@ const SECTIONS = [
     ],
     cta: 'Open Practice Management',
     ctaIcon: I.ArrowRight,
-    roleGate: ['lawyer', 'admin', 'owner', 'attorney', 'paralegal', 'staff'],
-    badge: 'Firm Only',
+    roleGate: null,
+    badge: null,
   },
   {
     id: 'marketplace',

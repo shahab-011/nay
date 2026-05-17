@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { communicationsApi } from '../api/communications.api';
@@ -20,8 +20,8 @@ const TYPE_META = {
   'Meeting (In-Person)':   { icon: I.Users,         color: '#D97706', bg: '#FFF7ED' },
   'Court Appearance':      { icon: I.Briefcase,     color: '#DC2626', bg: '#FEF2F2' },
   'Text Message':          { icon: I.MessageSquare, color: '#0891B2', bg: '#ECFEFF' },
-  'Letter Sent':           { icon: I.FileText,      color: '#6D28D9', bg: '#EDE9FE' },
-  'Letter Received':       { icon: I.FileText,      color: '#4F46E5', bg: '#EEF2FF' },
+  'Letter Sent':           { icon: I.Doc,            color: '#6D28D9', bg: '#EDE9FE' },
+  'Letter Received':       { icon: I.Doc,            color: '#4F46E5', bg: '#EEF2FF' },
   'Note':                  { icon: I.Edit,          color: '#F59E0B', bg: '#FFF7ED' },
 };
 
@@ -468,20 +468,36 @@ export default function Communications() {
   const [showLog, setShowLog]   = useState(false);
   const [pendingTE, setPendingTE] = useState(null);
   const [showExport, setShowExport] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimer = useRef(null);
+
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
+
+  useEffect(() => {
+    mattersApi.list({ limit: 200 }).then(r => {
+      const mb = r.data.data || r.data;
+      setMatters(mb.matters || mb || []);
+    }).catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [commsRes, mattersRes] = await Promise.all([
-        communicationsApi.list({ limit: 300 }),
-        mattersApi.list({ limit: 200 }),
-      ]);
-      const cb = commsRes.data.data || commsRes.data;
+      const params = { limit: 200 };
+      if (typeFilter !== 'All') params.type     = typeFilter;
+      if (matterFilter)         params.matterId  = matterFilter;
+      if (dateFrom)             params.from      = dateFrom;
+      if (dateTo)               params.to        = dateTo;
+      if (debouncedSearch)      params.q         = debouncedSearch;
+      const r = await communicationsApi.list(params);
+      const cb = r.data.data || r.data;
       setEntries(cb.logs || cb || []);
-      const mb = mattersRes.data.data || mattersRes.data;
-      setMatters(mb.matters || mb || []);
     } catch { /* empty */ } finally { setLoading(false); }
-  }, []);
+  }, [typeFilter, matterFilter, dateFrom, dateTo, debouncedSearch]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -491,31 +507,19 @@ export default function Communications() {
   };
 
   const handleSaved = (entry) => {
-    setEntries(es => [entry, ...es]);
+    load();
     if (entry.duration || entry.isBillable) setPendingTE(entry);
   };
 
-  const filtered = useMemo(() => entries.filter(e => {
-    if (typeFilter !== 'All' && e.type !== typeFilter) return false;
-    if (matterFilter && e.matterId?._id !== matterFilter && e.matterId !== matterFilter) return false;
-    if (dateFrom && new Date(e.date) < new Date(dateFrom)) return false;
-    if (dateTo   && new Date(e.date) > new Date(dateTo))   return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return e.contact?.toLowerCase().includes(q) || e.subject?.toLowerCase().includes(q) || e.summary?.toLowerCase().includes(q);
-    }
-    return true;
-  }), [entries, typeFilter, matterFilter, dateFrom, dateTo, search]);
-
   const grouped = useMemo(() => {
     const map = {};
-    filtered.forEach(e => {
+    entries.forEach(e => {
       const day = (e.date || e.createdAt || '').slice(0, 10);
       if (!map[day]) map[day] = [];
       map[day].push(e);
     });
     return Object.entries(map).sort(([a], [b]) => b.localeCompare(a));
-  }, [filtered]);
+  }, [entries]);
 
   const stats = {
     total:    entries.length,
@@ -561,7 +565,7 @@ export default function Communications() {
           <>
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 22 }}>
-              {[['Total', stats.total, '#7C3AED', I.Activity], ['Calls', stats.calls, '#3B82F6', I.Phone], ['Emails', stats.emails, '#10B981', I.Mail], ['Meetings', stats.meetings, '#D97706', I.Users], ['Follow-ups', stats.followUp, '#DC2626', I.AlertCircle]].map(([label, val, color, Ic]) => (
+              {[['Total', stats.total, '#7C3AED', I.Activity], ['Calls', stats.calls, '#3B82F6', I.Phone], ['Emails', stats.emails, '#10B981', I.Mail], ['Meetings', stats.meetings, '#D97706', I.Users], ['Follow-ups', stats.followUp, '#DC2626', I.Alert]].map(([label, val, color, Ic]) => (
                 <div key={label} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '13px 15px', display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 34, height: 34, borderRadius: 9, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Ic size={15} style={{ color }} />

@@ -49,7 +49,7 @@ function PublicNav({ navigate }) {
   }, []);
 
   const links = [
-    { label: 'Services',    to: '/intake' },
+    { label: 'Services',    to: '/services' },
     { label: 'Methodology', to: null },
     { label: 'For Lawyers', to: '/login' },
     { label: 'Contact',     to: '/intake' },

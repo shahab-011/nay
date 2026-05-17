@@ -20,7 +20,7 @@ const AUTH_PATHS = ['/login', '/register'];
 // Public/no-sidebar pages (public marketing OR portal home OR find-lawyer)
 function isNoSidebarPath(pathname) {
   if ([
-    '/', '/landing', '/intake', '/find-lawyer',
+    '/', '/landing', '/intake', '/find-lawyer', '/services',
   ].includes(pathname)) return true;
   if (pathname.startsWith('/marketplace')) return true;
   if (pathname.startsWith('/client-portal')) return true;

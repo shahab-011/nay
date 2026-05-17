@@ -134,8 +134,163 @@ const SECTIONS = [
   },
 ];
 
+/* ─── Login Prompt Modal ─────────────────────────────────────── */
+function LoginPromptModal({ service, onClose, navigate }) {
+  return (
+    <AnimatePresence>
+      {service && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 900,
+              background: 'rgba(15,10,40,0.55)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+          />
+
+          {/* Modal */}
+          <motion.div
+            key="modal"
+            initial={{ opacity: 0, scale: 0.88, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 910,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 20, pointerEvents: 'none',
+            }}
+          >
+            <div style={{
+              width: '100%', maxWidth: 420, borderRadius: 28,
+              background: '#fff',
+              boxShadow: `0 32px 80px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.06)`,
+              overflow: 'hidden',
+              pointerEvents: 'auto',
+            }}>
+              {/* Gradient service header */}
+              <div style={{
+                background: service.gradient,
+                padding: '28px 28px 24px',
+                position: 'relative', overflow: 'hidden',
+              }}>
+                <motion.div style={{
+                  position: 'absolute', right: -30, top: -30,
+                  width: 160, height: 160, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.08)',
+                }} />
+                <motion.div style={{
+                  position: 'absolute', left: -20, bottom: -40,
+                  width: 100, height: 100, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.05)',
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 16,
+                    background: 'rgba(255,255,255,0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <service.icon size={24} style={{ color: '#fff' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                      {service.tag}
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1.15 }}>
+                      {service.title}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div style={{ padding: '28px 28px 24px' }}>
+                {/* Lock icon + message */}
+                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 16,
+                    background: `rgba(${service.glowRgb},0.1)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 14px',
+                  }}>
+                    <I.Shield size={22} style={{ color: `rgb(${service.glowRgb})` }} />
+                  </div>
+                  <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 800, color: '#1E1B4B' }}>
+                    Sign in to continue
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 13.5, color: '#6B7280', lineHeight: 1.55 }}>
+                    You need an account to access <strong style={{ color: '#1E1B4B' }}>{service.title}</strong>.
+                    It's free to get started.
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { onClose(); navigate('/login'); }}
+                    style={{
+                      width: '100%', padding: '13px 20px', borderRadius: 14,
+                      background: service.gradient,
+                      border: 'none', cursor: 'pointer',
+                      fontSize: 14, fontWeight: 700, color: '#fff',
+                      boxShadow: `0 6px 24px rgba(${service.glowRgb},0.32)`,
+                    }}
+                  >
+                    Sign In to My Account
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { onClose(); navigate('/register'); }}
+                    style={{
+                      width: '100%', padding: '13px 20px', borderRadius: 14,
+                      background: 'rgba(124,58,237,0.06)',
+                      border: `1.5px solid rgba(${service.glowRgb},0.2)`,
+                      cursor: 'pointer',
+                      fontSize: 14, fontWeight: 700, color: `rgb(${service.glowRgb})`,
+                    }}
+                  >
+                    Create Free Account
+                  </motion.button>
+                </div>
+
+                {/* Dismiss */}
+                <button
+                  onClick={onClose}
+                  style={{
+                    display: 'block', width: '100%', marginTop: 14,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 13, color: '#9CA3AF', fontWeight: 500,
+                    textAlign: 'center',
+                  }}
+                >
+                  Maybe later
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /* ─── Service Card ───────────────────────────────────────────── */
-function ServiceCard({ s, index, navigate }) {
+function ServiceCard({ s, index, onCardClick }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -147,7 +302,7 @@ function ServiceCard({ s, index, navigate }) {
       whileHover={{ y: -12 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      onClick={() => navigate(s.path)}
+      onClick={() => onCardClick(s)}
       style={{
         borderRadius: 24,
         overflow: 'hidden',
@@ -307,6 +462,15 @@ export default function PortalHome() {
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.name?.split(' ')[0] || 'there';
+  const [loginPrompt, setLoginPrompt] = useState(null);
+
+  function handleCardClick(s) {
+    if (!user) {
+      setLoginPrompt(s);
+    } else {
+      navigate(s.path);
+    }
+  }
 
   const QUICK = [
     { label: 'My Documents', path: '/documents', ic: I.Folder },
@@ -407,7 +571,7 @@ export default function PortalHome() {
               backgroundClip: 'text',
             }}
           >
-            {greeting}, {firstName}
+            {user ? `${greeting}, ${firstName}` : 'Your Legal Workspace'}
           </motion.h1>
 
           <motion.p
@@ -419,7 +583,9 @@ export default function PortalHome() {
               maxWidth: 480, lineHeight: 1.6, fontWeight: 400,
             }}
           >
-            Your complete legal workspace. Choose a service to get started.
+            {user
+              ? 'Your complete legal workspace. Choose a service to get started.'
+              : 'AI-powered legal tools for everyone. Sign in to get started.'}
           </motion.p>
 
           <motion.p
@@ -456,7 +622,7 @@ export default function PortalHome() {
           marginBottom: 52,
         }}>
           {SECTIONS.map((s, i) => (
-            <ServiceCard key={s.id} s={s} index={i} navigate={navigate} />
+            <ServiceCard key={s.id} s={s} index={i} onCardClick={handleCardClick} />
           ))}
         </div>
 
@@ -488,6 +654,13 @@ export default function PortalHome() {
           © {new Date().getFullYear()} NyayaAI · Built for legal professionals · All data encrypted
         </motion.p>
       </div>
+
+      {/* ── Login prompt modal ── */}
+      <LoginPromptModal
+        service={loginPrompt}
+        onClose={() => setLoginPrompt(null)}
+        navigate={navigate}
+      />
     </div>
   );
 }

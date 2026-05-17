@@ -119,6 +119,7 @@ function App() {
 
                     {/* ── Public ── */}
                     <Route path="/landing"         element={<Landing />} />
+                    <Route path="/services"        element={<PortalHome />} />
                     <Route path="/intake"          element={<Intake />} />
                     <Route path="/marketplace"     element={<MarketDiscovery />} />
                     <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />

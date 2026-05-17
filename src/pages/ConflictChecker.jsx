@@ -335,7 +335,7 @@ export default function ConflictChecker() {
                     </div>
                     {terms.length > 1 && (
                       <button onClick={() => removeTerm(i)} style={{ width: 40, height: 40, borderRadius: 10, border: '1.5px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <I.Trash size={14} />
+                        <I.X size={14} />
                       </button>
                     )}
                   </div>

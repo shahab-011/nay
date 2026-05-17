@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { billingApi } from '../api/billing.api';
@@ -511,20 +511,28 @@ export default function Billing() {
   const [generateModal, setGenerateModal] = useState(false);
   const [markPaidModal, setMarkPaidModal] = useState(null);
   const [voidModal, setVoidModal]         = useState(null);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimer = useRef(null);
+
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
-      if (statusFilter) params.status = statusFilter;
-      if (search)       params.search = search;
+      if (statusFilter)    params.status = statusFilter;
+      if (debouncedSearch) params.search = debouncedSearch;
       const r = await billingApi.listInvoices(params);
       const d = r.data.data || {};
       setInvoices(d.invoices || []);
       setStats({ totalBilled: d.totalBilled || 0, totalCollected: d.totalCollected || 0, totalOutstanding: d.totalOutstanding || 0, overdueCount: d.overdueCount || 0 });
     } catch { setInvoices([]); }
     finally { setLoading(false); }
-  }, [statusFilter, search]);
+  }, [statusFilter, debouncedSearch]);
 
   const loadSupport = useCallback(async () => {
     try {

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
-import { tasksApi } from '../api/tasks.api';
+import { tasksApi }  from '../api/tasks.api';
+import { mattersApi } from '../api/matters.api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const STATUSES = [
@@ -64,7 +65,7 @@ function Field({ label, children }) {
 /* ─── Task Modal ─────────────────────────────────────────────────── */
 const BLANK = { title:'', description:'', priority:'medium', status:'to_do', activityType:'admin', dueDate:'', estimatedHours:'', matterId:'' };
 
-function TaskModal({ task, onClose, onSave }) {
+function TaskModal({ task, onClose, onSave, matters = [] }) {
   const [form, setForm] = useState(task ? {
     ...BLANK, ...task,
     dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
@@ -134,6 +135,19 @@ function TaskModal({ task, onClose, onSave }) {
               <input className="input" type="number" min="0" step="0.25" value={form.estimatedHours} onChange={e => set('estimatedHours', e.target.value)} placeholder="2.5" />
             </Field>
           </div>
+
+          {matters.length > 0 && (
+            <Field label="Linked Matter">
+              <select className="input" value={form.matterId?._id || form.matterId || ''} onChange={e => set('matterId', e.target.value)}>
+                <option value="">— No matter —</option>
+                {matters.map(m => (
+                  <option key={m._id} value={m._id}>
+                    {m.matterNumber ? `[${m.matterNumber}] ` : ''}{m.title}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          )}
 
           <div style={{ display:'flex', gap:10, justifyContent:'flex-end', marginTop:8 }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
@@ -405,23 +419,50 @@ export default function Tasks() {
   const [filterStatus, setFilterStatus]     = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const [filterDue, setFilterDue]           = useState('');
+  const [filterMatter, setFilterMatter]     = useState('');
+  const [myTasksOnly, setMyTasksOnly]       = useState(false);
   const [showModal, setShowModal]   = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [selectedList, setSelectedList] = useState(null);
+  const [matters, setMatters]       = useState([]);
+
+  /* debounced search ref */
+  const searchTimer = useRef(null);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
+
+  /* load active matters for filter + modal */
+  useEffect(() => {
+    mattersApi.list({ limit: 200, status: 'active' })
+      .then(r => setMatters(r.data.data || []))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params = {};
-      if (filterStatus)   params.status   = filterStatus;
-      if (filterPriority) params.priority  = filterPriority;
-      if (filterDue)      params.due       = filterDue;
-      if (selectedList)   params.taskListId = selectedList._id;
-      const r = await tasksApi.list(params);
-      setTasks(r.data.data?.tasks || []);
+      let r;
+      if (myTasksOnly) {
+        r = await tasksApi.myTasks();
+        setTasks(r.data.data || []);
+      } else {
+        const params = {};
+        if (filterStatus)   params.status    = filterStatus;
+        if (filterPriority) params.priority   = filterPriority;
+        if (filterDue)      params.due        = filterDue;
+        if (filterMatter)   params.matterId   = filterMatter;
+        if (selectedList)   params.taskListId = selectedList._id;
+        if (debouncedSearch) params.q         = debouncedSearch;
+        r = await tasksApi.list(params);
+        setTasks(r.data.data?.tasks || []);
+      }
     } catch { setTasks([]); }
     finally { setLoading(false); }
-  }, [filterStatus, filterPriority, filterDue, selectedList]);
+  }, [filterStatus, filterPriority, filterDue, filterMatter, selectedList, debouncedSearch, myTasksOnly]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -435,9 +476,16 @@ export default function Tasks() {
   }
 
   async function handleMove(task, newStatus) {
-    setTasks(ts => ts.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
-    try { await tasksApi.update(task._id, { status: newStatus }); }
-    catch { load(); }
+    const updated = tasks.map(t => t._id === task._id ? { ...t, status: newStatus } : t);
+    setTasks(updated);
+    try {
+      await tasksApi.update(task._id, { status: newStatus });
+      /* persist order for all tasks in the destination column */
+      const colTasks = updated.filter(t => t.status === newStatus);
+      if (colTasks.length > 1) {
+        await tasksApi.reorder(colTasks.map((t, i) => ({ id: t._id, order: i, status: newStatus })));
+      }
+    } catch { load(); }
   }
 
   async function handleDelete(id) {
@@ -534,24 +582,53 @@ export default function Tasks() {
           )}
 
           <div style={{ display:'flex', gap:10, marginBottom:18, flexWrap:'wrap' }}>
+            {/* Search */}
             <div style={{ position:'relative', flex:1, minWidth:200 }}>
               <I.Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)', pointerEvents:'none' }} />
               <input className="input" placeholder="Search tasks…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft:38 }} />
             </div>
-            <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width:140, cursor:'pointer' }}>
+
+            {/* My Tasks toggle */}
+            <button
+              onClick={() => setMyTasksOnly(v => !v)}
+              style={{
+                display:'flex', alignItems:'center', gap:7, padding:'0 14px', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer',
+                background: myTasksOnly ? 'var(--purple)' : 'var(--surface)',
+                color: myTasksOnly ? '#fff' : 'var(--text-muted)',
+                border: `1.5px solid ${myTasksOnly ? 'var(--purple)' : 'var(--border)'}`,
+                transition:'all 150ms',
+              }}
+            >
+              <I.User size={13} /> My Tasks
+            </button>
+
+            {/* Status */}
+            <select className="input" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ width:140, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Statuses</option>
               {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <select className="input" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ width:130, cursor:'pointer' }}>
+
+            {/* Priority */}
+            <select className="input" value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{ width:130, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Priorities</option>
               {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
-            <select className="input" value={filterDue} onChange={e => setFilterDue(e.target.value)} style={{ width:130, cursor:'pointer' }}>
+
+            {/* Due */}
+            <select className="input" value={filterDue} onChange={e => setFilterDue(e.target.value)} style={{ width:130, cursor:'pointer' }} disabled={myTasksOnly}>
               <option value="">All Dates</option>
               <option value="overdue">Overdue</option>
               <option value="today">Due Today</option>
               <option value="week">Due This Week</option>
             </select>
+
+            {/* Matter */}
+            {matters.length > 0 && (
+              <select className="input" value={filterMatter} onChange={e => setFilterMatter(e.target.value)} style={{ width:160, cursor:'pointer' }} disabled={myTasksOnly}>
+                <option value="">All Matters</option>
+                {matters.map(m => <option key={m._id} value={m._id}>{m.title}</option>)}
+              </select>
+            )}
           </div>
 
           {/* Content */}
@@ -600,6 +677,7 @@ export default function Tasks() {
             task={editingTask}
             onClose={() => { setShowModal(false); setEditingTask(null); }}
             onSave={() => { setShowModal(false); setEditingTask(null); load(); }}
+            matters={matters}
           />
         )}
       </AnimatePresence>

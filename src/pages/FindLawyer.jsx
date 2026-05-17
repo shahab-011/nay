@@ -108,10 +108,27 @@ const PROTOTYPE_LAWYERS = [
   { id:'p48', name:'Attorney Kasun Dissanayake',specialization:'Employment Law',        practice_areas:['employment','civil'],     location:'Colombo, Sri Lanka',    flag:'🇱🇰', rating:4.7, reviews:66,  experience_years:9,  hourly_rate:42,  verified:true,  languages:['English','Sinhala'],     bio:'Labour law attorney representing both employees and employers before the Labour Tribunal and the Industrial Court of Sri Lanka.' },
 ];
 
-function getPrototypeLawyers(area) {
-  const primary   = PROTOTYPE_LAWYERS.filter(l => l.practice_areas[0] === area);
-  const secondary = PROTOTYPE_LAWYERS.filter(l => l.practice_areas[0] !== area && l.practice_areas.includes(area));
-  const rest      = PROTOTYPE_LAWYERS.filter(l => !l.practice_areas.includes(area));
+const COUNTRIES = [
+  { id: 'India',         label: 'India',         flag: '🇮🇳', keyword: 'India' },
+  { id: 'USA',           label: 'United States',  flag: '🇺🇸', keyword: 'USA' },
+  { id: 'UK',            label: 'United Kingdom', flag: '🇬🇧', keyword: 'UK' },
+  { id: 'Canada',        label: 'Canada',         flag: '🇨🇦', keyword: 'Canada' },
+  { id: 'France',        label: 'France',         flag: '🇫🇷', keyword: 'France' },
+  { id: 'Australia',     label: 'Australia',      flag: '🇦🇺', keyword: 'Australia' },
+  { id: 'Pakistan',      label: 'Pakistan',       flag: '🇵🇰', keyword: 'Pakistan' },
+  { id: 'Sri Lanka',     label: 'Sri Lanka',      flag: '🇱🇰', keyword: 'Sri Lanka' },
+];
+
+function getPrototypeLawyers(area, country) {
+  let pool = PROTOTYPE_LAWYERS;
+  if (country) {
+    const kw = COUNTRIES.find(c => c.id === country)?.keyword || country;
+    pool = pool.filter(l => l.location.includes(kw));
+  }
+  if (!area) return pool.slice(0, 12);
+  const primary   = pool.filter(l => l.practice_areas[0] === area);
+  const secondary = pool.filter(l => l.practice_areas[0] !== area && l.practice_areas.includes(area));
+  const rest      = pool.filter(l => !l.practice_areas.includes(area));
   return [...primary, ...secondary, ...rest].slice(0, 12);
 }
 
@@ -267,41 +284,52 @@ function StepDetails({ form, onChange }) {
         </div>
       </div>
 
-      {/* Location + Consultation */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <div>
-          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 8 }}>Your location</label>
-          <input
-            value={form.location || ''}
-            onChange={e => set('location', e.target.value)}
-            placeholder="City, State / Country"
-            style={{
-              width: '100%', padding: '12px 14px', borderRadius: 10, border: '1.5px solid var(--border)',
-              fontSize: 13, background: 'var(--bg)', boxSizing: 'border-box', fontFamily: 'inherit', color: 'var(--ink)',
-            }}
-          />
+      {/* Country */}
+      <div>
+        <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 10 }}>
+          Which country do you need a lawyer in? *
+        </label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+          {COUNTRIES.map(c => (
+            <div
+              key={c.id}
+              onClick={() => set('country', c.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '11px 14px', borderRadius: 12, cursor: 'pointer',
+                border: `2px solid ${form.country === c.id ? 'var(--purple)' : 'var(--border)'}`,
+                background: form.country === c.id ? 'rgba(124,58,237,0.07)' : 'var(--surface)',
+                transition: 'all 150ms',
+              }}
+            >
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{c.flag}</span>
+              <span style={{ fontSize: 13, fontWeight: form.country === c.id ? 700 : 500, color: form.country === c.id ? 'var(--purple)' : 'var(--ink)' }}>{c.label}</span>
+            </div>
+          ))}
         </div>
-        <div>
-          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 8 }}>Preferred consultation</label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {CONSULT.map(c => (
-              <div
-                key={c.id}
-                onClick={() => set('consult', c.id)}
-                title={c.label}
-                style={{
-                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  gap: 4, padding: '10px 6px', borderRadius: 10, cursor: 'pointer',
-                  border: `2px solid ${form.consult === c.id ? 'var(--purple)' : 'var(--border)'}`,
-                  background: form.consult === c.id ? 'rgba(124,58,237,0.06)' : 'var(--surface)',
-                  transition: 'all 150ms',
-                }}
-              >
-                <c.ic size={15} style={{ color: form.consult === c.id ? 'var(--purple)' : 'var(--text-muted)' }} />
-                <span style={{ fontSize: 9, fontWeight: 700, color: form.consult === c.id ? 'var(--purple)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.label}</span>
-              </div>
-            ))}
-          </div>
+      </div>
+
+      {/* Consultation */}
+      <div>
+        <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 8 }}>Preferred consultation</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {CONSULT.map(c => (
+            <div
+              key={c.id}
+              onClick={() => set('consult', c.id)}
+              title={c.label}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 4, padding: '10px 6px', borderRadius: 10, cursor: 'pointer',
+                border: `2px solid ${form.consult === c.id ? 'var(--purple)' : 'var(--border)'}`,
+                background: form.consult === c.id ? 'rgba(124,58,237,0.06)' : 'var(--surface)',
+                transition: 'all 150ms',
+              }}
+            >
+              <c.ic size={15} style={{ color: form.consult === c.id ? 'var(--purple)' : 'var(--text-muted)' }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: form.consult === c.id ? 'var(--purple)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{c.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -399,7 +427,7 @@ function StepMatches({ lawyers, loading, selected, onSelect }) {
     <div>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ margin: '0 0 6px', fontSize: 22, fontWeight: 800, color: 'var(--ink)' }}>
-          {lawyers.length > 0 ? `We found ${lawyers.length} matching lawyers` : 'Available Lawyers'}
+          {lawyers.length > 0 ? `${lawyers.length} lawyers matched` : 'Available Lawyers'}
         </h2>
         <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>
           Select one or more lawyers to send your case request to.
@@ -482,7 +510,7 @@ export default function FindLawyer() {
 
   const [step, setStep]             = useState(0);
   const [area, setArea]             = useState('');
-  const [details, setDetails]       = useState({ description: '', urgency: '', budget: '', location: '', consult: 'video' });
+  const [details, setDetails]       = useState({ description: '', urgency: '', budget: '', country: '', consult: 'video' });
   const [lawyers, setLawyers]       = useState([]);
   const [loadingL, setLoadingL]     = useState(false);
   const [selected, setSelected]     = useState([]);
@@ -495,12 +523,12 @@ export default function FindLawyer() {
     api.get('/marketplace/lawyers', { params: { practice_area: area, limit: 12 } })
       .then(r => {
         const apiData = r.data?.lawyers || r.data?.data || r.data || [];
-        const list = Array.isArray(apiData) && apiData.length > 0 ? apiData : getPrototypeLawyers(area);
+        const list = Array.isArray(apiData) && apiData.length > 0 ? apiData : getPrototypeLawyers(area, details.country);
         setLawyers(list);
       })
-      .catch(() => setLawyers(getPrototypeLawyers(area)))
+      .catch(() => setLawyers(getPrototypeLawyers(area, details.country)))
       .finally(() => setLoadingL(false));
-  }, [step, area]);
+  }, [step, area, details.country]);
 
   async function sendRequest() {
     if (!selected.length) return;
@@ -521,12 +549,13 @@ export default function FindLawyer() {
 
   function canNext() {
     if (step === 0) return !!area;
-    if (step === 1) return !!(details.description?.trim().length > 20 && details.urgency);
+    if (step === 1) return !!(details.description?.trim().length > 20 && details.urgency && details.country);
     if (step === 2) return selected.length > 0;
     return false;
   }
 
-  const areaLabel = PRACTICE_AREAS.find(a => a.id === area)?.label || '';
+  const areaLabel    = PRACTICE_AREAS.find(a => a.id === area)?.label || '';
+  const countryEntry = COUNTRIES.find(c => c.id === details.country);
 
   return (
     <div style={{ paddingTop: 80, minHeight: '100vh', background: 'var(--bg)' }}>
@@ -549,7 +578,7 @@ export default function FindLawyer() {
               <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--ink)' }}>Find a Lawyer</h1>
               {areaLabel && step > 0 && (
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                  {areaLabel} {details.location ? `· ${details.location}` : ''}
+                  {areaLabel}{countryEntry ? ` · ${countryEntry.flag} ${countryEntry.label}` : ''}
                 </div>
               )}
             </div>

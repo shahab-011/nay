@@ -57,8 +57,10 @@ const LawyerDashboard  = lazy(() => import('./pages/LawyerDashboard'));
 const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
 const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
 
-/* ── Trust public payment portal (no auth) ── */
-const TrustPayPage = lazy(() => import('./pages/TrustPayPage'));
+/* ── Public payment + signing portals (no auth) ── */
+const TrustPayPage    = lazy(() => import('./pages/TrustPayPage'));
+const InvoicePayPage  = lazy(() => import('./pages/InvoicePayPage'));
+const ESignSignPage   = lazy(() => import('./pages/ESignSignPage'));
 
 /* ── Phase 3: Remaining Clio features ── */
 const DocAutomation   = lazy(() => import('./pages/DocAutomation'));
@@ -177,8 +179,10 @@ function App() {
                     <Route path="/client-portal/:token" element={<ClientPortal />} />
                     <Route path="/client-portal"        element={<ClientPortal />} />
 
-                    {/* ── Trust payment portal (public, token-based) ── */}
-                    <Route path="/trust-pay/:token" element={<TrustPayPage />} />
+                    {/* ── Public token-based portals (no auth) ── */}
+                    <Route path="/trust-pay/:token"  element={<TrustPayPage />} />
+                    <Route path="/pay/:token"         element={<InvoicePayPage />} />
+                    <Route path="/esign/sign/:token"  element={<ESignSignPage />} />
 
                     {/* ── Section 3: Legal Marketplace ── */}
                     <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />

@@ -65,6 +65,16 @@ function StatusBadge({ status }) {
   );
 }
 
+/* ── Field ────────────────────────────────────────────────────── */
+function Field({ label, children, half }) {
+  return (
+    <div style={{ marginBottom: half ? 0 : 16 }}>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
 /* ── EmptyState ───────────────────────────────────────────────── */
 function EmptyState({ icon, title, sub, action, onAction }) {
   return (
@@ -171,13 +181,6 @@ function MatterModal({ matter, onClose, onSave }) {
       setSaving(false);
     }
   }
-
-  const Field = ({ label, children, half }) => (
-    <div style={{ marginBottom: half ? 0 : 16 }}>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
-      {children}
-    </div>
-  );
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(11,11,20,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}

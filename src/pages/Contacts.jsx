@@ -159,9 +159,11 @@ function ContactModal({ contact, onClose, onSave }) {
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-            <Fld label="Job Title" half><input className="input" value={form.jobTitle} onChange={e => set('jobTitle', e.target.value)} placeholder="CEO, Partner…" /></Fld>
-            <Fld label="Bar Number" half><input className="input" value={form.barNumber} onChange={e => set('barNumber', e.target.value)} placeholder="For lawyers" /></Fld>
+          <div style={{ display: 'grid', gridTemplateColumns: form.type === 'opposing_counsel' ? '1fr 1fr' : '1fr', gap: 14, marginBottom: 14 }}>
+            <Fld label="Job Title" half={form.type === 'opposing_counsel'}><input className="input" value={form.jobTitle} onChange={e => set('jobTitle', e.target.value)} placeholder="CEO, Partner…" /></Fld>
+            {form.type === 'opposing_counsel' && (
+              <Fld label="Bar Number" half><input className="input" value={form.barNumber} onChange={e => set('barNumber', e.target.value)} placeholder="e.g. D/1234/2019" /></Fld>
+            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>

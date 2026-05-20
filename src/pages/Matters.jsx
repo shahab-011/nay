@@ -2,10 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
-import { mattersApi } from '../api/matters.api';
-import { tasksApi }   from '../api/tasks.api';
-import { timeApi }    from '../api/timeTracking.api';
-import { billingApi } from '../api/billing.api';
+import { mattersApi }  from '../api/matters.api';
+import { contactsApi } from '../api/contacts.api';
+import { tasksApi }    from '../api/tasks.api';
+import { timeApi }     from '../api/timeTracking.api';
+import { billingApi }  from '../api/billing.api';
 
 /* ── Constants ─────────────────────────────────────────────────── */
 const PRACTICE_AREAS = [
@@ -62,6 +63,82 @@ function StatusBadge({ status }) {
       <span style={{ width: 6, height: 6, borderRadius: 3, background: m.color }} />
       {m.label}
     </span>
+  );
+}
+
+/* ── ClientSelector ──────────────────────────────────────────── */
+function ClientSelector({ value, onChange }) {
+  const [query, setQuery]       = useState('');
+  const [results, setResults]   = useState([]);
+  const [open, setOpen]         = useState(false);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    if (!value) { setSelected(null); return; }
+    if (selected?._id === value) return;
+    contactsApi.list({ q: '', limit: 200 }).then(r => {
+      const list = r.data.data?.contacts || r.data.data || [];
+      const found = list.find(c => c._id === value);
+      if (found) setSelected(found);
+    }).catch(() => {});
+  }, [value]);
+
+  useEffect(() => {
+    if (!open) return;
+    contactsApi.list({ q: query, limit: 30, type: 'client' })
+      .then(r => setResults(r.data.data?.contacts || r.data.data || []))
+      .catch(() => setResults([]));
+  }, [query, open]);
+
+  function pick(c) {
+    setSelected(c);
+    onChange(c._id);
+    setOpen(false);
+    setQuery('');
+  }
+
+  function clear() {
+    setSelected(null);
+    onChange('');
+    setQuery('');
+  }
+
+  const displayName = c => c.firstName ? `${c.firstName} ${c.lastName || ''}`.trim() : c.company || c.email;
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {selected ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 10, border: '1.5px solid var(--purple)', background: 'var(--purple-soft)', cursor: 'default' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>{displayName(selected)}</div>
+            {selected.email && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{selected.email}</div>}
+          </div>
+          <button type="button" onClick={clear} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, lineHeight: 1 }}>×</button>
+        </div>
+      ) : (
+        <input
+          className="input"
+          placeholder="Search client by name or email…"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 180)}
+        />
+      )}
+      {open && !selected && results.length > 0 && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 999, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: 220, overflowY: 'auto', marginTop: 4 }}>
+          {results.map(c => (
+            <div key={c._id} onMouseDown={() => pick(c)}
+              style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', fontSize: 14 }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--active)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <div style={{ fontWeight: 600 }}>{displayName(c)}</div>
+              {c.email && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.email}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -142,6 +219,7 @@ function CloseMatterModal({ onClose, onConfirm }) {
 function MatterModal({ matter, onClose, onSave }) {
   const [form, setForm] = useState({
     title:         matter?.title || '',
+    clientId:      matter?.clientId?._id || matter?.clientId || '',
     description:   matter?.description || '',
     practiceArea:  matter?.practiceArea || 'Other',
     status:        matter?.status || 'active',
@@ -203,6 +281,9 @@ function MatterModal({ matter, onClose, onSave }) {
           )}
           <Field label="Matter Title *">
             <input className="input" value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Smith v. Johnson — Employment Dispute" />
+          </Field>
+          <Field label="Client">
+            <ClientSelector value={form.clientId} onChange={v => set('clientId', v)} />
           </Field>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <Field label="Practice Area" half>
@@ -562,7 +643,12 @@ function MatterDetail({ matter, onEdit, onBack, onMatterChange }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Client card */}
                 <div className="card" style={{ padding: 20 }}>
-                  <div className="h-title" style={{ fontSize: 15, marginBottom: 14 }}>Client</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <div className="h-title" style={{ fontSize: 15 }}>Client</div>
+                    <button onClick={onEdit} style={{ fontSize: 12, color: 'var(--purple)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                      {clientDisplay ? 'Change' : 'Link Client'}
+                    </button>
+                  </div>
                   {clientDisplay ? (
                     <>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{clientDisplay}</div>

@@ -72,6 +72,16 @@ function EmptyState({ icon, title, sub, action, onAction }) {
   );
 }
 
+/* ── Fld ──────────────────────────────────────────────────────── */
+function Fld({ label, children, half }) {
+  return (
+    <div style={{ marginBottom: half ? 0 : 14 }}>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
 /* ── ContactModal ─────────────────────────────────────────────── */
 function ContactModal({ contact, onClose, onSave }) {
   const isCompany = contact?.type === 'company';
@@ -112,13 +122,6 @@ function ContactModal({ contact, onClose, onSave }) {
       setError(err.response?.data?.message || 'Failed to save contact');
     } finally { setSaving(false); }
   }
-
-  const Fld = ({ label, children, half }) => (
-    <div style={{ marginBottom: half ? 0 : 14 }}>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</label>
-      {children}
-    </div>
-  );
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(11,11,20,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}

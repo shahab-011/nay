@@ -57,6 +57,9 @@ const LawyerDashboard  = lazy(() => import('./pages/LawyerDashboard'));
 const LawyerClientView = lazy(() => import('./pages/LawyerClientView'));
 const LawyerDocView    = lazy(() => import('./pages/LawyerDocView'));
 
+/* ── Trust public payment portal (no auth) ── */
+const TrustPayPage = lazy(() => import('./pages/TrustPayPage'));
+
 /* ── Phase 3: Remaining Clio features ── */
 const DocAutomation   = lazy(() => import('./pages/DocAutomation'));
 const LeadPipeline    = lazy(() => import('./pages/LeadPipeline'));
@@ -173,6 +176,9 @@ function App() {
                     {/* ── Client Portal (public, token-based) ── */}
                     <Route path="/client-portal/:token" element={<ClientPortal />} />
                     <Route path="/client-portal"        element={<ClientPortal />} />
+
+                    {/* ── Trust payment portal (public, token-based) ── */}
+                    <Route path="/trust-pay/:token" element={<TrustPayPage />} />
 
                     {/* ── Section 3: Legal Marketplace ── */}
                     <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />

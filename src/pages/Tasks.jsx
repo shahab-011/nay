@@ -395,9 +395,18 @@ function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
   );
 }
 
+const MATTER_STAGES = ['Intake','Investigation','Litigation','Negotiation','Drafting','Review','Execution','Archived'];
+const MATTER_PRACTICE_AREAS = ['Corporate','Contract','Criminal Defense','Family Law','Immigration','Labor & Employment','Real Estate','Intellectual Property','Tax Law','Civil Litigation','Constitutional','Other'];
+
 /* ─── Task List Modal ────────────────────────────────────────────── */
 function TaskListModal({ list, onClose, onSave }) {
-  const [form, setForm] = useState({ name: list?.name || '', description: list?.description || '', isTemplate: list?.isTemplate || false });
+  const [form, setForm] = useState({
+    name:                list?.name                || '',
+    description:         list?.description         || '',
+    isTemplate:          list?.isTemplate          || false,
+    triggerStage:        list?.triggerStage        || '',
+    triggerPracticeArea: list?.triggerPracticeArea || '',
+  });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -416,7 +425,7 @@ function TaskListModal({ list, onClose, onSave }) {
     <div style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(11,11,20,0.45)', backdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }}
-        style={{ width:'100%', maxWidth:440, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', padding:28 }}>
+        style={{ width:'100%', maxWidth:480, background:'var(--surface)', borderRadius:20, boxShadow:'var(--shadow-float)', padding:28 }}>
         <h3 style={{ margin:'0 0 20px', fontSize:18, fontWeight:700 }}>{list?._id ? 'Edit Task List' : 'New Task List'}</h3>
         <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
           <Field label="Name *">
@@ -425,10 +434,40 @@ function TaskListModal({ list, onClose, onSave }) {
           <Field label="Description">
             <textarea className="input" rows={2} value={form.description} onChange={e => set('description', e.target.value)} style={{ resize:'vertical' }} />
           </Field>
+
           <label style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer' }}>
             <input type="checkbox" checked={form.isTemplate} onChange={e => set('isTemplate', e.target.checked)} />
             <span style={{ fontSize:13 }}>Save as reusable template</span>
           </label>
+
+          {/* Stage trigger — only shown when isTemplate is checked */}
+          {form.isTemplate && (
+            <div style={{ background:'var(--purple-soft)', borderRadius:12, padding:14, border:'1px solid #DDD6FE' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'var(--purple)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>
+                Auto-apply when matter stage changes to…
+              </div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                <Field label="Stage">
+                  <select className="input" style={{ fontSize:13 }} value={form.triggerStage} onChange={e => set('triggerStage', e.target.value)}>
+                    <option value="">— Any stage —</option>
+                    {MATTER_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </Field>
+                <Field label="Practice Area">
+                  <select className="input" style={{ fontSize:13 }} value={form.triggerPracticeArea} onChange={e => set('triggerPracticeArea', e.target.value)}>
+                    <option value="">— Any area —</option>
+                    {MATTER_PRACTICE_AREAS.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </Field>
+              </div>
+              {form.triggerStage && (
+                <div style={{ fontSize:11, color:'var(--purple)', marginTop:8 }}>
+                  Tasks from this template will be auto-created when a matter moves to <strong>{form.triggerStage}</strong>{form.triggerPracticeArea ? ` (${form.triggerPracticeArea} matters only)` : ''}.
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-purple" disabled={saving}>{saving ? 'Saving…' : list?._id ? 'Update' : 'Create'}</button>

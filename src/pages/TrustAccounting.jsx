@@ -321,7 +321,7 @@ function PaymentRequestModal({ account, matters, onClose }) {
 }
 
 /* ── Main ──────────────────────────────────────────────────────── */
-const TABS = ['Transactions', 'Matter Ledger', 'Reconciliation'];
+const TABS = ['Transactions', 'Matter Ledger', 'Reconciliation', 'Payment Requests'];
 
 export default function TrustAccounting() {
   const [accounts, setAccounts]         = useState([]);
@@ -337,6 +337,7 @@ export default function TrustAccounting() {
   const [reconcileModal, setReconcileModal] = useState(false);
   const [voidModal, setVoidModal]       = useState(null);
   const [paymentReqModal, setPaymentReqModal] = useState(false);
+  const [paymentRequests, setPaymentRequests] = useState([]);
   const [typeFilter, setTypeFilter]     = useState('');
 
   const loadAccounts = useCallback(async () => {
@@ -368,6 +369,14 @@ export default function TrustAccounting() {
     } catch { setRecons([]); }
   }, [activeAccount]);
 
+  const loadPaymentRequests = useCallback(async () => {
+    if (!activeAccount) return;
+    try {
+      const r = await trustApi.listPaymentRequests(activeAccount._id);
+      setPaymentRequests(r.data.data || []);
+    } catch { setPaymentRequests([]); }
+  }, [activeAccount]);
+
   const loadMatters = useCallback(async () => {
     try {
       const r = await mattersApi.list({ limit: 200 });
@@ -376,7 +385,7 @@ export default function TrustAccounting() {
   }, []);
 
   useEffect(() => { loadAccounts(); loadMatters(); }, [loadAccounts, loadMatters]);
-  useEffect(() => { if (activeAccount) { loadTransactions(); loadRecons(); } }, [activeAccount, loadTransactions, loadRecons]);
+  useEffect(() => { if (activeAccount) { loadTransactions(); loadRecons(); loadPaymentRequests(); } }, [activeAccount, loadTransactions, loadRecons, loadPaymentRequests]);
 
   async function loadMatterLedger(matterId) {
     if (!matterId || !activeAccount) return;
@@ -404,6 +413,14 @@ export default function TrustAccounting() {
     await trustApi.voidTx(accountId, txId, reason);
     await loadAccounts();
     loadTransactions();
+  }
+
+  async function handleCancelPaymentRequest(reqId) {
+    if (!activeAccount) return;
+    try {
+      await trustApi.cancelPaymentRequest(activeAccount._id, reqId);
+      loadPaymentRequests();
+    } catch { /* ignore */ }
   }
 
   const totalDeposits = transactions.filter(t => t.type === 'deposit' && !t.isVoided).reduce((s, t) => s + t.amount, 0);
@@ -623,6 +640,74 @@ export default function TrustAccounting() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Payment Requests Tab */}
+        {tab === 'Payment Requests' && activeAccount && (
+          <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Payment Requests</span>
+                <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-muted)' }}>{paymentRequests.length} request{paymentRequests.length !== 1 ? 's' : ''}</span>
+              </div>
+              <button onClick={() => setPaymentReqModal(true)}
+                style={{ padding: '7px 14px', borderRadius: 9, border: 'none', background: 'var(--purple)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+                + Request Payment
+              </button>
+            </div>
+            {paymentRequests.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--text-muted)' }}>
+                <I.DollarSign size={40} style={{ opacity: 0.2, marginBottom: 12 }} />
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>No payment requests</p>
+                <p style={{ margin: '6px 0 0', fontSize: 13 }}>Send a payment link to a client to request a trust deposit.</p>
+              </div>
+            ) : (
+              <div style={{ padding: '0 0 8px' }}>
+                {paymentRequests.map(req => {
+                  const statusColor = { pending: '#F59E0B', paid: '#10B981', cancelled: '#6B7280', expired: '#EF4444' }[req.status] || '#6B7280';
+                  const statusBg   = { pending: 'rgba(245,158,11,0.1)', paid: 'rgba(16,185,129,0.1)', cancelled: 'rgba(107,114,128,0.1)', expired: 'rgba(239,68,68,0.1)' }[req.status] || 'rgba(107,114,128,0.1)';
+                  return (
+                    <div key={req._id} style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--ink)' }}>{fmtMoney(req.amount)}</span>
+                          <span style={{ padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, background: statusBg, color: statusColor, textTransform: 'capitalize' }}>
+                            {req.status}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3 }}>
+                          {req.clientName && <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{req.clientName}</span>}
+                          {req.clientName && req.clientEmail && <span> · </span>}
+                          {req.clientEmail && <span>{req.clientEmail}</span>}
+                        </div>
+                        {req.description && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{req.description}</div>}
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                          Sent {fmtDate(req.createdAt)}
+                          {req.expiresAt && <span> · Expires {fmtDate(req.expiresAt)}</span>}
+                          {req.paidAt && <span> · Paid {fmtDate(req.paidAt)}</span>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                        {req.payUrl && req.status === 'pending' && (
+                          <button onClick={() => { navigator.clipboard.writeText(req.payUrl); }}
+                            title="Copy payment link"
+                            style={{ padding: '6px 12px', borderRadius: 8, border: '1.5px solid var(--border)', background: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <I.Copy size={13} /> Copy Link
+                          </button>
+                        )}
+                        {req.status === 'pending' && (
+                          <button onClick={() => handleCancelPaymentRequest(req._id)}
+                            style={{ padding: '6px 12px', borderRadius: 8, border: '1.5px solid #FECACA', background: 'rgba(239,68,68,0.07)', color: '#EF4444', cursor: 'pointer', fontSize: 12 }}>
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { firmApi } from '../api/firm.api';
+import { CURRENCIES, setStoredCurrency } from '../utils/currency';
 
 /* ─── Shared styles ─────────────────────────────────────────────── */
 const lbl = { display:'block', fontSize:12, fontWeight:600, color:'#374151', marginBottom:5 };
@@ -204,7 +205,11 @@ function BillingConfig({ billing, setBilling }) {
 
   async function save() {
     setSaving(true);
-    try { await firmApi.updateBilling(billing); setSaved(true); setTimeout(()=>setSaved(false),2500); }
+    try {
+      await firmApi.updateBilling(billing);
+      setStoredCurrency(billing.currency || 'INR');
+      setSaved(true); setTimeout(()=>setSaved(false),2500);
+    }
     catch(e) { console.error(e); }
     finally { setSaving(false); }
   }
@@ -214,8 +219,10 @@ function BillingConfig({ billing, setBilling }) {
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
         <div>
           <label style={lbl}>Currency</label>
-          <select value={billing.currency||'PKR'} onChange={e=>set('currency',e.target.value)} style={inp}>
-            {['PKR','USD','GBP','EUR','AED','CAD','AUD'].map(c=><option key={c}>{c}</option>)}
+          <select value={billing.currency||'INR'} onChange={e=>set('currency',e.target.value)} style={inp}>
+            {Object.entries(CURRENCIES).map(([code, meta]) => (
+              <option key={code} value={code}>{meta.name}</option>
+            ))}
           </select>
         </div>
         <div>
@@ -712,8 +719,10 @@ export default function FirmSettings() {
         address:d.address||'', description:d.description||'',
         timeZone:d.timeZone||'Asia/Karachi',
       });
+      const loadedCurrency = d.currency || 'INR';
+      setStoredCurrency(loadedCurrency);
       setBilling({
-        currency:d.currency||'PKR', defaultHourlyRate:d.defaultHourlyRate||0,
+        currency:loadedCurrency, defaultHourlyRate:d.defaultHourlyRate||0,
         defaultTaxRate:d.defaultTaxRate||0, invoicePrefix:d.invoicePrefix||'INV',
         paymentTermsDays:d.paymentTermsDays||30, lateFeePercent:d.lateFeePercent||0,
         graceperiodDays:d.graceperiodDays||0, trustAccountBank:d.trustAccountBank||'',

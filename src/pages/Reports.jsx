@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { reportsApi } from '../api/reports.api';
+import { formatMoney, getStoredCurrency } from '../utils/currency';
+import { useCurrency } from '../hooks/useCurrency';
 
 /* ─── Helpers ───────────────────────────────────────────────────── */
-const fmt$  = n => `$${(parseFloat(n)||0).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const fmt$  = n => formatMoney(n, getStoredCurrency());
 const fmtN  = n => (parseFloat(n)||0).toLocaleString('en',{maximumFractionDigits:1});
 const fmtPct= n => `${(parseFloat(n)||0).toFixed(1)}%`;
 
@@ -728,6 +730,7 @@ function CustomTab() {
 
 /* ─── Main ──────────────────────────────────────────────────────── */
 export default function Reports() {
+  useCurrency(); // re-render when currency changes
   const [tab, setTab] = useState('dashboard');
 
   return (

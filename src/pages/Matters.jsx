@@ -7,6 +7,8 @@ import { contactsApi } from '../api/contacts.api';
 import { tasksApi }    from '../api/tasks.api';
 import { timeApi }     from '../api/timeTracking.api';
 import { billingApi }  from '../api/billing.api';
+import { formatMoney, getStoredCurrency, getCurrencySymbol } from '../utils/currency';
+import { useCurrency } from '../hooks/useCurrency';
 
 /* ── Constants ─────────────────────────────────────────────────── */
 const PRACTICE_AREAS = [
@@ -47,7 +49,7 @@ function fmtDate(d) {
 
 function fmtCurrency(n) {
   if (!n) return '—';
-  return `$${Number(n).toLocaleString()}`;
+  return formatMoney(n, getStoredCurrency());
 }
 
 /* ── StatusBadge ──────────────────────────────────────────────── */
@@ -713,7 +715,7 @@ function MatterDetail({ matter, onEdit, onBack, onMatterChange }) {
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, marginBottom: 5 }}>
                             <span style={{ color: 'var(--text-secondary)' }}>Fees</span>
-                            <span style={{ color: fColor }}>${(u.feesBilled || 0).toLocaleString()} / ${matter.budgetFees.toLocaleString()} ({fPct}%)</span>
+                            <span style={{ color: fColor }}>{fmtCurrency(u.feesBilled || 0)} / {fmtCurrency(matter.budgetFees)} ({fPct}%)</span>
                           </div>
                           <div style={{ height: 7, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${fPct}%`, background: fColor, borderRadius: 4, transition: 'width 0.4s' }} />
@@ -952,6 +954,7 @@ function MatterListRow({ matter, onClick }) {
 
 /* ── Main Page ───────────────────────────────────────────────── */
 export default function Matters() {
+  useCurrency(); // re-render when currency changes
   const navigate = useNavigate();
   const { id: paramId } = useParams();
 

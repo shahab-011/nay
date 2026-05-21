@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { timeApi } from '../api/timeTracking.api';
 import { mattersApi } from '../api/matters.api';
+import { formatMoney, getStoredCurrency } from '../utils/currency';
+import { useCurrency } from '../hooks/useCurrency';
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 const pad = n => String(n).padStart(2, '0');
@@ -19,9 +21,7 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function fmtMoney(n) {
-  return '$' + (n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+function fmtMoney(n) { return formatMoney(n, getStoredCurrency()); }
 
 function calcElapsed(timer) {
   const paused = timer.pausedDuration || 0;
@@ -462,6 +462,7 @@ function ExpenseRow({ expense, onEdit, onDelete, onApprove }) {
 const TABS = ['Time Entries', 'Expenses'];
 
 export default function TimeTracking() {
+  useCurrency(); // re-render when currency changes
   const [tab, setTab]           = useState('Time Entries');
   const [entries, setEntries]   = useState([]);
   const [expenses, setExpenses] = useState([]);

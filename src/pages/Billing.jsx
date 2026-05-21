@@ -4,9 +4,12 @@ import { I } from '../components/Icons';
 import { billingApi } from '../api/billing.api';
 import { mattersApi } from '../api/matters.api';
 import { contactsApi } from '../api/contacts.api';
+import { useCurrency } from '../hooks/useCurrency';
+
+import { formatMoney, getStoredCurrency } from '../utils/currency';
 
 /* ── Helpers ───────────────────────────────────────────────────── */
-function fmtMoney(n) { return '$' + (n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtMoney(n) { return formatMoney(n, getStoredCurrency()); }
 function fmtDate(d)  { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
 function todayStr()  { return new Date().toISOString().slice(0, 10); }
 function addDays(n)  { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
@@ -499,6 +502,7 @@ function InvoiceRow({ invoice, onClick }) {
 
 /* ── Main ──────────────────────────────────────────────────────── */
 export default function Billing() {
+  useCurrency(); // subscribe to currency changes so page re-renders when currency updates
   const [invoices, setInvoices]     = useState([]);
   const [matters, setMatters]       = useState([]);
   const [contacts, setContacts]     = useState([]);

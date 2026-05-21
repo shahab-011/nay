@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { trustApi } from '../api/trust.api';
 import { mattersApi } from '../api/matters.api';
+import { formatMoney, getStoredCurrency } from '../utils/currency';
+import { useCurrency } from '../hooks/useCurrency';
 
 /* ── Helpers ───────────────────────────────────────────────────── */
-function fmtMoney(n) { return '$' + (n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtMoney(n) { return formatMoney(n, getStoredCurrency()); }
 function fmtDate(d)  { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
 function todayStr()  { return new Date().toISOString().slice(0, 10); }
 
@@ -324,6 +326,7 @@ function PaymentRequestModal({ account, matters, onClose }) {
 const TABS = ['Transactions', 'Matter Ledger', 'Reconciliation', 'Payment Requests'];
 
 export default function TrustAccounting() {
+  useCurrency(); // re-render when currency changes
   const [accounts, setAccounts]         = useState([]);
   const [activeAccount, setActiveAccount] = useState(null);
   const [matters, setMatters]           = useState([]);

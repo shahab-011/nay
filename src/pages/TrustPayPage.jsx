@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/axios';
+import { formatMoney, getStoredCurrency } from '../utils/currency';
 
 const PAYMENT_METHODS = [
   { value: 'bank_transfer', label: 'Bank Transfer' },
@@ -10,8 +11,8 @@ const PAYMENT_METHODS = [
   { value: 'other',         label: 'Other' },
 ];
 
-function fmtMoney(n) {
-  return '$' + Number(n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function fmtMoney(n, currency) {
+  return formatMoney(n, currency || getStoredCurrency());
 }
 
 export default function TrustPayPage() {

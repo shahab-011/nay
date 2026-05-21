@@ -626,8 +626,12 @@ export default function CalendarPage() {
   function openEdit(ev) {
     const start = ev.startDate ? new Date(ev.startDate) : null;
     const end   = ev.endDate   ? new Date(ev.endDate)   : null;
+    const locStr = ev.location
+      ? (ev.location.virtualUrl || ev.location.address || '')
+      : '';
     setPrefill({
       ...ev,
+      location:  locStr,
       startDate: start ? formatDate(start) : '',
       startTime: start ? formatTime24(start) : '09:00',
       endDate:   end   ? formatDate(end)   : '',
@@ -646,6 +650,25 @@ export default function CalendarPage() {
 
     const { startTime, endTime, ...rest } = form;
     const payload = { ...rest, startDate, endDate };
+
+    // location: model expects { type, address } object, not a plain string
+    if (typeof payload.location === 'string') {
+      const loc = payload.location.trim();
+      if (!loc) delete payload.location;
+      else if (loc.startsWith('http')) payload.location = { type: 'virtual', virtualUrl: loc };
+      else payload.location = { type: 'in_person', address: loc };
+    } else if (!payload.location) {
+      delete payload.location;
+    }
+
+    // empty matterId → remove to avoid ObjectId cast error
+    if (!payload.matterId) delete payload.matterId;
+
+    // recurrence: frontend uses endDate, model uses until
+    if (payload.recurrence) {
+      const { endDate: recEnd, ...restRec } = payload.recurrence;
+      payload.recurrence = { ...restRec, ...(recEnd ? { until: recEnd } : {}) };
+    }
 
     if (form._id) {
       await calendarApi.update(form._id, payload);

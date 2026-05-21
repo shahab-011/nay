@@ -184,12 +184,12 @@ function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
   /* ── subtask helpers ── */
   function addSubtask() {
     if (!newSubtask.trim()) return;
-    set('subtasks', [...form.subtasks, { title: newSubtask.trim(), completed: false }]);
+    set('subtasks', [...form.subtasks, { title: newSubtask.trim(), isCompleted: false }]);
     setNewSubtask('');
     subtaskRef.current?.focus();
   }
   function toggleSubtask(i) {
-    set('subtasks', form.subtasks.map((s, idx) => idx === i ? { ...s, completed: !s.completed } : s));
+    set('subtasks', form.subtasks.map((s, idx) => idx === i ? { ...s, isCompleted: !s.isCompleted } : s));
   }
   function removeSubtask(i) {
     set('subtasks', form.subtasks.filter((_, idx) => idx !== i));
@@ -219,6 +219,19 @@ function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
     setSaving(true);
     try {
       const payload = { ...form };
+      // Clean up empty strings for typed fields to avoid cast errors
+      if (!payload.dueDate)        delete payload.dueDate;
+      if (!payload.estimatedHours) delete payload.estimatedHours;
+      if (!payload.matterId)       delete payload.matterId;
+      // Fix subtask key name (schema uses isCompleted, not completed)
+      payload.subtasks = (payload.subtasks || []).map(({ completed, isCompleted, ...s }) => ({
+        ...s, isCompleted: isCompleted ?? completed ?? false,
+      }));
+      // Fix recurrence: rename endDate → until
+      if (payload.recurrence) {
+        const { endDate, ...restRec } = payload.recurrence;
+        payload.recurrence = { ...restRec, ...(endDate ? { until: endDate } : {}) };
+      }
       if (task?._id) await tasksApi.update(task._id, payload);
       else await tasksApi.create(payload);
       onSave();
@@ -290,19 +303,19 @@ function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
           {/* ── Subtasks ── */}
           <div style={{ marginTop:8, marginBottom:14 }}>
             <div style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>
-              Subtasks {form.subtasks.length > 0 && <span style={{ background:'var(--purple-soft)', color:'var(--purple)', borderRadius:999, padding:'1px 7px', fontSize:10 }}>{form.subtasks.filter(s => s.completed).length}/{form.subtasks.length}</span>}
+              Subtasks {form.subtasks.length > 0 && <span style={{ background:'var(--purple-soft)', color:'var(--purple)', borderRadius:999, padding:'1px 7px', fontSize:10 }}>{form.subtasks.filter(s => s.isCompleted).length}/{form.subtasks.length}</span>}
             </div>
             {form.subtasks.length > 0 && (
               <div style={{ border:'1px solid var(--border)', borderRadius:10, overflow:'hidden', marginBottom:8 }}>
                 {form.subtasks.map((st, i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderBottom: i < form.subtasks.length - 1 ? '1px solid var(--border)' : 'none', background: st.completed ? 'var(--bg)' : 'var(--surface)' }}>
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', borderBottom: i < form.subtasks.length - 1 ? '1px solid var(--border)' : 'none', background: st.isCompleted ? 'var(--bg)' : 'var(--surface)' }}>
                     <button type="button" onClick={() => toggleSubtask(i)} style={{
-                      width:18, height:18, borderRadius:5, flexShrink:0, border:`2px solid ${st.completed ? 'var(--purple)' : 'var(--border)'}`,
-                      background: st.completed ? 'var(--purple)' : 'transparent', display:'grid', placeItems:'center', cursor:'pointer',
+                      width:18, height:18, borderRadius:5, flexShrink:0, border:`2px solid ${st.isCompleted ? 'var(--purple)' : 'var(--border)'}`,
+                      background: st.isCompleted ? 'var(--purple)' : 'transparent', display:'grid', placeItems:'center', cursor:'pointer',
                     }}>
-                      {st.completed && <I.Check size={10} style={{ color:'#fff' }} />}
+                      {st.isCompleted && <I.Check size={10} style={{ color:'#fff' }} />}
                     </button>
-                    <span style={{ flex:1, fontSize:13, color: st.completed ? 'var(--text-muted)' : 'var(--ink)', textDecoration: st.completed ? 'line-through' : 'none' }}>{st.title}</span>
+                    <span style={{ flex:1, fontSize:13, color: st.isCompleted ? 'var(--text-muted)' : 'var(--ink)', textDecoration: st.isCompleted ? 'line-through' : 'none' }}>{st.title}</span>
                     <button type="button" onClick={() => removeSubtask(i)} style={{ width:22, height:22, borderRadius:6, background:'transparent', border:'none', cursor:'pointer', display:'grid', placeItems:'center', color:'var(--text-muted)', flexShrink:0 }}>
                       <I.X size={11} />
                     </button>
@@ -481,7 +494,7 @@ function TaskListModal({ list, onClose, onSave }) {
 /* ─── Task Row ───────────────────────────────────────────────────── */
 function TaskRow({ task, onToggle, onEdit, onDelete, onLogTime }) {
   const overdue = isOverdue(task);
-  const subtasksDone  = task.subtasks?.filter(s => s.completed).length || 0;
+  const subtasksDone  = task.subtasks?.filter(s => s.isCompleted).length || 0;
   const subtasksTotal = task.subtasks?.length || 0;
 
   return (
@@ -553,7 +566,7 @@ function TaskRow({ task, onToggle, onEdit, onDelete, onLogTime }) {
 function KanbanCard({ task, onEdit, onDragStart, onLogTime }) {
   const overdue       = isOverdue(task);
   const pm            = priorityMeta(task.priority);
-  const subtasksDone  = task.subtasks?.filter(s => s.completed).length || 0;
+  const subtasksDone  = task.subtasks?.filter(s => s.isCompleted).length || 0;
   const subtasksTotal = task.subtasks?.length || 0;
 
   return (

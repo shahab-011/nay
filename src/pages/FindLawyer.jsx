@@ -502,7 +502,7 @@ export default function FindLawyer() {
 
   function canNext() {
     if (step === 0) return !!area;
-    if (step === 1) return !!(details.description?.trim().length > 20 && details.urgency && details.country);
+    if (step === 1) return !!(details.description?.trim().length > 20 && details.urgency);
     if (step === 2) return selected.length > 0;
     return false;
   }

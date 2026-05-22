@@ -783,23 +783,28 @@ export default function Landing() {
             </motion.button>
           </motion.div>
 
-          {/* Trust strip */}
+          {/* Feature pills */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.6 }}
-            style={{ display: 'flex', gap: 32, justifyContent: 'center', alignItems: 'center', marginTop: 40, flexWrap: 'wrap' }}
+            style={{ display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'center', marginTop: 40, flexWrap: 'wrap' }}
           >
             {[
-              { v: '50K+', l: 'Documents Analyzed' },
-              { v: '99.2%', l: 'Uptime' },
-              { v: '120+', l: 'Jurisdictions' },
-              { v: 'GDPR', l: 'Compliant' },
-            ].map(({ v, l }) => (
-              <div key={l} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: 20, color: 'var(--ink)', letterSpacing: '-0.02em' }}>{v}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{l}</div>
-              </div>
+              { icon: <I.Sparkle size={13} />, label: 'AI Contract Analysis' },
+              { icon: <I.Briefcase size={13} />, label: 'Full Matter Management' },
+              { icon: <I.Scale size={13} />, label: 'Verified Advocate Network' },
+              { icon: <I.Lock size={13} />, label: 'End-to-End Encrypted' },
+            ].map(({ icon, label }) => (
+              <motion.span
+                key={label}
+                className="pill"
+                whileHover={{ scale: 1.05, y: -2 }}
+                style={{ fontSize: 13, padding: '7px 14px', display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'default' }}
+              >
+                <span style={{ color: 'var(--purple)', display: 'flex' }}>{icon}</span>
+                {label}
+              </motion.span>
             ))}
           </motion.div>
 

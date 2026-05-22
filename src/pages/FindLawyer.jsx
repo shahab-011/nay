@@ -262,53 +262,6 @@ function StepDetails({ form, onChange }) {
         </div>
       </div>
 
-      {/* Budget */}
-      <div>
-        <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 10 }}>Budget range</label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
-          {BUDGET.map(b => (
-            <div
-              key={b.id}
-              onClick={() => set('budget', b.id)}
-              style={{
-                padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-                border: `2px solid ${form.budget === b.id ? 'var(--purple)' : 'var(--border)'}`,
-                background: form.budget === b.id ? 'rgba(124,58,237,0.06)' : 'var(--surface)',
-                transition: 'all 150ms',
-              }}
-            >
-              <div style={{ fontSize: 13, fontWeight: 700, color: form.budget === b.id ? 'var(--purple)' : 'var(--ink)' }}>{b.label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>{b.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Country */}
-      <div>
-        <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 10 }}>
-          Which country do you need a lawyer in? *
-        </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-          {COUNTRIES.map(c => (
-            <div
-              key={c.id}
-              onClick={() => set('country', c.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '11px 14px', borderRadius: 12, cursor: 'pointer',
-                border: `2px solid ${form.country === c.id ? 'var(--purple)' : 'var(--border)'}`,
-                background: form.country === c.id ? 'rgba(124,58,237,0.07)' : 'var(--surface)',
-                transition: 'all 150ms',
-              }}
-            >
-              <span style={{ fontSize: 22, lineHeight: 1 }}>{c.flag}</span>
-              <span style={{ fontSize: 13, fontWeight: form.country === c.id ? 700 : 500, color: form.country === c.id ? 'var(--purple)' : 'var(--ink)' }}>{c.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Consultation */}
       <div>
         <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 8 }}>Preferred consultation</label>

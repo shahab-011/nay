@@ -389,18 +389,6 @@ function ServiceCard({ s, index, onCardClick }) {
           </p>
         </div>
 
-        {/* Metric badge */}
-        <div style={{
-          position: 'absolute', bottom: 20, right: 24,
-          background: 'rgba(0,0,0,0.25)',
-          backdropFilter: 'blur(12px)',
-          borderRadius: 12, padding: '7px 14px',
-          border: '1px solid rgba(255,255,255,0.15)',
-          textAlign: 'right',
-        }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{s.metric.value}</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 600, letterSpacing: '0.05em', marginTop: 2 }}>{s.metric.label}</div>
-        </div>
       </div>
 
       {/* ── Feature list ── */}
@@ -597,22 +585,6 @@ export default function PortalHome() {
           </motion.p>
         </div>
 
-        {/* ── Stats bar ── */}
-        <motion.div
-          variants={scaleUp} initial="hidden" animate="show"
-          transition={{ ...stagger(0.35).transition }}
-          style={{
-            display: 'inline-flex', alignItems: 'stretch',
-            background: '#fff', borderRadius: 20,
-            border: '1.5px solid rgba(124,58,237,0.12)',
-            boxShadow: '0 8px 32px rgba(124,58,237,0.08)',
-            marginBottom: 52, width: '100%', maxWidth: 700,
-            marginInline: 'auto',
-            flexWrap: 'wrap', justifyContent: 'center',
-          }}
-        >
-          {STATS.map((stat, i) => <StatItem key={stat.label} stat={stat} index={i} />)}
-        </motion.div>
 
         {/* ── Service cards ── */}
         <div style={{

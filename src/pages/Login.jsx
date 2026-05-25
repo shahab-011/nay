@@ -149,7 +149,6 @@ export default function Login() {
   const [showPass,   setShowPass]   = useState(false);
   const [error,      setError]      = useState('');
   const [isLoading,  setIsLoading]  = useState(false);
-  const [googleNote, setGoogleNote] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -166,8 +165,8 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    setGoogleNote(true);
-    setTimeout(() => setGoogleNote(false), 3000);
+    const api = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+    window.location.href = `${api}/api/auth/google`;
   };
 
   return (
@@ -271,14 +270,6 @@ export default function Login() {
               <GoogleIcon />
               Continue with Google
             </motion.button>
-            <AnimatePresence>
-              {googleNote && (
-                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  style={{ fontSize: 11, color: '#a78bfa', textAlign: 'center', marginTop: 8 }}>
-                  Google Sign-In is coming soon
-                </motion.p>
-              )}
-            </AnimatePresence>
           </motion.div>
 
           {/* Divider */}

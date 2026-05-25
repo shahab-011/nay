@@ -68,6 +68,15 @@ export const AuthProvider = ({ children }) => {
     restore();
   }, [clearSession]);
 
+  /* ─── loginWithToken (Google OAuth callback) ─────────────────── */
+  const loginWithToken = useCallback(async (accessToken, refreshToken) => {
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
+    setToken(accessToken);
+    const { data } = await getMe();
+    setUser(data.data.user);
+  }, []);
+
   /* ─── login ──────────────────────────────────────────────────── */
   const login = async (email, password, rememberMe = false, totpCode) => {
     const { data } = await loginUser(email, password, rememberMe, totpCode);
@@ -126,7 +135,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, token, loading,
-      login, register, verifyEmail, resendOTP,
+      login, loginWithToken, register, verifyEmail, resendOTP,
       forgotPassword, resetPassword,
       completeOnboarding,
       logout, updateUser,

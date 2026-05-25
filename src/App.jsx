@@ -18,11 +18,12 @@ import Intake     from './pages/Intake';
 import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
 
 /* ── Auth pages ── */
-import Login          from './pages/Login';
-import Register       from './pages/Register';
-import VerifyEmail    from './pages/VerifyEmail';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword  from './pages/ResetPassword';
+import Login               from './pages/Login';
+import Register            from './pages/Register';
+import VerifyEmail         from './pages/VerifyEmail';
+import ForgotPassword      from './pages/ForgotPassword';
+import ResetPassword       from './pages/ResetPassword';
+import GoogleAuthCallback  from './pages/GoogleAuthCallback';
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 
 /* ── Portal home + section entries ── */
@@ -134,8 +135,9 @@ function App() {
                     <Route path="/register"        element={<GuestRoute><Register /></GuestRoute>} />
                     <Route path="/verify-email"    element={<VerifyEmail />} />
                     <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-                    <Route path="/reset-password"  element={<GuestRoute><ResetPassword /></GuestRoute>} />
-                    <Route path="/onboarding"      element={<PrivateRoute><OnboardingWizard /></PrivateRoute>} />
+                    <Route path="/reset-password"        element={<GuestRoute><ResetPassword /></GuestRoute>} />
+                    <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+                    <Route path="/onboarding"           element={<PrivateRoute><OnboardingWizard /></PrivateRoute>} />
 
                     {/* ── Section 1: Document Studio ── */}
                     <Route path="/studio"          element={<PrivateRoute><StudioHome /></PrivateRoute>} />

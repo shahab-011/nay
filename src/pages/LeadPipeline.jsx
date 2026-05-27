@@ -28,24 +28,24 @@ function Stars({ score, onChange }) {
   return (
     <div style={{ display: 'flex', gap: 2 }}>
       {[1,2,3,4,5].map(n => (
-        <span key={n} onClick={() => onChange?.(n)} style={{ cursor: onChange ? 'pointer' : 'default', fontSize: 13, color: n <= (score || 0) ? '#F59E0B' : '#D1D5DB', lineHeight: 1 }}>★</span>
+        <span key={n} onClick={() => onChange?.(n)} style={{ cursor: onChange ? 'pointer' : 'default', fontSize: 13, color: n <= (score || 0) ? '#F59E0B' : 'rgba(240,238,255,0.2)', lineHeight: 1 }}>★</span>
       ))}
     </div>
   );
 }
 
 function BarChart({ data, labelKey = '_id', valueKey = 'count', color = '#7C3AED' }) {
-  if (!data?.length) return <div style={{ color: '#9CA3AF', fontSize: 13 }}>No data</div>;
+  if (!data?.length) return <div style={{ color: 'rgba(240,238,255,0.35)', fontSize: 13 }}>No data</div>;
   const max = Math.max(...data.map(d => d[valueKey] || 0), 1);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {data.map((d, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 140, fontSize: 12, color: '#374151', textAlign: 'right', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d[labelKey] || 'Unknown'}</div>
-          <div style={{ flex: 1, background: '#F3F4F6', borderRadius: 4, height: 18, overflow: 'hidden' }}>
+          <div style={{ width: 140, fontSize: 12, color: 'rgba(240,238,255,0.55)', textAlign: 'right', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d[labelKey] || 'Unknown'}</div>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: 4, height: 18, overflow: 'hidden' }}>
             <div style={{ width: `${((d[valueKey] || 0) / max) * 100}%`, background: color, height: '100%', borderRadius: 4, transition: 'width 0.4s', minWidth: d[valueKey] ? 4 : 0 }} />
           </div>
-          <div style={{ width: 32, fontSize: 12, fontWeight: 700, color: '#374151' }}>{d[valueKey] || 0}</div>
+          <div style={{ width: 32, fontSize: 12, fontWeight: 700, color: '#f0eeff' }}>{d[valueKey] || 0}</div>
         </div>
       ))}
     </div>
@@ -68,7 +68,7 @@ function Stats({ leads, stats: apiStats }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 28 }}>
       {items.map(s => (
-        <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(12px)' }}>
+        <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
           <div style={{ width: 40, height: 40, borderRadius: 11, background: s.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <s.icon size={18} style={{ color: s.color }} />
           </div>
@@ -87,8 +87,8 @@ function LeadCard({ lead, onDragStart, onClick }) {
   const sc = STAGE_COLOR[lead.stage] || STAGE_COLOR['New Lead'];
   return (
     <motion.div layout draggable onDragStart={e => onDragStart(e, lead._id)} onClick={() => onClick(lead)}
-      whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(124,58,237,0.18)' }}
-      style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', padding: '14px 16px', cursor: 'grab', marginBottom: 8, backdropFilter: 'blur(8px)' }}>
+      whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(124,58,237,0.22)' }}
+      style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', padding: '14px 16px', cursor: 'grab', marginBottom: 8, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff', lineHeight: 1.3 }}>{lead.name}</div>
         <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{lead.practiceArea}</span>
@@ -168,13 +168,13 @@ function NewLeadModal({ onClose, onSave }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(11,11,20,0.55)', backdropFilter: 'blur(4px)' }}>
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(6,4,18,0.7)', backdropFilter: 'blur(8px)' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 20, width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto', padding: 28, boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>New Lead</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={20} /></button>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#f0eeff' }}>New Lead</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.5)' }}><I.X size={20} /></button>
         </div>
-        {err && <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '10px 14px', borderRadius: 9, fontSize: 13, marginBottom: 14 }}>{err}</div>}
+        {err && <div style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', padding: '10px 14px', borderRadius: 9, fontSize: 13, marginBottom: 14, border: '1px solid rgba(239,68,68,0.25)' }}>{err}</div>}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           {[['name','Full Name','text'],['email','Email','email'],['phone','Phone','tel'],['estimatedValue','Est. Value (PKR)','number']].map(([k,pl,type]) => (
             <div key={k}>
@@ -239,9 +239,9 @@ function BookConsultationModal({ lead, onClose, onBooked }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#fff', borderRadius: 16, padding: 28, width: 380 }}>
-        <h3 style={{ margin: '0 0 18px', fontSize: 16, fontWeight: 800 }}>Book Consultation</h3>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,4,18,0.7)', backdropFilter: 'blur(8px)' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 16, padding: 28, width: 380, boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
+        <h3 style={{ margin: '0 0 18px', fontSize: 16, fontWeight: 800, color: '#f0eeff' }}>Book Consultation</h3>
         <label style={lbl}>Date & Time</label>
         <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} style={{ ...inp, marginBottom: 20 }} />
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -294,19 +294,19 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
   return (
     <>
       <motion.div initial={{ x: 380 }} animate={{ x: 0 }} exit={{ x: 380 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 380, zIndex: 150, background: '#fff', borderLeft: '1.5px solid #E5E7EB', boxShadow: '-8px 0 32px rgba(0,0,0,0.10)', overflowY: 'auto', padding: 24 }}>
+        style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 380, zIndex: 150, background: '#0c0a1e', borderLeft: '1px solid rgba(124,58,237,0.25)', boxShadow: '-8px 0 40px rgba(0,0,0,0.6)', overflowY: 'auto', padding: 24 }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#111827' }}>{lead.name}</h3>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#f0eeff' }}>{lead.name}</h3>
             <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }}>{lead.stage}</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={18} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.5)' }}><I.X size={18} /></button>
         </div>
 
         {/* Score */}
-        <div style={{ background: '#F9FAFB', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', marginBottom: 6 }}>LEAD SCORE</div>
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, border: '1px solid rgba(124,58,237,0.15)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.45)', marginBottom: 6, letterSpacing: '0.06em' }}>LEAD SCORE</div>
           <Stars score={score} onChange={handleScoreSave} />
         </div>
 
@@ -323,9 +323,9 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
             ['Created',       lead.createdAt?.slice(0,10), I.Calendar],
           ].filter(([,v]) => v).map(([label, val, Ic]) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 }}>
-              <Ic size={13} style={{ color: '#9CA3AF', flexShrink: 0 }} />
-              <span style={{ color: '#6B7280', width: 88, flexShrink: 0, fontSize: 12 }}>{label}</span>
-              <span style={{ color: '#111827', fontWeight: 600, fontSize: 12 }}>{val}</span>
+              <Ic size={13} style={{ color: 'rgba(240,238,255,0.4)', flexShrink: 0 }} />
+              <span style={{ color: 'rgba(240,238,255,0.5)', width: 88, flexShrink: 0, fontSize: 12 }}>{label}</span>
+              <span style={{ color: '#f0eeff', fontWeight: 600, fontSize: 12 }}>{val}</span>
             </div>
           ))}
         </div>
@@ -333,30 +333,31 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
         {/* Tags */}
         {lead.tags?.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', marginBottom: 6 }}>TAGS</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.45)', marginBottom: 6, letterSpacing: '0.06em' }}>TAGS</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-              {lead.tags.map(t => <span key={t} style={{ fontSize: 11, padding: '2px 9px', borderRadius: 12, background: '#EDE9FE', color: '#6D28D9', fontWeight: 600 }}>{t}</span>)}
+              {lead.tags.map(t => <span key={t} style={{ fontSize: 11, padding: '2px 9px', borderRadius: 12, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', fontWeight: 600, border: '1px solid rgba(124,58,237,0.3)' }}>{t}</span>)}
             </div>
           </div>
         )}
 
         {/* Notes */}
         {(lead.description || lead.notes) && (
-          <div style={{ background: '#F9FAFB', borderRadius: 10, padding: '10px 14px', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', marginBottom: 4 }}>NOTES</div>
-            <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>{lead.notes || lead.description}</div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, border: '1px solid rgba(124,58,237,0.15)' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.45)', marginBottom: 4, letterSpacing: '0.06em' }}>NOTES</div>
+            <div style={{ fontSize: 13, color: 'rgba(240,238,255,0.8)', lineHeight: 1.6 }}>{lead.notes || lead.description}</div>
           </div>
         )}
 
         {/* Stage selector */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Move to Stage</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.55)', marginBottom: 8, letterSpacing: '0.04em' }}>Move to Stage</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {STAGES.map(s => {
               const c = STAGE_COLOR[s];
+              const active = lead.stage === s;
               return (
                 <button key={s} onClick={() => handleStage(s)}
-                  style={{ padding: '4px 11px', borderRadius: 20, border: `1.5px solid ${lead.stage === s ? c.text : '#E5E7EB'}`, background: lead.stage === s ? c.bg : '#fff', color: lead.stage === s ? c.text : '#6B7280', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
+                  style={{ padding: '4px 11px', borderRadius: 20, border: `1.5px solid ${active ? c.text : 'rgba(124,58,237,0.2)'}`, background: active ? c.bg : 'rgba(255,255,255,0.04)', color: active ? c.text : 'rgba(240,238,255,0.5)', cursor: 'pointer', fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
                   {s}
                 </button>
               );
@@ -376,7 +377,7 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
               <I.Briefcase size={14} /> {converting ? 'Converting…' : 'Convert to Matter'}
             </button>
           ) : (
-            <div style={{ background: '#ECFDF5', borderRadius: 10, padding: 10, fontSize: 13, color: '#059669', fontWeight: 700, textAlign: 'center' }}>
+            <div style={{ background: 'rgba(34,197,94,0.15)', borderRadius: 10, padding: 10, fontSize: 13, color: '#4ade80', fontWeight: 700, textAlign: 'center', border: '1px solid rgba(34,197,94,0.3)' }}>
               ✓ Converted to Matter
             </div>
           )}
@@ -385,7 +386,7 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
         {/* Activity log */}
         {lead.activityLog?.length > 0 && (
           <div style={{ marginTop: 20 }}>
-            <button onClick={() => setShowActivity(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#6B7280', padding: 0 }}>
+            <button onClick={() => setShowActivity(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.5)', padding: 0 }}>
               <I.Clock size={13} /> Activity Log ({lead.activityLog.length})
               <I.ChevronDown size={13} style={{ transform: showActivity ? 'rotate(180deg)' : 'none', transition: '150ms' }} />
             </button>
@@ -394,8 +395,8 @@ function LeadDetail({ lead, onClose, onUpdate, onConvert }) {
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
                   <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {[...lead.activityLog].reverse().slice(0, 8).map((a, i) => (
-                      <div key={i} style={{ fontSize: 11, color: '#374151', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                        <span style={{ color: '#9CA3AF', flexShrink: 0 }}>{new Date(a.date).toLocaleDateString()}</span>
+                      <div key={i} style={{ fontSize: 11, color: 'rgba(240,238,255,0.7)', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <span style={{ color: 'rgba(240,238,255,0.35)', flexShrink: 0 }}>{new Date(a.date).toLocaleDateString()}</span>
                         <span>{a.description}</span>
                       </div>
                     ))}
@@ -423,15 +424,15 @@ function AnalyticsView() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>Loading analytics…</div>;
-  if (!data)   return <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>No analytics data</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'rgba(240,238,255,0.35)' }}>Loading analytics…</div>;
+  if (!data)   return <div style={{ textAlign: 'center', padding: 60, color: 'rgba(240,238,255,0.35)' }}>No analytics data</div>;
 
   const { byStage, bySource, byArea, summary } = data;
 
   const sumCards = [
     { label: 'Total Leads',      value: summary?.total ?? 0,          color: '#7C3AED' },
-    { label: 'Hired',            value: summary?.hired ?? 0,          color: '#059669' },
-    { label: 'Conversion Rate',  value: `${summary?.conversionRate ?? 0}%`, color: '#3B82F6' },
+    { label: 'Hired',            value: summary?.hired ?? 0,          color: '#22c55e' },
+    { label: 'Conversion Rate',  value: `${summary?.conversionRate ?? 0}%`, color: '#60a5fa' },
     { label: 'Pipeline Value',   value: `PKR ${((summary?.pipelineValue || 0)/1000).toFixed(0)}k`, color: '#F59E0B' },
   ];
 
@@ -439,30 +440,25 @@ function AnalyticsView() {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 28 }}>
         {sumCards.map(c => (
-          <div key={c.label} style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '16px 18px' }}>
+          <div key={c.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '16px 18px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: c.color }}>{c.value}</div>
-            <div style={{ fontSize: 12, color: '#6B7280', marginTop: 3 }}>{c.label}</div>
+            <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.45)', marginTop: 3 }}>{c.label}</div>
           </div>
         ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: 20 }}>
-          <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#111827' }}>Leads by Stage</h4>
-          <BarChart data={byStage} color="#7C3AED" />
-        </div>
-        <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: 20 }}>
-          <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#111827' }}>Leads by Source</h4>
-          <BarChart data={bySource} color="#10B981" />
-        </div>
-        <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: 20 }}>
-          <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#111827' }}>Leads by Practice Area</h4>
-          <BarChart data={byArea} color="#3B82F6" />
-        </div>
-        <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: 20 }}>
-          <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#111827' }}>Value by Stage</h4>
-          <BarChart data={byStage} valueKey="value" color="#F59E0B" />
-        </div>
+        {[
+          { title: 'Leads by Stage',         data: byStage,  valueKey: 'count', color: '#7C3AED' },
+          { title: 'Leads by Source',        data: bySource, valueKey: 'count', color: '#10B981' },
+          { title: 'Leads by Practice Area', data: byArea,   valueKey: 'count', color: '#3B82F6' },
+          { title: 'Value by Stage',         data: byStage,  valueKey: 'value', color: '#F59E0B' },
+        ].map(chart => (
+          <div key={chart.title} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: 20, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+            <h4 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#f0eeff' }}>{chart.title}</h4>
+            <BarChart data={chart.data} valueKey={chart.valueKey} color={chart.color} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -507,11 +503,11 @@ function FormModal({ form: editForm, onClose, onSave }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(11,11,20,0.55)', backdropFilter: 'blur(4px)' }}>
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(6,4,18,0.7)', backdropFilter: 'blur(8px)' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', padding: 28, boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>{editForm ? 'Edit Form' : 'New Intake Form'}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={20} /></button>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#f0eeff' }}>{editForm ? 'Edit Form' : 'New Intake Form'}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.5)' }}><I.X size={20} /></button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
@@ -532,21 +528,21 @@ function FormModal({ form: editForm, onClose, onSave }) {
 
         <div style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>Form Fields ({form.fields.length})</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff' }}>Form Fields ({form.fields.length})</div>
             <button onClick={addField} style={{ ...btnPurple, padding: '6px 14px', fontSize: 12 }}><I.Plus size={13} /> Add Field</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {form.fields.map((field, i) => (
-              <div key={i} style={{ background: '#F9FAFB', borderRadius: 10, padding: '12px 14px', border: '1.5px solid #E5E7EB' }}>
+              <div key={i} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(124,58,237,0.2)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px auto', gap: 10, alignItems: 'center' }}>
                   <input value={field.label} onChange={e => updateField(i, 'label', e.target.value)} style={{ ...inp, padding: '7px 10px', fontSize: 12 }} placeholder="Field label" />
                   <select value={field.type} onChange={e => updateField(i, 'type', e.target.value)} style={{ ...inp, padding: '7px 10px', fontSize: 12 }}>
                     {FIELD_TYPES.map(t => <option key={t}>{t}</option>)}
                   </select>
-                  <button onClick={() => removeField(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4 }}><I.X size={14} /></button>
+                  <button onClick={() => removeField(i)} style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 7, cursor: 'pointer', color: '#f87171', padding: 6 }}><I.X size={14} /></button>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                  <label style={{ fontSize: 12, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+                  <label style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
                     <input type="checkbox" checked={field.isRequired || false} onChange={e => updateField(i, 'isRequired', e.target.checked)} />
                     Required
                   </label>
@@ -562,7 +558,7 @@ function FormModal({ form: editForm, onClose, onSave }) {
               </div>
             ))}
             {form.fields.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '20px', color: '#9CA3AF', fontSize: 13 }}>No fields yet — click "Add Field" to start</div>
+              <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(240,238,255,0.35)', fontSize: 13 }}>No fields yet — click "Add Field" to start</div>
             )}
           </div>
         </div>
@@ -613,23 +609,23 @@ function FormsView() {
 
   const baseUrl = window.location.origin;
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>Loading forms…</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'rgba(240,238,255,0.35)' }}>Loading forms…</div>;
 
   if (responses) return (
     <div>
       <button onClick={() => setResponses(null)} style={{ ...btnGhost, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
         <I.ChevronLeft size={14} /> Back to Forms
       </button>
-      <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 800 }}>Responses — {responses.form.name} ({responses.leads.length})</h3>
+      <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 800, color: '#f0eeff' }}>Responses — {responses.form.name} ({responses.leads.length})</h3>
       {responses.leads.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>No submissions yet</div>
+        <div style={{ textAlign: 'center', padding: 40, color: 'rgba(240,238,255,0.35)' }}>No submissions yet</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {responses.leads.map(l => (
-            <div key={l._id} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={l._id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{l.name}</div>
-                <div style={{ fontSize: 12, color: '#6B7280' }}>{l.email} · {l.stage} · {new Date(l.createdAt).toLocaleDateString()}</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#f0eeff' }}>{l.name}</div>
+                <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)' }}>{l.email} · {l.stage} · {new Date(l.createdAt).toLocaleDateString()}</div>
               </div>
               {l.score && <Stars score={l.score} />}
             </div>
@@ -648,28 +644,28 @@ function FormsView() {
       </div>
 
       {forms.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(240,238,255,0.35)' }}>
           <I.Doc size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
           <div style={{ fontSize: 14 }}>No intake forms yet</div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>Create a form to capture leads from your website</div>
+          <div style={{ fontSize: 12, marginTop: 6, color: 'rgba(240,238,255,0.25)' }}>Create a form to capture leads from your website</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {forms.map(f => (
-            <div key={f._id} style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '16px 20px' }}>
+            <motion.div key={f._id} whileHover={{ scale: 1.003 }} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '16px 20px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 800, fontSize: 15, color: '#111827' }}>{f.name}</span>
-                    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: f.isActive ? '#ECFDF5' : '#F3F4F6', color: f.isActive ? '#059669' : '#6B7280', fontWeight: 700 }}>{f.isActive ? 'Active' : 'Inactive'}</span>
+                    <span style={{ fontWeight: 800, fontSize: 15, color: '#f0eeff' }}>{f.name}</span>
+                    <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: f.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.07)', color: f.isActive ? '#4ade80' : 'rgba(240,238,255,0.45)', fontWeight: 700, border: `1px solid ${f.isActive ? 'rgba(34,197,94,0.3)' : 'rgba(124,58,237,0.2)'}` }}>{f.isActive ? 'Active' : 'Inactive'}</span>
                   </div>
-                  {f.description && <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>{f.description}</div>}
-                  <div style={{ fontSize: 12, color: '#6B7280' }}>
+                  {f.description && <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)', marginBottom: 8 }}>{f.description}</div>}
+                  <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.45)' }}>
                     {f.fields?.length || 0} fields · {f.usageCount || 0} submissions
                   </div>
                   {f.slug && (
                     <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <code style={{ fontSize: 11, background: '#F3F4F6', padding: '3px 8px', borderRadius: 6, color: '#6D28D9', maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <code style={{ fontSize: 11, background: 'rgba(124,58,237,0.15)', padding: '3px 8px', borderRadius: 6, color: '#c4b5fd', maxWidth: 320, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {baseUrl}/intake/{f.slug}
                       </code>
                       <button onClick={() => navigator.clipboard?.writeText(`${baseUrl}/intake/${f.slug}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7C3AED', fontSize: 11 }}>Copy</button>
@@ -679,10 +675,10 @@ function FormsView() {
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                   <button onClick={() => loadResponses(f)} style={{ ...btnGhost, padding: '6px 12px', fontSize: 12 }}>Responses</button>
                   <button onClick={() => { setEditForm(f); setShowModal(true); }} style={{ ...btnGhost, padding: '6px 12px', fontSize: 12 }}>Edit</button>
-                  <button onClick={() => handleDelete(f._id)} style={{ background: 'none', border: '1.5px solid #FCA5A5', borderRadius: 9, padding: '6px 12px', color: '#EF4444', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>
+                  <button onClick={() => handleDelete(f._id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 9, padding: '6px 12px', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
@@ -749,20 +745,27 @@ export default function LeadPipeline() {
   }
 
   const viewBtn = (v, label) => (
-    <button onClick={() => setView(v)} style={{ padding: '8px 18px', borderRadius: 9, background: view === v ? '#7C3AED' : '#F3F4F6', color: view === v ? '#fff' : '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+    <button onClick={() => setView(v)} style={{ padding: '8px 18px', borderRadius: 9, background: view === v ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'rgba(255,255,255,0.07)', color: view === v ? '#fff' : 'rgba(240,238,255,0.55)', border: view === v ? 'none' : '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: view === v ? '0 4px 14px rgba(124,58,237,0.3)' : 'none', transition: 'all 0.15s' }}>
       {label}
     </button>
   );
 
   if (loading) return (
     <div style={{ paddingTop: 120, display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: 28, height: 28, border: '3px solid #EDE9FE', borderTopColor: '#7C3AED', borderRadius: '50%', animation: 'spin 0.75s linear infinite' }} />
+      <div style={{ width: 28, height: 28, border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7C3AED', borderRadius: '50%', animation: 'spin 0.75s linear infinite' }} />
     </div>
   );
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px 60px' }}>
+    <div style={{ paddingTop: 80, minHeight: '100vh', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-8%', right: '8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: '5%', left: '-5%', width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '35%', width: 260, height: 260, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+      </div>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px 60px', position: 'relative', zIndex: 1 }}>
 
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
@@ -771,8 +774,8 @@ export default function LeadPipeline() {
                 <I.Target size={22} style={{ color: '#fff' }} />
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#111827' }}>Lead Pipeline</h1>
-                <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>Track prospects from first contact to signed retainer</p>
+                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#f0eeff' }}>Lead Pipeline</h1>
+                <p style={{ margin: 0, fontSize: 13, color: 'rgba(240,238,255,0.45)' }}>Track prospects from first contact to signed retainer</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -811,7 +814,7 @@ export default function LeadPipeline() {
       <AnimatePresence>
         {selected && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(0,0,0,0.3)' }} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelected(null)} style={{ position: 'fixed', inset: 0, zIndex: 140, background: 'rgba(6,4,18,0.5)', backdropFilter: 'blur(2px)' }} />
             <LeadDetail lead={selected} onClose={() => setSelected(null)} onUpdate={patchLead} onConvert={handleConverted} />
           </>
         )}

@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import PracticeSidebar from './PracticeSidebar';
 import { usePrivacy } from '../context/PrivacyContext';
 import { MobileMenuProvider } from '../context/MobileMenuContext';
+import { I } from './Icons';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -69,20 +70,72 @@ function PrivacyBanner() {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          style={{ overflow: 'hidden', position: 'sticky', top: 0, zIndex: 30 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          style={{ overflow: 'hidden', position: 'sticky', top: 0, zIndex: 40 }}
         >
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
-            background: 'var(--purple-soft)', borderBottom: '1px solid var(--purple-mist)',
+            display: 'flex', alignItems: 'center', gap: 16, padding: '9px 24px',
+            background: 'rgba(10,8,28,0.96)',
+            borderBottom: '1px solid rgba(124,58,237,0.28)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 4px 32px rgba(124,58,237,0.12), inset 0 -1px 0 rgba(124,58,237,0.15)',
           }}>
-            <span style={{ fontSize: 18 }}>🔒</span>
-            <p style={{ color: 'var(--purple-deep)', fontSize: 13, fontWeight: 600, flex: 1, margin: 0 }}>
-              Privacy Mode Active — files processed in your browser only. Nothing is uploaded.
+
+            {/* Glowing lock icon */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <motion.div
+                animate={{ scale: [1, 1.5, 1], opacity: [0.35, 0, 0.35] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
+                style={{ position: 'absolute', inset: -6, borderRadius: '50%', background: 'rgba(124,58,237,0.35)', pointerEvents: 'none' }}
+              />
+              <div style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: 'linear-gradient(135deg,#7c3aed,#5b21b6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 16px rgba(124,58,237,0.55)',
+              }}>
+                <I.Lock size={15} style={{ color: '#fff' }} />
+              </div>
+            </div>
+
+            {/* Active pill */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 11px', borderRadius: 20, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.28)', flexShrink: 0 }}>
+              <motion.div
+                animate={{ opacity: [1, 0.25, 1] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+                style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}
+              />
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#4ade80', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Privacy Shield
+              </span>
+            </div>
+
+            {/* Message */}
+            <p style={{ color: 'rgba(240,238,255,0.6)', fontSize: 13, fontWeight: 500, flex: 1, margin: 0, lineHeight: 1.4 }}>
+              Files are processed in your browser only —{' '}
+              <span style={{ color: '#f0eeff', fontWeight: 700 }}>nothing is uploaded to our servers.</span>
             </p>
-            <button onClick={togglePrivacy} style={{ color: 'var(--purple)', fontSize: 12, fontWeight: 600, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
-              Disable
-            </button>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.25)', flexShrink: 0 }} />
+
+            {/* Disable button */}
+            <motion.button
+              whileHover={{ scale: 1.04, background: 'rgba(239,68,68,0.15)' }}
+              whileTap={{ scale: 0.96 }}
+              onClick={togglePrivacy}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 8,
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.22)',
+                color: '#f87171', fontSize: 12, fontWeight: 700,
+                cursor: 'pointer', flexShrink: 0,
+                transition: 'background 150ms',
+              }}
+            >
+              <I.EyeOff size={13} /> Disable
+            </motion.button>
           </div>
         </motion.div>
       )}

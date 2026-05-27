@@ -7,7 +7,7 @@ import { conflictsApi } from '../api/conflicts.api';
 const RISK_COLOR  = { none: '#22c55e', low: '#f59e0b', medium: '#f97316', high: '#ef4444' };
 const RISK_BG     = { none: 'rgba(34,197,94,0.15)', low: 'rgba(245,158,11,0.15)', medium: 'rgba(249,115,22,0.15)', high: 'rgba(239,68,68,0.15)' };
 const RISK_BORDER = { none: 'rgba(34,197,94,0.3)', low: 'rgba(245,158,11,0.3)', medium: 'rgba(249,115,22,0.3)', high: 'rgba(239,68,68,0.3)' };
-const SEV_COLOR   = { high: '#ef4444', medium: '#f59e0b', low: '#3b82f6' };
+const SEV_COLOR   = { high: '#f87171', medium: '#f59e0b', low: '#60a5fa' };
 const SEV_BG      = { high: 'rgba(239,68,68,0.15)', medium: 'rgba(245,158,11,0.15)', low: 'rgba(59,130,246,0.15)' };
 
 const TERM_TYPES = ['name', 'email', 'phone', 'company'];
@@ -22,6 +22,8 @@ const CONFLICT_LABELS = {
   COMMUNICATION_MENTION:  'Communication Mention',
 };
 
+const inp = { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+
 /* ─── Sub-components ──────────────────────────────────────────── */
 function ConflictFlag({ detail }) {
   const sev = detail.severity || 'low';
@@ -29,7 +31,7 @@ function ConflictFlag({ detail }) {
     <motion.div
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      style={{ background: SEV_BG[sev], border: `2px solid ${SEV_COLOR[sev]}30`, borderRadius: 12, padding: '14px 18px', marginBottom: 10, display: 'flex', alignItems: 'flex-start', gap: 12 }}
+      style={{ background: SEV_BG[sev], border: `1px solid ${SEV_COLOR[sev]}40`, borderRadius: 12, padding: '14px 18px', marginBottom: 10, display: 'flex', alignItems: 'flex-start', gap: 12 }}
     >
       <div style={{ width: 30, height: 30, borderRadius: 8, background: `${SEV_COLOR[sev]}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
         <I.Alert size={15} style={{ color: SEV_COLOR[sev] }} />
@@ -38,7 +40,7 @@ function ConflictFlag({ detail }) {
         <div style={{ fontSize: 12, fontWeight: 800, color: SEV_COLOR[sev], textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>
           {CONFLICT_LABELS[detail.type] || detail.type} · {sev} risk
         </div>
-        <div style={{ fontSize: 13, color: '#374151' }}>{detail.description}</div>
+        <div style={{ fontSize: 13, color: 'rgba(240,238,255,0.8)' }}>{detail.description}</div>
       </div>
     </motion.div>
   );
@@ -78,15 +80,20 @@ function ResolveModal({ check, onClose, onSaved }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#fff', borderRadius: 18, padding: 28, width: 420, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,0.18)' }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: '#111827', marginBottom: 18 }}>Resolve Conflict Check</div>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(6,4,18,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 18, padding: 28, width: 420, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,0.6)' }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: '#f0eeff', marginBottom: 18 }}>Resolve Conflict Check</div>
 
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Resolution</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.55)', marginBottom: 8 }}>Resolution</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {['clear', 'waived', 'declined'].map(r => (
-              <button key={r} onClick={() => setResolution(r)} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: `2px solid ${resolution === r ? '#7C3AED' : '#E5E7EB'}`, background: resolution === r ? '#F5F3FF' : '#F9FAFB', color: resolution === r ? '#7C3AED' : '#4B5563', cursor: 'pointer', fontSize: 13, fontWeight: 700, textTransform: 'capitalize' }}>
+              <button key={r} onClick={() => setResolution(r)} style={{
+                flex: 1, padding: '9px 0', borderRadius: 9, cursor: 'pointer', fontSize: 13, fontWeight: 700, textTransform: 'capitalize', transition: 'all 0.15s',
+                border: `2px solid ${resolution === r ? '#7C3AED' : 'rgba(124,58,237,0.2)'}`,
+                background: resolution === r ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.04)',
+                color: resolution === r ? '#c4b5fd' : 'rgba(240,238,255,0.5)',
+              }}>
                 {r}
               </button>
             ))}
@@ -94,19 +101,19 @@ function ResolveModal({ check, onClose, onSaved }) {
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6 }}>Notes</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.55)', marginBottom: 6 }}>Notes</div>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Add resolution notes…"
             rows={3}
-            style={{ width: '100%', borderRadius: 9, border: '1.5px solid #E5E7EB', padding: '10px 12px', fontSize: 13, color: '#111827', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+            style={{ ...inp, resize: 'vertical', fontFamily: 'inherit' }}
           />
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 9, border: '1.5px solid #E5E7EB', background: '#F9FAFB', color: '#374151', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Cancel</button>
-          <button onClick={save} disabled={saving} style={{ padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
+          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(255,255,255,0.06)', color: 'rgba(240,238,255,0.7)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Cancel</button>
+          <button onClick={save} disabled={saving} style={{ padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Saving…' : 'Save Resolution'}
           </button>
         </div>
@@ -163,13 +170,13 @@ function HistoryRow({ check, onView }) {
   const terms = (check.searchTerms || []).map(t => t.value).filter(Boolean).join(', ');
   const rl    = check.riskLevel || 'none';
   return (
-    <div style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
-      <div style={{ width: 36, height: 36, borderRadius: 9, background: RISK_BG[rl], border: `1.5px solid ${RISK_BORDER[rl]}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {check.hasConflict ? <I.Alert size={16} style={{ color: RISK_COLOR[rl] }} /> : <I.Check size={16} style={{ color: '#059669' }} />}
+    <motion.div whileHover={{ scale: 1.003 }} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+      <div style={{ width: 36, height: 36, borderRadius: 9, background: RISK_BG[rl], border: `1px solid ${RISK_BORDER[rl]}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        {check.hasConflict ? <I.Alert size={16} style={{ color: RISK_COLOR[rl] }} /> : <I.Check size={16} style={{ color: '#4ade80' }} />}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{terms || 'No terms'}</div>
-        <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{terms || 'No terms'}</div>
+        <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.35)', marginTop: 2 }}>
           {new Date(check.createdAt).toLocaleDateString()} · by {check.performedBy?.name || 'Unknown'}
           {check.matterId ? ` · ${check.matterId.title}` : ''}
         </div>
@@ -179,15 +186,15 @@ function HistoryRow({ check, onView }) {
           {check.riskLevel || 'none'}
         </span>
         {check.resolution && (
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#ECFDF5', color: '#059669' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
             {check.resolution}
           </span>
         )}
-        <button onClick={() => onView(check._id)} style={{ padding: '5px 12px', borderRadius: 7, border: '1.5px solid #E5E7EB', background: '#F9FAFB', color: '#374151', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+        <button onClick={() => onView(check._id)} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid rgba(124,58,237,0.25)', background: 'rgba(255,255,255,0.06)', color: 'rgba(240,238,255,0.7)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
           View
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -204,18 +211,10 @@ export default function ConflictChecker() {
   const [resolveCheck, setResolveCheck] = useState(null);
   const [histQ, setHistQ]         = useState('');
 
-  /* ── Search terms helpers ── */
-  function addTerm() {
-    setTerms(prev => [...prev, { type: 'name', value: '' }]);
-  }
-  function removeTerm(i) {
-    setTerms(prev => prev.filter((_, idx) => idx !== i));
-  }
-  function updateTerm(i, field, val) {
-    setTerms(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: val } : t));
-  }
+  function addTerm() { setTerms(prev => [...prev, { type: 'name', value: '' }]); }
+  function removeTerm(i) { setTerms(prev => prev.filter((_, idx) => idx !== i)); }
+  function updateTerm(i, field, val) { setTerms(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: val } : t)); }
 
-  /* ── Run check ── */
   const runCheck = useCallback(async () => {
     const filled = terms.filter(t => t.value.trim());
     if (!filled.length) return;
@@ -230,7 +229,6 @@ export default function ConflictChecker() {
     }
   }, [terms, notes]);
 
-  /* ── History ── */
   const loadHistory = useCallback(async (q = histQ) => {
     setHistLoading(true);
     try {
@@ -245,23 +243,14 @@ export default function ConflictChecker() {
     }
   }, [histQ]);
 
-  useEffect(() => {
-    if (tab === 'history') loadHistory();
-  }, [tab]);
+  useEffect(() => { if (tab === 'history') loadHistory(); }, [tab]);
 
-  /* ── View from history ── */
   async function viewCheck(id) {
     setLoading(true);
     try {
       const res = await conflictsApi.get(id);
       const c   = res.data.data;
-      setResult({
-        check:       c,
-        contacts:    c.results?.contacts || [],
-        matters:     c.results?.matters  || [],
-        leads:       c.results?.leads    || [],
-        commMatches: [],
-      });
+      setResult({ check: c, contacts: c.results?.contacts || [], matters: c.results?.matters || [], leads: c.results?.leads || [], commMatches: [] });
       setTab('check');
     } catch (e) {
       console.error(e);
@@ -270,17 +259,23 @@ export default function ConflictChecker() {
     }
   }
 
-  const check       = result?.check;
-  const contacts    = result?.contacts || [];
-  const matters     = result?.matters  || [];
-  const leads       = result?.leads    || [];
-  const riskLevel   = check?.riskLevel || 'none';
-  const hasConflict = check?.hasConflict;
+  const check          = result?.check;
+  const contacts       = result?.contacts || [];
+  const matters        = result?.matters  || [];
+  const leads          = result?.leads    || [];
+  const riskLevel      = check?.riskLevel || 'none';
+  const hasConflict    = check?.hasConflict;
   const conflictDetails = check?.conflictDetails || [];
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 80px' }}>
+    <div style={{ paddingTop: 80, minHeight: '100vh', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-8%', right: '8%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(239,68,68,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '-5%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      </div>
+
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 80px', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
@@ -289,16 +284,16 @@ export default function ConflictChecker() {
               <I.Shield size={22} style={{ color: '#fff' }} />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#111827' }}>Conflict of Interest Checker</h1>
-              <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>Search across matters, contacts, and leads before taking new clients</p>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#f0eeff' }}>Conflict of Interest Checker</h1>
+              <p style={{ margin: 0, fontSize: 13, color: 'rgba(240,238,255,0.45)' }}>Search across matters, contacts, and leads before taking new clients</p>
             </div>
           </div>
         </motion.div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#fff', borderRadius: 12, padding: 4, border: '1.5px solid #E5E7EB', width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 4, border: '1px solid rgba(124,58,237,0.18)', width: 'fit-content', backdropFilter: 'blur(8px)' }}>
           {[['check', I.Search, 'Run Check'], ['history', I.Clock, 'History']].map(([id, Ic, label]) => (
-            <button key={id} onClick={() => setTab(id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 9, border: 'none', background: tab === id ? '#7C3AED' : 'transparent', color: tab === id ? '#fff' : '#6B7280', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all .15s' }}>
+            <button key={id} onClick={() => setTab(id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 9, border: 'none', background: tab === id ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'transparent', color: tab === id ? '#fff' : 'rgba(240,238,255,0.55)', cursor: 'pointer', fontSize: 13, fontWeight: 700, transition: 'all .15s', boxShadow: tab === id ? '0 4px 14px rgba(124,58,237,0.3)' : 'none' }}>
               <Ic size={14} /> {label}
             </button>
           ))}
@@ -311,57 +306,57 @@ export default function ConflictChecker() {
             <motion.div key="check" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
               {/* Search form */}
-              <div style={{ background: '#fff', borderRadius: 18, border: '2px solid #E5E7EB', padding: 24, marginBottom: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 12 }}>Search Terms</div>
+              <div style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 18, border: '1px solid rgba(124,58,237,0.2)', padding: 24, marginBottom: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(240,238,255,0.7)', marginBottom: 12 }}>Search Terms</div>
 
                 {terms.map((term, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                     <select
                       value={term.type}
                       onChange={e => updateTerm(i, 'type', e.target.value)}
-                      style={{ width: 110, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#374151', outline: 'none', background: '#F9FAFB', fontWeight: 600 }}
+                      style={{ width: 110, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', outline: 'none', background: 'rgba(255,255,255,0.07)', fontWeight: 600 }}
                     >
                       {TERM_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}
                     </select>
                     <div style={{ position: 'relative', flex: 1 }}>
-                      <I.Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                      <I.Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,238,255,0.35)' }} />
                       <input
                         value={term.value}
                         onChange={e => updateTerm(i, 'value', e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && runCheck()}
                         placeholder={`Enter ${term.type}…`}
-                        style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
+                        style={{ ...inp, paddingLeft: 36 }}
                       />
                     </div>
                     {terms.length > 1 && (
-                      <button onClick={() => removeTerm(i)} style={{ width: 40, height: 40, borderRadius: 10, border: '1.5px solid #FCA5A5', background: '#FEF2F2', color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <button onClick={() => removeTerm(i)} style={{ width: 40, height: 40, borderRadius: 10, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <I.X size={14} />
                       </button>
                     )}
                   </div>
                 ))}
 
-                <button onClick={addTerm} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, border: '1.5px dashed #D1D5DB', background: 'transparent', color: '#6B7280', cursor: 'pointer', fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
+                <button onClick={addTerm} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 9, border: '1.5px dashed rgba(124,58,237,0.35)', background: 'transparent', color: 'rgba(240,238,255,0.5)', cursor: 'pointer', fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
                   <I.Plus size={13} /> Add another term
                 </button>
 
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6 }}>Notes (optional)</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.55)', marginBottom: 6 }}>Notes (optional)</div>
                   <input
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
                     placeholder="Reason for this check…"
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
+                    style={inp}
                   />
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                   {result && (
-                    <button onClick={() => { setResult(null); setTerms([{ type: 'name', value: '' }]); setNotes(''); }} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E5E7EB', background: '#F9FAFB', color: '#374151', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    <button onClick={() => { setResult(null); setTerms([{ type: 'name', value: '' }]); setNotes(''); }} style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(255,255,255,0.06)', color: 'rgba(240,238,255,0.7)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
                       Clear
                     </button>
                   )}
-                  <button onClick={runCheck} disabled={loading} style={{ padding: '10px 28px', borderRadius: 10, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
+                  <button onClick={runCheck} disabled={loading} style={{ padding: '10px 28px', borderRadius: 10, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, opacity: loading ? 0.7 : 1, boxShadow: '0 4px 14px rgba(124,58,237,0.3)' }}>
                     {loading ? 'Checking…' : 'Run Check'}
                   </button>
                 </div>
@@ -375,25 +370,25 @@ export default function ConflictChecker() {
                     {/* Summary bar */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, background: RISK_BG[riskLevel], border: `1.5px solid ${RISK_BORDER[riskLevel]}` }}>
-                          {hasConflict ? <I.Alert size={15} style={{ color: RISK_COLOR[riskLevel] }} /> : <I.Check size={15} style={{ color: '#059669' }} />}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10, background: RISK_BG[riskLevel], border: `1px solid ${RISK_BORDER[riskLevel]}` }}>
+                          {hasConflict ? <I.Alert size={15} style={{ color: RISK_COLOR[riskLevel] }} /> : <I.Check size={15} style={{ color: '#4ade80' }} />}
                           <span style={{ fontSize: 13, fontWeight: 800, color: RISK_COLOR[riskLevel] }}>
                             {hasConflict ? `${conflictDetails.length} Flag${conflictDetails.length !== 1 ? 's' : ''} · ${riskLevel} risk` : 'Clear — No Conflicts'}
                           </span>
                         </div>
                         {check.resolution && (
-                          <span style={{ fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#ECFDF5', color: '#059669' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
                             {check.resolution}
                           </span>
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         {hasConflict && !check.resolution && (
-                          <button onClick={() => setResolveCheck(check)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1.5px solid #7C3AED', background: '#F5F3FF', color: '#7C3AED', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                          <button onClick={() => setResolveCheck(check)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.35)', background: 'rgba(124,58,237,0.15)', color: '#c4b5fd', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
                             <I.Check size={13} /> Resolve
                           </button>
                         )}
-                        <button onClick={() => printReport(check, contacts, matters, leads)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: '#111827', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
+                        <button onClick={() => printReport(check, contacts, matters, leads)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.08)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>
                           <I.Download size={13} /> Print Report
                         </button>
                       </div>
@@ -402,7 +397,7 @@ export default function ConflictChecker() {
                     {/* Conflict flags */}
                     {conflictDetails.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Conflict Flags</div>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Conflict Flags</div>
                         {conflictDetails.map((d, i) => <ConflictFlag key={i} detail={d} />)}
                       </div>
                     )}
@@ -410,18 +405,18 @@ export default function ConflictChecker() {
                     {/* Contact matches */}
                     {contacts.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                           <I.Users size={13} /> Contact Matches ({contacts.length})
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {contacts.map(c => (
                             <ResultRow key={c._id}
-                              icon={I.User} iconBg="#EFF6FF" iconColor="#3B82F6"
+                              icon={I.User} iconBg="rgba(59,130,246,0.15)" iconColor="#60a5fa"
                               title={`${c.firstName||''} ${c.lastName||''}`.trim() || c.company || '—'}
                               sub={c.email || c.phone || ''}
                               badge={c.type?.replace(/_/g, ' ')}
-                              badgeBg={['opposing_party','opposing_counsel'].includes(c.type) ? '#FEE2E2' : '#F3F4F6'}
-                              badgeColor={['opposing_party','opposing_counsel'].includes(c.type) ? '#DC2626' : '#6B7280'}
+                              badgeBg={['opposing_party','opposing_counsel'].includes(c.type) ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.08)'}
+                              badgeColor={['opposing_party','opposing_counsel'].includes(c.type) ? '#f87171' : 'rgba(240,238,255,0.55)'}
                             />
                           ))}
                         </div>
@@ -431,18 +426,18 @@ export default function ConflictChecker() {
                     {/* Matter matches */}
                     {matters.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                           <I.Briefcase size={13} /> Matter Matches ({matters.length})
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {matters.map(m => (
                             <ResultRow key={m._id}
-                              icon={I.Briefcase} iconBg="#F5F3FF" iconColor="#7C3AED"
+                              icon={I.Briefcase} iconBg="rgba(124,58,237,0.15)" iconColor="#c4b5fd"
                               title={m.title}
                               sub={`#${m.matterNumber || 'N/A'} · ${m.practiceArea || ''}`}
                               badge={m.status}
-                              badgeBg={m.status === 'Active' ? '#ECFDF5' : '#F3F4F6'}
-                              badgeColor={m.status === 'Active' ? '#059669' : '#6B7280'}
+                              badgeBg={m.status === 'Active' ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)'}
+                              badgeColor={m.status === 'Active' ? '#4ade80' : 'rgba(240,238,255,0.5)'}
                             />
                           ))}
                         </div>
@@ -452,13 +447,13 @@ export default function ConflictChecker() {
                     {/* Lead matches */}
                     {leads.length > 0 && (
                       <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                           <I.Star size={13} /> Lead Matches ({leads.length})
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                           {leads.map(l => (
                             <ResultRow key={l._id}
-                              icon={I.User} iconBg="#FFF7ED" iconColor="#D97706"
+                              icon={I.User} iconBg="rgba(245,158,11,0.15)" iconColor="#f59e0b"
                               title={l.name || l.email || '—'}
                               sub={l.email || ''}
                               badge={l.stage}
@@ -470,7 +465,7 @@ export default function ConflictChecker() {
 
                     {/* All clear */}
                     {!hasConflict && contacts.length === 0 && matters.length === 0 && leads.length === 0 && (
-                      <div style={{ textAlign: 'center', padding: '48px 20px', color: '#9CA3AF' }}>
+                      <div style={{ textAlign: 'center', padding: '48px 20px', color: 'rgba(240,238,255,0.35)' }}>
                         <I.Search size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
                         <p style={{ margin: 0, fontSize: 14 }}>No matches found across contacts, matters, or leads.</p>
                       </div>
@@ -481,10 +476,10 @@ export default function ConflictChecker() {
 
               {/* Info box */}
               {!result && !loading && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB', padding: '20px 24px' }}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 16, border: '1px solid rgba(124,58,237,0.18)', padding: '20px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                     <I.Info size={15} style={{ color: '#7C3AED' }} />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>How Conflict Checking Works</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff' }}>How Conflict Checking Works</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
                     {[
@@ -493,9 +488,9 @@ export default function ConflictChecker() {
                       ['Saved to history', 'Every check is recorded — auditable for professional responsibility compliance.'],
                       ['Print report', 'Generate a printable PDF report with all findings for your file.'],
                     ].map(([t, d]) => (
-                      <div key={t} style={{ background: '#F9FAFB', borderRadius: 10, padding: '12px 14px' }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{t}</div>
-                        <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>{d}</div>
+                      <div key={t} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(124,58,237,0.12)' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#f0eeff', marginBottom: 4 }}>{t}</div>
+                        <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)', lineHeight: 1.5 }}>{d}</div>
                       </div>
                     ))}
                   </div>
@@ -509,30 +504,30 @@ export default function ConflictChecker() {
             <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
-                  <I.Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                  <I.Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,238,255,0.35)' }} />
                   <input
                     value={histQ}
                     onChange={e => setHistQ(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && loadHistory(histQ)}
                     placeholder="Filter by search term…"
-                    style={{ width: '100%', padding: '10px 12px 10px 36px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', outline: 'none', boxSizing: 'border-box' }}
+                    style={{ ...inp, paddingLeft: 36 }}
                   />
                 </div>
-                <button onClick={() => loadHistory(histQ)} disabled={histLoading} style={{ padding: '10px 20px', borderRadius: 10, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: histLoading ? 0.7 : 1 }}>
+                <button onClick={() => loadHistory(histQ)} disabled={histLoading} style={{ padding: '10px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, opacity: histLoading ? 0.7 : 1 }}>
                   {histLoading ? '…' : 'Search'}
                 </button>
               </div>
 
               {histLoading ? (
-                <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>Loading history…</div>
+                <div style={{ textAlign: 'center', padding: 40, color: 'rgba(240,238,255,0.35)' }}>Loading history…</div>
               ) : history.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 20px', color: '#9CA3AF' }}>
+                <div style={{ textAlign: 'center', padding: '48px 20px', color: 'rgba(240,238,255,0.35)' }}>
                   <I.Clock size={36} style={{ marginBottom: 10, opacity: 0.3 }} />
                   <p style={{ margin: 0, fontSize: 14 }}>No conflict checks recorded yet.</p>
                 </div>
               ) : (
                 <>
-                  <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 12 }}>{histTotal} check{histTotal !== 1 ? 's' : ''} total</div>
+                  <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.35)', marginBottom: 12 }}>{histTotal} check{histTotal !== 1 ? 's' : ''} total</div>
                   {history.map(c => <HistoryRow key={c._id} check={c} onView={viewCheck} />)}
                 </>
               )}

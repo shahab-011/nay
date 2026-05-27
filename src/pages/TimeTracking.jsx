@@ -220,7 +220,7 @@ function StopTimerModal({ timer, onClose, onStop }) {
           <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
             placeholder="Work performed…" style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
         </Field>
-        <Field label="Rate ($/hr)">
+        <Field label="Rate (₹/hr)">
           <input type="number" min="0" value={form.rate} onChange={e => set('rate', e.target.value)}
             placeholder="Leave blank for firm default" style={inputStyle} />
         </Field>
@@ -285,12 +285,12 @@ function EntryModal({ entry, matters, onClose, onSave }) {
           <Field label="Hours">
             <input type="number" min="0" step="0.25" value={form.hours} onChange={e => set('hours', e.target.value)} style={inputStyle} />
           </Field>
-          <Field label="Rate ($/hr)">
+          <Field label="Rate (₹/hr)">
             <input type="number" min="0" value={form.rate} onChange={e => set('rate', e.target.value)} placeholder="0" style={inputStyle} />
           </Field>
           <Field label="Amount">
             <div style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 13, background: 'var(--elevated)', fontWeight: 700, color: 'var(--ink)' }}>
-              ${amount}
+              ₹{amount}
             </div>
           </Field>
         </div>
@@ -349,7 +349,7 @@ function ExpenseModal({ expense, matters, onClose, onSave }) {
           <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
             placeholder="Expense details…" style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
         </Field>
-        <Field label="Amount ($) *">
+        <Field label="Amount (₹) *">
           <input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0.00" style={inputStyle} />
         </Field>
         <Toggle label="Billable to client" value={form.isBillable} onChange={v => set('isBillable', v)} />
@@ -380,7 +380,7 @@ function EntryRow({ entry, onEdit, onDelete }) {
         </span>
       </td>
       <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, fontFamily: 'monospace', color: 'var(--ink)', whiteSpace: 'nowrap' }}>{(entry.hours || 0).toFixed(2)}h</td>
-      <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>${entry.rate || 0}/hr</td>
+      <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>₹{entry.rate || 0}/hr</td>
       <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 700, color: entry.isBillable ? 'var(--ink)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
         {entry.isBillable ? fmtMoney(entry.amount) : '—'}
       </td>
@@ -540,8 +540,13 @@ export default function TimeTracking() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F9FC', padding: '28px 24px 60px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-8%', right: '5%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '-5%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      </div>
+      <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>

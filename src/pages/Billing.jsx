@@ -209,7 +209,7 @@ function InvoiceModal({ invoice, matters, contacts, onClose, onSave }) {
             <select value={form.discountType} onChange={e => set('discountType', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
               <option value="">None</option>
               <option value="percent">Percentage (%)</option>
-              <option value="fixed">Fixed ($)</option>
+              <option value="fixed">Fixed (₹)</option>
             </select>
           </Field>
           <Field label="Discount Value">
@@ -267,9 +267,10 @@ function GenerateModal({ matters, onClose, onGenerate }) {
         <Field label="Due Date">
           <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={inputStyle} />
         </Field>
-        <div style={{ padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.08)', border: '1.5px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#1E40AF' }}>
+        <div style={{ padding: 12, borderRadius: 10, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', fontSize: 12, color: '#93c5fd' }}>
           All unbilled time entries and expenses for the selected matter will be added as line items automatically.
         </div>
+
         <ModalFooter onClose={onClose} onSave={submit} saving={saving} disabled={!matterId} saveLabel="Generate Invoice" />
       </div>
     </ModalWrap>
@@ -292,7 +293,7 @@ function MarkPaidModal({ invoice, onClose, onMark }) {
     <ModalWrap onClose={onClose} title="Record Payment" subtitle={`${invoice.invoiceNumber} — Outstanding: ${fmtMoney(invoice.amountOutstanding)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Field label="Amount ($)">
+          <Field label="Amount (₹)">
             <input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} style={inputStyle} />
           </Field>
           <Field label="Date">
@@ -332,7 +333,7 @@ function VoidModal({ invoice, onClose, onVoid }) {
   return (
     <ModalWrap onClose={onClose} title="Void Invoice" subtitle={invoice.invoiceNumber}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#991B1B' }}>
+        <div style={{ padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', fontSize: 12, color: '#f87171' }}>
           Voiding will unmark all time entries and expenses associated with this invoice so they can be re-billed.
         </div>
         <Field label="Reason *">
@@ -413,7 +414,7 @@ function InvoiceDetail({ invoice, onClose, onAction, onRefresh }) {
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, color: 'var(--ink)' }}>{li.description}</div>
-                  {li.quantity !== 1 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{li.quantity} × ${li.rate}/hr</div>}
+                  {li.quantity !== 1 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{li.quantity} × ₹{li.rate}/hr</div>}
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginLeft: 16 }}>{fmtMoney(li.amount)}</div>
               </div>
@@ -601,8 +602,13 @@ export default function Billing() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F9FC', padding: '28px 24px 60px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-8%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '-5%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      </div>
+      <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>

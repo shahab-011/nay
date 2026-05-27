@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { accountingApi } from '../api/accounting.api';
 
 /* ─── Helpers ───────────────────────────────────────────────────────── */
-const fmt$  = n => `$${(parseFloat(n) || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt$  = n => `₹${(parseFloat(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 const fmtDate = d => d ? new Date(d).toLocaleDateString() : '—';
 const today = () => new Date().toISOString().slice(0, 10);
 const monthStart = () => { const d = new Date(); d.setDate(1); return d.toISOString().slice(0, 10); };

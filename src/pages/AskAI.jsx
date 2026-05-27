@@ -6,20 +6,17 @@ import { getDocuments, getDocument, getTextPreview, uploadTextOnly } from '../ap
 import { useAuth } from '../context/AuthContext';
 import ConsentPanel from '../components/ConsentPanel';
 
-/* ── browser PDF extraction (same as UploadDocument) ──────────────── */
+/* ── browser PDF/DOCX extraction ──────────────────────────────────── */
 async function extractPdfInBrowser(file, onProgress) {
   const pdfjsLib = await import('pdfjs-dist');
   if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url,
-    ).href;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).href;
   }
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
   let text = '';
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page    = await pdf.getPage(i);
+    const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     text += content.items.map((item) => item.str).join(' ') + '\n';
     onProgress(Math.round((i / pdf.numPages) * 80));
@@ -28,51 +25,60 @@ async function extractPdfInBrowser(file, onProgress) {
 }
 
 async function extractDocxInBrowser(file, onProgress) {
-  const mammoth     = (await import('mammoth')).default;
+  const mammoth = (await import('mammoth')).default;
   const arrayBuffer = await file.arrayBuffer();
-  const result      = await mammoth.extractRawText({ arrayBuffer });
+  const result = await mammoth.extractRawText({ arrayBuffer });
   onProgress(80);
   return result.value.trim();
 }
 
+/* ── design tokens ─────────────────────────────────────────────────── */
+const T = {
+  bg:     '#f8f9fe',
+  sur:    '#ffffff',
+  bdr:    '#e5e7f5',
+  indigo: '#6366f1',
+  ink:    '#1e1b4b',
+  muted:  '#6b7099',
+  subtle: '#f0f2ff',
+  ele:    '#eaecf8',
+};
+
 const SUGGESTIONS = [
-  { icon: 'handshake',    text: 'What are my obligations?' },
-  { icon: 'fact_check',   text: 'Is this clause standard?' },
-  { icon: 'search',       text: 'What clauses are missing?' },
-  { icon: 'translate',    text: 'Explain in simple language.' },
-  { icon: 'warning',      text: 'Is this risky?' },
+  { icon: 'handshake',  text: 'What are my obligations?' },
+  { icon: 'fact_check', text: 'Is this clause standard?' },
+  { icon: 'search',     text: 'What clauses are missing?' },
+  { icon: 'translate',  text: 'Explain in simple language.' },
+  { icon: 'warning',    text: 'Is this risky?' },
 ];
 
 const fmtTime = (ts) =>
-  ts
-    ? new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    : 'Just now';
+  ts ? new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Just now';
 
-/* ── AI response text formatter ───────────────────────────────────── */
+/* ── markdown-lite renderer ────────────────────────────────────────── */
 function parseBold(str) {
-  const parts = str.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((p, i) =>
+  return str.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
     p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i} style={{ fontWeight: 700, color: 'inherit' }}>{p.slice(2, -2)}</strong>
+      ? <strong key={i} style={{ fontWeight: 700 }}>{p.slice(2, -2)}</strong>
       : p
   );
 }
 
 function MessageContent({ text }) {
   if (!text) return null;
-  const lines  = text.split('\n');
+  const lines = text.split('\n');
   const output = [];
-  let listBuf  = [];
-  let k        = 0;
+  let listBuf = [];
+  let k = 0;
 
   const flushList = () => {
     if (!listBuf.length) return;
     output.push(
-      <ul key={k++} className="space-y-2 my-2">
+      <ul key={k++} style={{ margin: '6px 0', paddingLeft: 0, listStyle: 'none' }}>
         {listBuf.map((item, i) => (
-          <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-on-surface/90">
-            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-            <span>{parseBold(item)}</span>
+          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: T.indigo, flexShrink: 0, marginTop: 7 }} />
+            <span style={{ fontSize: 14, lineHeight: 1.65, color: T.ink }}>{parseBold(item)}</span>
           </li>
         ))}
       </ul>
@@ -84,48 +90,44 @@ function MessageContent({ text }) {
     const line = raw.trim();
     if (!line) {
       flushList();
-      if (i > 0 && i < lines.length - 1) output.push(<div key={k++} className="h-1.5" />);
+      if (i > 0 && i < lines.length - 1) output.push(<div key={k++} style={{ height: 6 }} />);
     } else if (line.startsWith('* ') || line.startsWith('- ')) {
       listBuf.push(line.slice(2));
     } else if (/^\d+\.\s/.test(line)) {
       flushList();
       output.push(
-        <div key={k++} className="flex items-start gap-2.5 my-1 text-sm leading-relaxed text-on-surface/90">
-          <span className="text-primary font-bold tabular-nums shrink-0 mt-0.5">{line.match(/^\d+/)[0]}.</span>
-          <span>{parseBold(line.replace(/^\d+\.\s/, ''))}</span>
+        <div key={k++} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: T.indigo, flexShrink: 0, minWidth: 18 }}>{line.match(/^\d+/)[0]}.</span>
+          <span style={{ fontSize: 14, lineHeight: 1.65, color: T.ink }}>{parseBold(line.replace(/^\d+\.\s/, ''))}</span>
         </div>
       );
     } else if (line.startsWith('⚠')) {
       flushList();
       output.push(
-        <p key={k++} className="text-[11px] text-on-surface-variant/50 italic mt-4 pt-3 border-t border-white/5">{line}</p>
+        <p key={k++} style={{ fontSize: 11, color: T.muted, fontStyle: 'italic', marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.bdr}` }}>{line}</p>
       );
     } else {
       flushList();
-      output.push(
-        <p key={k++} className="text-sm leading-relaxed text-on-surface/90 my-0.5">{parseBold(line)}</p>
-      );
+      output.push(<p key={k++} style={{ fontSize: 14, lineHeight: 1.65, color: T.ink, margin: '2px 0' }}>{parseBold(line)}</p>);
     }
   });
   flushList();
-  return <div className="space-y-0.5">{output}</div>;
+  return <div>{output}</div>;
 }
 
-/* ── component ────────────────────────────────────────────────────── */
+/* ── component ─────────────────────────────────────────────────────── */
 export default function AskAI() {
-  const [searchParams]  = useSearchParams();
-  const navigate        = useNavigate();
-  const { user }        = useAuth();
-  const paramDocId      = searchParams.get('docId');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const paramDocId = searchParams.get('docId');
 
-  /* doc selection */
   const [docs,        setDocs]        = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [docId,       setDocId]       = useState(paramDocId || '');
-  const [pickerTab,   setPickerTab]   = useState('existing'); // 'existing' | 'upload'
+  const [pickerTab,   setPickerTab]   = useState('existing');
   const [docSearch,   setDocSearch]   = useState('');
 
-  /* inline upload state */
   const [uploadFile,     setUploadFile]     = useState(null);
   const [uploadDragging, setUploadDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -133,573 +135,433 @@ export default function AskAI() {
   const [uploadError,    setUploadError]    = useState('');
   const uploadInputRef = useRef(null);
 
-  /* chat */
-  const [messages,  setMessages]  = useState([]);
-  const [question,  setQuestion]  = useState('');
-  const [sending,   setSending]   = useState(false);
-  const [loading,   setLoading]   = useState(false);
-  const [clearing,  setClearing]  = useState(false);
-  const [error,     setError]     = useState('');
+  const [messages, setMessages] = useState([]);
+  const [question, setQuestion] = useState('');
+  const [sending,  setSending]  = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [error,    setError]    = useState('');
 
-  /* consent — shown once per session per document */
-  const [consentOpen,    setConsentOpen]    = useState(false);
-  const [consentPreview, setConsentPreview] = useState(null);
-  const [consentLoading, setConsentLoading] = useState(false);
-  const [consentMeta,    setConsentMeta]    = useState({ wordCount: 0, charCount: 0 });
+  const [consentOpen,     setConsentOpen]     = useState(false);
+  const [consentPreview,  setConsentPreview]  = useState(null);
+  const [consentLoading,  setConsentLoading]  = useState(false);
+  const [consentMeta,     setConsentMeta]     = useState({ wordCount: 0, charCount: 0 });
   const [pendingQuestion, setPendingQuestion] = useState('');
   const consentedDocs = useRef(new Set(JSON.parse(sessionStorage.getItem('nyaya_consented_docs') || '[]')));
 
-  const bottomRef  = useRef(null);
+  const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
 
-  /* ── fetch document list ──────────────────────────────────────── */
   useEffect(() => {
-    getDocuments()
-      .then((res) => setDocs(res.data.data.documents || []))
-      .catch(() => {});
+    getDocuments().then((r) => setDocs(r.data.data.documents || [])).catch(() => {});
   }, []);
 
-  /* ── load doc + history when docId changes ────────────────────── */
   useEffect(() => {
     if (!docId) { setSelectedDoc(null); setMessages([]); return; }
     loadDocAndHistory(docId);
   }, [docId]);
 
   const loadDocAndHistory = async (id) => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
-      const [docRes, histRes] = await Promise.all([
-        getDocument(id),
-        getChatHistory(id),
-      ]);
+      const [docRes, histRes] = await Promise.all([getDocument(id), getChatHistory(id)]);
       setSelectedDoc(docRes.data.data.document);
       setMessages(histRes.data.data.messages || []);
-    } catch {
-      setError('Failed to load document or chat history.');
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError('Failed to load document or chat history.'); }
+    finally { setLoading(false); }
   };
 
-  /* ── auto-scroll on new messages ──────────────────────────────── */
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, sending]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, sending]);
 
-  /* ── auto-resize textarea ─────────────────────────────────────── */
   useEffect(() => {
     if (!textareaRef.current) return;
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
   }, [question]);
 
-  /* ── consent helpers ─────────────────────────────────────────── */
   const openConsentForQuestion = useCallback(async (q) => {
-    setPendingQuestion(q);
-    setConsentOpen(true);
-    setConsentLoading(true);
+    setPendingQuestion(q); setConsentOpen(true); setConsentLoading(true);
     try {
       const res = await getTextPreview(docId);
       setConsentPreview(res.data.data.preview);
       setConsentMeta({ wordCount: res.data.data.wordCount, charCount: res.data.data.charCount });
-    } catch {
-      setConsentPreview(null);
-    } finally {
-      setConsentLoading(false);
-    }
+    } catch { setConsentPreview(null); }
+    finally { setConsentLoading(false); }
   }, [docId]);
 
   const handleConsentConfirm = () => {
-    // remember consent for this doc for the rest of the session
     consentedDocs.current.add(docId);
     sessionStorage.setItem('nyaya_consented_docs', JSON.stringify([...consentedDocs.current]));
     setConsentOpen(false);
     sendQuestion(pendingQuestion);
   };
 
-  /* ── send ─────────────────────────────────────────────────────── */
   const sendQuestion = useCallback(async (q) => {
-    setSending(true);
-    setError('');
+    setSending(true); setError('');
     const userMsg = { role: 'user', content: q, timestamp: new Date().toISOString() };
     setMessages((prev) => [...prev, userMsg]);
     try {
       const res = await askAI(docId, q);
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: res.data.data.answer, timestamp: new Date().toISOString() },
-      ]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: res.data.data.answer, timestamp: new Date().toISOString() }]);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to get a response. Please try again.');
       setMessages((prev) => prev.filter((m) => m !== userMsg));
       setQuestion(q);
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   }, [docId]);
 
   const handleSend = useCallback(async () => {
     if (!question.trim() || !docId || sending) return;
-    const q = question.trim();
-    setQuestion('');
-
-    // Show consent panel on first message per doc per session
-    if (!consentedDocs.current.has(docId)) {
-      await openConsentForQuestion(q);
-    } else {
-      sendQuestion(q);
-    }
+    const q = question.trim(); setQuestion('');
+    if (!consentedDocs.current.has(docId)) { await openConsentForQuestion(q); }
+    else { sendQuestion(q); }
   }, [question, docId, sending, openConsentForQuestion, sendQuestion]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const handleKeyDown = (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSend(); } };
 
-  /* ── clear history ────────────────────────────────────────────── */
   const handleClear = async () => {
     if (!docId || !window.confirm('Clear all chat history for this document?')) return;
     setClearing(true);
-    try {
-      await clearChatHistory(docId);
-      setMessages([]);
-    } catch {
-      setError('Failed to clear history.');
-    } finally {
-      setClearing(false);
-    }
+    try { await clearChatHistory(docId); setMessages([]); }
+    catch { setError('Failed to clear history.'); }
+    finally { setClearing(false); }
   };
 
-  /* ── inline upload ────────────────────────────────────────────── */
   const handleUploadFile = async (file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['pdf', 'doc', 'docx'].includes(ext)) {
-      setUploadError('Only PDF, DOC, and DOCX files are supported.');
-      return;
-    }
-    setUploadFile(file);
-    setUploadError('');
-    setUploadProgress(5);
-    setUploadMsg('Extracting text from document…');
+    if (!['pdf', 'doc', 'docx'].includes(ext)) { setUploadError('Only PDF, DOC, and DOCX files are supported.'); return; }
+    setUploadFile(file); setUploadError(''); setUploadProgress(5); setUploadMsg('Extracting text from document…');
     try {
-      let text = '';
-      if (ext === 'pdf') {
-        text = await extractPdfInBrowser(file, setUploadProgress);
-      } else {
-        text = await extractDocxInBrowser(file, setUploadProgress);
-      }
-      setUploadProgress(85);
-      setUploadMsg('Uploading to NyayaAI…');
+      let text = ext === 'pdf' ? await extractPdfInBrowser(file, setUploadProgress) : await extractDocxInBrowser(file, setUploadProgress);
+      setUploadProgress(85); setUploadMsg('Uploading to NyayaAI…');
       const upRes = await uploadTextOnly(file.name, text, 'Other', 'Not detected', true);
       const newDocId = upRes.data.data.document._id;
-      setUploadProgress(90);
-      setUploadMsg('Running AI analysis…');
+      setUploadProgress(90); setUploadMsg('Running AI analysis…');
       await analyzeDocument(newDocId);
-      setUploadProgress(100);
-      setUploadMsg('Done! Starting chat…');
-      // refresh docs list then open chat
+      setUploadProgress(100); setUploadMsg('Done! Starting chat…');
       const docsRes = await getDocuments();
       setDocs(docsRes.data.data.documents || []);
       setDocId(newDocId);
       navigate(`/ask?docId=${newDocId}`, { replace: true });
     } catch (err) {
       setUploadError(err.response?.data?.message || 'Upload failed. Please try again.');
-      setUploadProgress(0);
-      setUploadMsg('');
-      setUploadFile(null);
+      setUploadProgress(0); setUploadMsg(''); setUploadFile(null);
     }
   };
 
-  /* ── copy message ─────────────────────────────────────────────── */
   const copyMsg = (text) => navigator.clipboard.writeText(text).catch(() => {});
 
-  /* ── render ───────────────────────────────────────────────────── */
-  const HDR = { position:'sticky', top:0, zIndex:40, background:'rgba(7,9,31,0.92)', backdropFilter:'blur(18px)', borderBottom:'1px solid rgba(99,102,241,0.18)', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:12 };
-  const BTN = { display:'flex', alignItems:'center', gap:6, padding:'5px 13px', borderRadius:24, border:'1px solid rgba(255,255,255,0.12)', background:'transparent', color:'rgba(240,240,255,0.55)', fontSize:12, fontWeight:700, cursor:'pointer' };
+  /* ── render ─────────────────────────────────────────────────────── */
+  const canSend = question.trim() && docId && !sending;
 
   return (
-    <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh', display:'flex', flexDirection:'column' }}>
-      <header style={HDR}>
-        <button onClick={() => navigate('/studio')} style={{ ...BTN, border:'none', padding:'5px 8px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize:16 }}>arrow_back</span>
+    <div style={{ background: T.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'inherit' }}>
+
+      {/* ── Header ────────────────────────────────────────────────── */}
+      <header style={{ background: T.sur, borderBottom: `1px solid ${T.bdr}`, height: 60, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 12px rgba(99,102,241,0.07)' }}>
+        <button onClick={() => navigate('/studio')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, border: `1px solid ${T.bdr}`, background: T.subtle, color: T.muted, cursor: 'pointer' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
         </button>
-        <p style={{ flex:1, color:'#f0f0ff', fontWeight:700, fontSize:15 }}>Ask AI</p>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <div style={{ position:'relative' }}>
-            <span className="material-symbols-outlined" style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', fontSize:15, color:'#6366f1', pointerEvents:'none' }}>description</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#fff', fontVariationSettings: "'FILL' 1" }}>psychology</span>
+          </div>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 15, color: T.ink, lineHeight: 1 }}>Ask AI</p>
+            <p style={{ fontSize: 11, color: T.muted, lineHeight: 1, marginTop: 2 }}>Legal Document Assistant</p>
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ position: 'relative' }}>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 15, color: T.indigo, pointerEvents: 'none' }}>description</span>
             <select value={docId} onChange={(e) => { setDocId(e.target.value); navigate(`/ask?docId=${e.target.value}`, { replace: true }); }}
-              style={{ appearance:'none', paddingLeft:28, paddingRight:24, paddingTop:6, paddingBottom:6, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:24, color:'#f0f0ff', fontSize:12, outline:'none', cursor:'pointer', maxWidth:200 }}>
+              style={{ appearance: 'none', paddingLeft: 30, paddingRight: 26, paddingTop: 7, paddingBottom: 7, background: T.subtle, border: `1px solid ${T.ele}`, borderRadius: 20, color: T.ink, fontSize: 12, fontWeight: 600, outline: 'none', cursor: 'pointer', maxWidth: 200 }}>
               <option value="">— Select a document —</option>
               {docs.map((d) => <option key={d._id} value={d._id}>{d.originalName}</option>)}
             </select>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: T.muted, pointerEvents: 'none' }}>expand_more</span>
           </div>
+
           {messages.length > 0 && (
-            <button onClick={handleClear} disabled={clearing} style={{ ...BTN }}>
-              <span className="material-symbols-outlined" style={{ fontSize:14 }}>delete_sweep</span>
-              <span className="hidden md:inline">{clearing ? 'Clearing…' : 'Clear'}</span>
+            <button onClick={handleClear} disabled={clearing} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 20, border: `1px solid ${T.bdr}`, background: T.sur, color: T.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>delete_sweep</span>
+              <span className="hidden md:inline">{clearing ? 'Clearing…' : 'Clear Chat'}</span>
             </button>
           )}
+
           {docId && (
-            <Link to={`/analysis/${docId}`} style={{ ...BTN, textDecoration:'none' }}>
-              <span className="material-symbols-outlined" style={{ fontSize:14 }}>analytics</span>
-              <span className="hidden md:inline">Analysis</span>
+            <Link to={`/analysis/${docId}`} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 20, border: `1px solid ${T.bdr}`, background: T.sur, color: T.muted, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>analytics</span>
+              <span className="hidden md:inline">View Analysis</span>
             </Link>
           )}
         </div>
       </header>
 
-      <div className="flex flex-col" style={{ flex:1, height:'calc(100vh - 60px)' }}>
+      {/* ── Body ──────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)' }}>
 
-        {/* ── Document Picker ────────────────────────────────────── */}
+        {/* ── NO DOC: Document Picker ───────────────────────────── */}
         {!docId && (
-          <div className="flex-1 overflow-y-auto no-scrollbar">
-            <div className="px-4 md:px-8 py-6 md:py-10 max-w-5xl mx-auto w-full">
+          <div style={{ flex: 1, overflowY: 'auto' }} className="no-scrollbar">
+            <div style={{ maxWidth: 920, margin: '0 auto', padding: '48px 24px' }}>
 
-              {/* Heading */}
-              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
-                className="flex flex-col items-center text-center mb-10">
+              {/* Hero */}
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ textAlign: 'center', marginBottom: 40 }}>
                 <motion.div
-                  animate={{ boxShadow: ['0 0 20px rgba(124,58,237,0.15)', '0 0 40px rgba(124,58,237,0.15)', '0 0 20px rgba(124,58,237,0.15)'] }}
-                  transition={{ duration:3, repeat:Infinity }}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-5">
-                  <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  animate={{ boxShadow: ['0 0 0 0px rgba(99,102,241,0.2)', '0 0 0 16px rgba(99,102,241,0.06)', '0 0 0 0px rgba(99,102,241,0.2)'] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 12px 40px rgba(99,102,241,0.3)' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 40, color: '#fff', fontVariationSettings: "'FILL' 1" }}>psychology</span>
                 </motion.div>
-                <h2 className="text-3xl font-headline font-extrabold mb-2 tracking-tight">
-                  <span className="gradient-text">Ask AI</span> <span className="text-on-surface">About a Document</span>
-                </h2>
-                <p className="text-on-surface-variant text-sm max-w-md">
-                  Choose an existing document or upload a new one — get instant AI answers in plain English.
+                <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, marginBottom: 10, letterSpacing: '-0.5px' }}>Ask AI About a Document</h1>
+                <p style={{ fontSize: 14, color: T.muted, maxWidth: 420, margin: '0 auto', lineHeight: 1.7 }}>
+                  Choose a document from your library or upload a new one to get instant, plain-English answers about any clause, risk, or obligation.
                 </p>
               </motion.div>
 
               {/* Tab toggle */}
-              <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.15 }}
-                className="flex items-center gap-1 rounded-2xl p-1.5 mb-8 max-w-xs mx-auto border border-white/5 shadow-inner relative"
-                style={{ background: 'var(--surface)', backdropFilter: 'blur(12px)' }}>
-                {[
-                  { key: 'existing', icon: 'folder_open', label: 'My Documents' },
-                  { key: 'upload',   icon: 'upload_file', label: 'Upload New'   },
-                ].map(({ key, icon, label }) => (
-                  <motion.button
-                    key={key}
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+                style={{ display: 'flex', gap: 4, background: T.ele, borderRadius: 14, padding: 4, maxWidth: 300, margin: '0 auto 32px' }}>
+                {[{ key: 'existing', icon: 'folder_open', label: 'My Documents' }, { key: 'upload', icon: 'upload_file', label: 'Upload New' }].map(({ key, icon, label }) => (
+                  <motion.button key={key}
                     onClick={() => { setPickerTab(key); setUploadError(''); setUploadFile(null); setUploadProgress(0); setUploadMsg(''); }}
-                    whileHover={{ scale: pickerTab !== key ? 1.03 : 1 }}
-                    whileTap={{ scale: 0.97 }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors duration-200 relative z-10 ${
-                      pickerTab === key ? 'text-[#001a12]' : 'text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    {pickerTab === key && (
-                      <motion.div layoutId="tab-active-bg" className="absolute inset-0 rounded-xl z-[-1]"
-                        style={{ background: 'linear-gradient(135deg,var(--purple),#9333ea)', boxShadow: '0 4px 20px rgba(124,58,237,0.15)' }}
-                        transition={{ type:'spring', stiffness:400, damping:30 }} />
-                    )}
-                    <span className="material-symbols-outlined text-[17px]">{icon}</span>
+                    whileHover={{ scale: pickerTab !== key ? 1.02 : 1 }} whileTap={{ scale: 0.97 }}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 10, border: 'none', background: pickerTab === key ? T.sur : 'transparent', color: pickerTab === key ? T.indigo : T.muted, fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: pickerTab === key ? '0 2px 10px rgba(99,102,241,0.12)' : 'none', transition: 'all 0.18s' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{icon}</span>
                     {label}
                   </motion.button>
                 ))}
               </motion.div>
 
-              {/* ── Tab: existing documents ── */}
+              {/* ── Existing docs ── */}
               {pickerTab === 'existing' && (
-                <>
-                  {/* Search */}
-                  <div className="relative mb-6">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-                    <input
-                      value={docSearch}
-                      onChange={(e) => setDocSearch(e.target.value)}
-                      placeholder="Search by name or type…"
-                      className="w-full bg-surface-container border border-white/5 rounded-xl pl-11 pr-4 py-3.5 text-sm text-on-surface outline-none focus:border-primary/40 transition-colors placeholder:text-on-surface-variant/40"
-                    />
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+                  <div style={{ position: 'relative', marginBottom: 20 }}>
+                    <span className="material-symbols-outlined" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 18, color: T.muted, pointerEvents: 'none' }}>search</span>
+                    <input value={docSearch} onChange={(e) => setDocSearch(e.target.value)} placeholder="Search by name or type…"
+                      style={{ width: '100%', background: T.sur, border: `1px solid ${T.bdr}`, borderRadius: 12, paddingLeft: 44, paddingRight: 16, paddingTop: 12, paddingBottom: 12, fontSize: 13, color: T.ink, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                      onFocus={(e) => e.target.style.borderColor = T.indigo}
+                      onBlur={(e) => e.target.style.borderColor = T.bdr} />
                   </div>
 
                   {docs.length === 0 ? (
-                    <div className="text-center py-20 flex flex-col items-center gap-4">
-                      <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center">
-                        <span className="material-symbols-outlined text-4xl text-on-surface-variant/30">folder_open</span>
+                    <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                      <div style={{ width: 72, height: 72, borderRadius: '50%', background: T.ele, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 32, color: T.muted }}>folder_open</span>
                       </div>
-                      <div>
-                        <p className="font-bold text-on-surface mb-1">No documents yet</p>
-                        <p className="text-sm text-on-surface-variant">Upload your first document to get started.</p>
-                      </div>
-                      <button
-                        onClick={() => setPickerTab('upload')}
-                        className="mt-2 px-6 py-3 bg-primary text-on-primary font-bold rounded-xl text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">upload_file</span>
+                      <p style={{ fontWeight: 700, color: T.ink, marginBottom: 6 }}>No documents yet</p>
+                      <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>Upload your first document to get started.</p>
+                      <button onClick={() => setPickerTab('upload')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 22px', borderRadius: 12, background: T.indigo, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>upload_file</span>
                         Upload a Document
                       </button>
                     </div>
                   ) : (
-                    <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                      variants={{ show: { transition: { staggerChildren: 0.07 } } }}
-                      initial="hidden" animate="show">
-                      {docs
-                        .filter((d) =>
-                          !docSearch ||
-                          d.originalName.toLowerCase().includes(docSearch.toLowerCase()) ||
-                          d.docType?.toLowerCase().includes(docSearch.toLowerCase())
-                        )
-                        .map((doc) => {
-                          const score = doc.healthScore || 0;
-                          const health =
-                            score >= 80 ? { color: 'text-primary',   bar: 'bg-primary',   glow: 'shadow-primary/20'   }
-                            : score >= 50 ? { color: 'text-amber-400', bar: 'bg-amber-400', glow: 'shadow-amber-400/20' }
-                            :               { color: 'text-error',     bar: 'bg-error',     glow: 'shadow-error/20'     };
-                          const analyzed = doc.status === 'analyzed';
-                          return (
-                            <motion.button
-                              key={doc._id}
-                              variants={{ hidden: { opacity:0, y:20, scale:0.96 }, show: { opacity:1, y:0, scale:1, transition:{ duration:0.4, ease:[0.22,1,0.36,1] } } }}
-                              whileHover={{ y:-5, scale:1.02, boxShadow:'0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(124,58,237,0.15)' }}
-                              whileTap={{ scale:0.98 }}
-                              onClick={() => {
-                                setDocId(doc._id);
-                                navigate(`/ask?docId=${doc._id}`, { replace: true });
-                              }}
-                              className="text-left border border-white/5 rounded-2xl p-5 group"
-                              style={{ background: 'var(--surface)', backdropFilter: 'blur(12px)', transition: 'border-color 0.2s' }}
-                            >
-                              {/* Icon + name */}
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                                  <span className="material-symbols-outlined text-primary text-xl">description</span>
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate leading-tight" title={doc.originalName}>
-                                    {doc.originalName.replace(/\.[^.]+$/, '')}
-                                  </p>
-                                  <p className="text-[11px] text-on-surface-variant/70 mt-0.5 font-label">
-                                    {doc.docType && doc.docType !== 'Other' ? doc.docType : doc.fileType?.toUpperCase() || 'Document'}
-                                  </p>
-                                </div>
+                    <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(265px, 1fr))', gap: 16 }}
+                      variants={{ show: { transition: { staggerChildren: 0.06 } } }} initial="hidden" animate="show">
+                      {docs.filter((d) => !docSearch || d.originalName.toLowerCase().includes(docSearch.toLowerCase()) || d.docType?.toLowerCase().includes(docSearch.toLowerCase())).map((doc) => {
+                        const score = doc.healthScore || 0;
+                        const hc = score >= 80 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+                        const analyzed = doc.status === 'analyzed';
+                        return (
+                          <motion.button key={doc._id}
+                            variants={{ hidden: { opacity: 0, y: 16, scale: 0.97 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.32, ease: [0.22, 1, 0.36, 1] } } }}
+                            whileHover={{ y: -4, boxShadow: `0 12px 32px rgba(99,102,241,0.15), 0 0 0 2px rgba(99,102,241,0.2)` }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => { setDocId(doc._id); navigate(`/ask?docId=${doc._id}`, { replace: true }); }}
+                            style={{ textAlign: 'left', background: T.sur, border: `1px solid ${T.bdr}`, borderRadius: 16, padding: 18, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'border-color 0.2s' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                              <div style={{ width: 42, height: 42, borderRadius: 12, background: T.subtle, border: `1px solid ${T.ele}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 20, color: T.indigo }}>description</span>
                               </div>
-
-                              {/* Health bar */}
-                              {analyzed ? (
-                                <div className="flex items-center gap-2.5 mb-4">
-                                  <div className="flex-1 h-1.5 bg-outline-variant/15 rounded-full overflow-hidden">
-                                    <div
-                                      className={`h-full rounded-full ${health.bar} transition-all`}
-                                      style={{ width: `${score}%` }}
-                                    />
-                                  </div>
-                                  <span className={`text-[11px] font-extrabold font-label tabular-nums ${health.color}`}>{score}</span>
-                                </div>
-                              ) : (
-                                <div className="h-[26px] mb-4 flex items-center">
-                                  <span className="text-[11px] text-on-surface-variant/50 font-label italic">Not yet analyzed</span>
-                                </div>
-                              )}
-
-                              {/* Footer */}
-                              <div className="flex items-center justify-between">
-                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full font-label ${
-                                  analyzed
-                                    ? 'bg-primary/10 text-primary border border-primary/15'
-                                    : 'bg-outline-variant/10 text-on-surface-variant border border-white/5'
-                                }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${analyzed ? 'bg-primary' : 'bg-on-surface-variant/40'}`} />
-                                  {analyzed ? 'Ready to chat' : 'Upload only'}
-                                </span>
-                                <span className="text-[10px] text-on-surface-variant/50 font-label">
-                                  {new Date(doc.uploadedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
-                                </span>
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 13, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 2 }} title={doc.originalName}>
+                                  {doc.originalName.replace(/\.[^.]+$/, '')}
+                                </p>
+                                <p style={{ fontSize: 11, color: T.muted }}>
+                                  {doc.docType && doc.docType !== 'Other' ? doc.docType : doc.fileType?.toUpperCase() || 'Document'}
+                                </p>
                               </div>
-                            </motion.button>
-                          );
-                        })}
+                            </div>
+
+                            {analyzed ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                <div style={{ flex: 1, height: 4, background: T.ele, borderRadius: 4, overflow: 'hidden' }}>
+                                  <div style={{ height: '100%', width: `${score}%`, background: hc, borderRadius: 4, transition: 'width 0.6s' }} />
+                                </div>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: hc, minWidth: 22 }}>{score}</span>
+                              </div>
+                            ) : (
+                              <div style={{ height: 26, marginBottom: 14, display: 'flex', alignItems: 'center' }}>
+                                <span style={{ fontSize: 11, color: T.muted, fontStyle: 'italic' }}>Not yet analyzed</span>
+                              </div>
+                            )}
+
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: analyzed ? 'rgba(99,102,241,0.08)' : T.ele, color: analyzed ? T.indigo : T.muted, border: `1px solid ${analyzed ? 'rgba(99,102,241,0.2)' : T.bdr}` }}>
+                                <span style={{ width: 5, height: 5, borderRadius: '50%', background: analyzed ? T.indigo : T.muted, display: 'inline-block' }} />
+                                {analyzed ? 'Ready to chat' : 'Upload only'}
+                              </span>
+                              <span style={{ fontSize: 10, color: T.muted }}>
+                                {new Date(doc.uploadedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                              </span>
+                            </div>
+                          </motion.button>
+                        );
+                      })}
                     </motion.div>
                   )}
-                </>
+                </motion.div>
               )}
 
-              {/* ── Tab: upload new ── */}
+              {/* ── Upload tab ── */}
               {pickerTab === 'upload' && (
-                <div className="max-w-md mx-auto">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
+                  style={{ maxWidth: 500, margin: '0 auto' }}>
                   {uploadProgress > 0 ? (
-                    <div className="bg-surface-container-low rounded-2xl p-10 border border-white/5 text-center">
-                      <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-5">
+                    <div style={{ background: T.sur, borderRadius: 20, padding: 40, border: `1px solid ${T.bdr}`, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+                      <div style={{ width: 64, height: 64, borderRadius: '50%', background: T.subtle, border: `2px solid ${T.indigo}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                         {uploadProgress === 100
-                          ? <span className="material-symbols-outlined text-3xl text-primary">check_circle</span>
-                          : <span className="material-symbols-outlined text-3xl text-primary animate-spin">progress_activity</span>
-                        }
+                          ? <span className="material-symbols-outlined" style={{ fontSize: 28, color: T.indigo }}>check_circle</span>
+                          : <span className="material-symbols-outlined animate-spin" style={{ fontSize: 28, color: T.indigo }}>progress_activity</span>}
                       </div>
-                      <p className="font-semibold text-on-surface mb-1 truncate">{uploadFile?.name}</p>
-                      <p className="text-sm text-on-surface-variant mb-6">{uploadMsg}</p>
-                      <div className="w-full bg-outline-variant/15 rounded-full h-1.5 mb-2 overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-500"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
+                      <p style={{ fontWeight: 600, color: T.ink, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uploadFile?.name}</p>
+                      <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>{uploadMsg}</p>
+                      <div style={{ width: '100%', height: 6, background: T.ele, borderRadius: 6, marginBottom: 8, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${uploadProgress}%`, background: 'linear-gradient(90deg,#6366f1,#22d3ee)', borderRadius: 6, transition: 'width 0.4s' }} />
                       </div>
-                      <p className="text-xs text-primary font-bold">{uploadProgress}%</p>
-                      {uploadError && <p className="mt-4 text-sm text-error">{uploadError}</p>}
+                      <p style={{ fontSize: 12, fontWeight: 700, color: T.indigo }}>{uploadProgress}%</p>
                     </div>
                   ) : (
-                    <div
-                      onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
-                      onDragLeave={() => setUploadDragging(false)}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setUploadDragging(false);
-                        const f = e.dataTransfer.files[0];
-                        if (f) handleUploadFile(f);
-                      }}
-                      onClick={() => uploadInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-2xl p-14 text-center cursor-pointer transition-all duration-200 ${
-                        uploadDragging
-                          ? 'border-primary bg-primary/10 scale-[1.01]'
-                          : 'border-outline-variant/20 hover:border-primary/40 hover:bg-primary/5'
-                      }`}
-                    >
-                      <input
-                        ref={uploadInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="hidden"
-                        onChange={(e) => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); }}
-                      />
-                      <span className="material-symbols-outlined text-6xl text-primary/40 mb-5 block">upload_file</span>
-                      <p className="font-bold text-on-surface text-lg mb-1">Drop your document here</p>
-                      <p className="text-sm text-on-surface-variant mb-5">or click to browse files</p>
-                      <div className="flex items-center justify-center gap-2 flex-wrap">
-                        {['PDF', 'DOC', 'DOCX'].map((ext) => (
-                          <span key={ext} className="text-[11px] bg-surface-container px-3 py-1 rounded-full text-on-surface-variant border border-white/5 font-label font-bold">
-                            {ext}
-                          </span>
-                        ))}
+                    <>
+                      <div onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }} onDragLeave={() => setUploadDragging(false)}
+                        onDrop={(e) => { e.preventDefault(); setUploadDragging(false); const f = e.dataTransfer.files[0]; if (f) handleUploadFile(f); }}
+                        onClick={() => uploadInputRef.current?.click()}
+                        style={{ border: `2px dashed ${uploadDragging ? T.indigo : T.bdr}`, borderRadius: 20, padding: '52px 32px', textAlign: 'center', cursor: 'pointer', background: uploadDragging ? T.subtle : T.sur, transition: 'all 0.2s', boxShadow: uploadDragging ? `0 0 0 4px rgba(99,102,241,0.1)` : '0 2px 12px rgba(0,0,0,0.05)' }}>
+                        <input ref={uploadInputRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={(e) => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); }} />
+                        <span className="material-symbols-outlined" style={{ fontSize: 48, color: uploadDragging ? T.indigo : T.muted, marginBottom: 12, display: 'block' }}>cloud_upload</span>
+                        <p style={{ fontWeight: 700, color: T.ink, fontSize: 16, marginBottom: 6 }}>Drop your document here</p>
+                        <p style={{ fontSize: 13, color: T.muted, marginBottom: 18 }}>or click to browse files</p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                          {['PDF', 'DOC', 'DOCX'].map((ext) => (
+                            <span key={ext} style={{ fontSize: 11, background: T.ele, padding: '4px 12px', borderRadius: 20, color: T.muted, fontWeight: 700 }}>{ext}</span>
+                          ))}
+                        </div>
+                        {uploadError && <p style={{ marginTop: 16, fontSize: 13, color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 15 }}>error</span>{uploadError}
+                        </p>}
                       </div>
-                      {uploadError && (
-                        <p className="mt-5 text-sm text-error flex items-center justify-center gap-1.5">
-                          <span className="material-symbols-outlined text-base">error</span>
-                          {uploadError}
-                        </p>
-                      )}
-                    </div>
+                      <p style={{ marginTop: 14, textAlign: 'center', fontSize: 11, color: T.muted, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 13 }}>lock</span>
+                        Text extracted in your browser — raw file never uploaded
+                      </p>
+                    </>
                   )}
-                  <div className="mt-5 flex items-center justify-center gap-2 text-[11px] text-on-surface-variant/40 font-label">
-                    <span className="material-symbols-outlined text-[14px]">lock</span>
-                    Text extracted in your browser — raw file never leaves your device
-                  </div>
-                </div>
+                </motion.div>
               )}
-
             </div>
           </div>
         )}
 
-        {/* ── Loading ───────────────────────────────────────────── */}
+        {/* ── Loading ────────────────────────────────────────────── */}
         {docId && loading && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>
-            <p className="text-on-surface-variant text-sm">Loading chat…</p>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-outlined animate-spin" style={{ fontSize: 24, color: '#fff' }}>progress_activity</span>
+            </div>
+            <p style={{ fontSize: 13, color: T.muted, fontWeight: 500 }}>Loading chat history…</p>
           </div>
         )}
 
         {/* ── Chat view ─────────────────────────────────────────── */}
         {docId && !loading && (
           <>
-            {/* Document info bar */}
+            {/* Doc info bar */}
             {selectedDoc && (
-              <div className="px-6 py-2.5 border-b border-white/[0.06] bg-surface-container/20 backdrop-blur flex items-center gap-3 shrink-0">
-                <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-[14px]">description</span>
+              <div style={{ background: T.sur, borderBottom: `1px solid ${T.bdr}`, padding: '8px 24px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                <div style={{ width: 26, height: 26, borderRadius: 8, background: T.subtle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 14, color: T.indigo }}>description</span>
                 </div>
-                <span className="text-sm font-medium text-on-surface/80 truncate flex-1">
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.ink, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {selectedDoc.originalName?.replace(/\.[^.]+$/, '')}
                 </span>
                 {selectedDoc.docType && selectedDoc.docType !== 'Other' && (
-                  <span className="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-label border border-primary/15 shrink-0">
+                  <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.08)', color: T.indigo, padding: '3px 10px', borderRadius: 20, fontWeight: 700, border: '1px solid rgba(99,102,241,0.18)', flexShrink: 0 }}>
                     {selectedDoc.docType}
                   </span>
                 )}
-                <span className="text-[10px] text-on-surface-variant/40 font-label shrink-0">
-                  {messages.length} msg{messages.length !== 1 ? 's' : ''}
-                </span>
+                <span style={{ fontSize: 10, color: T.muted, flexShrink: 0 }}>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
               </div>
             )}
 
-            {/* Messages area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar py-8">
-              <div className="max-w-3xl mx-auto px-6 space-y-6">
+            {/* Messages */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 0', background: T.bg }} className="no-scrollbar">
+              <div style={{ maxWidth: 740, margin: '0 auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 22 }}>
 
-                {/* Welcome */}
                 <AnimatePresence>
                 {messages.length === 0 && !sending && (
-                  <motion.div initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
-                    className="flex gap-4 items-start">
-                    <motion.div animate={{ boxShadow: ['0 0 16px rgba(124,58,237,0.15)','0 0 30px rgba(124,58,237,0.15)','0 0 16px rgba(124,58,237,0.15)'] }} transition={{ duration:2.5, repeat:Infinity }}
-                      className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+                    style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <motion.div animate={{ boxShadow: ['0 0 0 0px rgba(99,102,241,0.2)', '0 0 0 8px rgba(99,102,241,0.07)', '0 0 0 0px rgba(99,102,241,0.2)'] }} transition={{ duration: 2.5, repeat: Infinity }}
+                      style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 19, color: '#fff', fontVariationSettings: "'FILL' 1" }}>psychology</span>
                     </motion.div>
-                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 max-w-[88%] shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
-                      <p className="text-sm text-on-surface/90 leading-relaxed">
-                        Hello! I've loaded{' '}
-                        <span className="text-primary font-semibold">{selectedDoc?.originalName?.replace(/\.[^.]+$/, '')}</span>.
+                    <div style={{ background: T.sur, border: `1px solid ${T.bdr}`, borderRadius: '4px 16px 16px 16px', padding: '14px 18px', maxWidth: '88%', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <p style={{ fontSize: 14, color: T.ink, lineHeight: 1.65 }}>
+                        Hello! I've loaded <strong style={{ color: T.indigo }}>{selectedDoc?.originalName?.replace(/\.[^.]+$/, '')}</strong>.
                         Ask me anything — clause meanings, risks, obligations, payment terms. I'll answer in plain English.
                       </p>
-                      <p className="text-[11px] text-on-surface-variant/40 mt-3 italic">⚠ AI-generated — verify with a qualified lawyer</p>
+                      <p style={{ fontSize: 11, color: T.muted, marginTop: 8, fontStyle: 'italic' }}>⚠ AI-generated — verify with a qualified lawyer before taking action.</p>
                     </div>
                   </motion.div>
                 )}
                 </AnimatePresence>
 
-                {/* Message history */}
                 <AnimatePresence initial={false}>
                 {messages.map((msg, i) => (
                   <motion.div key={i}
-                    initial={{ opacity:0, y:16, scale:0.97 }}
-                    animate={{ opacity:1, y:0, scale:1 }}
-                    transition={{ duration:0.4, ease:[0.22,1,0.36,1] }}
-                    className={`flex gap-4 items-end ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    initial={{ opacity: 0, y: 14, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ display: 'flex', gap: 12, alignItems: 'flex-end', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
 
-                    {/* AI avatar */}
                     {msg.role === 'assistant' && (
-                      <motion.div whileHover={{ scale:1.1 }}
-                        className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0 self-start shadow-[0_0_12px_rgba(124,58,237,0.15)]">
-                        <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                      </motion.div>
+                      <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 19, color: '#fff', fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                      </div>
                     )}
 
-                    <div className={`flex flex-col gap-1.5 max-w-[88%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxWidth: '82%', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                       {msg.role === 'user' ? (
-                        /* User bubble */
-                        <div className="px-5 py-3.5 rounded-2xl rounded-br-sm" style={{ background:'linear-gradient(135deg,var(--purple),#9333ea)', boxShadow:'0 4px 24px rgba(124,58,237,0.15)' }}>
-                          <p className="text-[#001a12] font-medium text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                        <div style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)', borderRadius: '16px 4px 16px 16px', padding: '12px 18px', boxShadow: '0 4px 20px rgba(99,102,241,0.28)' }}>
+                          <p style={{ fontSize: 14, color: '#fff', fontWeight: 500, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{msg.content}</p>
                         </div>
                       ) : (
-                        /* AI bubble */
-                        <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
+                        <div style={{ background: T.sur, border: `1px solid ${T.bdr}`, borderRadius: '4px 16px 16px 16px', padding: '14px 18px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
                           <MessageContent text={msg.content} />
                         </div>
                       )}
 
-                      {/* Meta row */}
-                      <div className={`flex items-center gap-2.5 px-1 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <span className="text-[10px] text-on-surface-variant/35 font-label tabular-nums">
-                          {msg.role === 'user' ? 'You' : 'Nyaya AI'} · {fmtTime(msg.timestamp)}
-                        </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 2px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                        <span style={{ fontSize: 10, color: T.muted }}>{msg.role === 'user' ? 'You' : 'Nyaya AI'} · {fmtTime(msg.timestamp)}</span>
                         {msg.role === 'assistant' && (
-                          <motion.button whileHover={{ scale:1.2 }} whileTap={{ scale:0.9 }}
-                            onClick={() => copyMsg(msg.content)}
-                            title="Copy response"
-                            className="text-on-surface-variant/30 hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                          <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
+                            onClick={() => copyMsg(msg.content)} title="Copy"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.muted, display: 'flex', padding: 2 }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>content_copy</span>
                           </motion.button>
                         )}
                       </div>
                     </div>
 
-                    {/* User avatar */}
                     {msg.role === 'user' && (
-                      <div className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center shrink-0 self-start text-primary font-bold text-sm" style={{ background:'var(--surface)' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 12, background: T.subtle, border: `1px solid ${T.ele}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-start', color: T.indigo, fontWeight: 800, fontSize: 14 }}>
                         {user?.name?.[0]?.toUpperCase() || 'U'}
                       </div>
                     )}
@@ -707,21 +569,19 @@ export default function AskAI() {
                 ))}
                 </AnimatePresence>
 
-                {/* Typing indicator */}
                 <AnimatePresence>
                 {sending && (
-                  <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }}
-                    transition={{ duration:0.3 }} className="flex gap-4 items-end">
-                    <motion.div animate={{ boxShadow: ['0 0 12px rgba(124,58,237,0.15)','0 0 24px rgba(124,58,237,0.15)','0 0 12px rgba(124,58,237,0.15)'] }} transition={{ duration:1.5, repeat:Infinity }}
-                      className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-[18px] text-[#001a12]" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-                    </motion.div>
-                    <div className="border border-white/[0.07] rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm" style={{ background:'var(--surface)', backdropFilter:'blur(12px)' }}>
-                      <div className="flex items-center gap-1.5">
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#22d3ee)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 19, color: '#fff', fontVariationSettings: "'FILL' 1" }}>psychology</span>
+                    </div>
+                    <div style={{ background: T.sur, border: `1px solid ${T.bdr}`, borderRadius: '4px 16px 16px 16px', padding: '14px 18px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         {[0, 1, 2].map((j) => (
-                          <motion.span key={j} className="w-2 h-2 rounded-full" style={{ background:'rgba(124,58,237,0.15)' }}
-                            animate={{ y:[0,-6,0], opacity:[0.6,1,0.6] }}
-                            transition={{ duration:0.9, repeat:Infinity, delay:j*0.18, ease:'easeInOut' }} />
+                          <motion.span key={j} style={{ width: 7, height: 7, borderRadius: '50%', background: T.indigo, display: 'block', opacity: 0.4 }}
+                            animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+                            transition={{ duration: 0.9, repeat: Infinity, delay: j * 0.18, ease: 'easeInOut' }} />
                         ))}
                       </div>
                     </div>
@@ -729,13 +589,11 @@ export default function AskAI() {
                 )}
                 </AnimatePresence>
 
-                {/* Error */}
                 <AnimatePresence>
                 {error && (
-                  <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
-                    className="flex items-center gap-3 bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm">
-                    <span className="material-symbols-outlined text-base shrink-0">error</span>
-                    {error}
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: 12, fontSize: 13 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, flexShrink: 0 }}>error</span>{error}
                   </motion.div>
                 )}
                 </AnimatePresence>
@@ -744,25 +602,21 @@ export default function AskAI() {
               </div>
             </div>
 
-            {/* ── Input area ──────────────────────────────────────── */}
-            <div className="shrink-0 bg-surface/80 backdrop-blur-2xl border-t border-white/[0.06] px-6 pt-4 pb-5">
-              <div className="max-w-3xl mx-auto w-full">
+            {/* ── Input area ─────────────────────────────────────── */}
+            <div style={{ background: T.sur, borderTop: `1px solid ${T.bdr}`, padding: '14px 24px 18px', flexShrink: 0, boxShadow: '0 -4px 16px rgba(0,0,0,0.04)' }}>
+              <div style={{ maxWidth: 740, margin: '0 auto' }}>
 
-                {/* Suggestion chips */}
                 <AnimatePresence>
                 {messages.length === 0 && (
-                  <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:4 }} transition={{ duration:0.3 }}
-                    className="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-0.5">
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    style={{ display: 'flex', gap: 8, marginBottom: 10, overflowX: 'auto', paddingBottom: 2 }} className="no-scrollbar">
                     {SUGGESTIONS.map(({ icon, text }, idx) => (
                       <motion.button key={text}
-                        initial={{ opacity:0, scale:0.85 }} animate={{ opacity:1, scale:1 }}
-                        transition={{ delay: idx * 0.07, duration:0.3, ease:[0.22,1,0.36,1] }}
-                        whileHover={{ scale:1.06, y:-2 }} whileTap={{ scale:0.94 }}
+                        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.05 }}
+                        whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.95 }}
                         onClick={() => setQuestion(text)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/[0.07] hover:border-primary/30 text-[11px] font-medium text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap shrink-0"
-                        style={{ background:'var(--surface)', backdropFilter:'blur(8px)' }}
-                      >
-                        <span className="material-symbols-outlined text-[13px] text-primary">{icon}</span>
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, border: `1px solid ${T.bdr}`, background: T.subtle, color: T.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 14, color: T.indigo }}>{icon}</span>
                         {text}
                       </motion.button>
                     ))}
@@ -770,37 +624,23 @@ export default function AskAI() {
                 )}
                 </AnimatePresence>
 
-                {/* Input box */}
-                <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
-                  className="relative group">
-                  <div className="absolute -inset-px blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity rounded-2xl pointer-events-none" style={{ background:'rgba(124,58,237,0.15)' }} />
-                  <div className="relative flex items-end gap-3 border border-white/[0.08] rounded-2xl px-4 pt-3 pb-3 focus-within:border-primary/35 transition-all duration-200" style={{ background:'var(--surface)', backdropFilter:'blur(16px)' }}>
-                    <textarea
-                      ref={textareaRef}
-                      value={question}
-                      onChange={(e) => setQuestion(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      disabled={sending}
-                      rows={1}
-                      placeholder="Ask anything about your document…"
-                      className="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/30 resize-none outline-none overflow-hidden leading-relaxed pt-0.5"
-                    />
-                    <motion.button whileHover={{ scale:1.1, boxShadow:'0 0 20px rgba(124,58,237,0.15)' }} whileTap={{ scale:0.88 }}
-                      onClick={handleSend}
-                      disabled={!question.trim() || sending}
-                      className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-[#001a12] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ background:'linear-gradient(135deg,var(--purple),#9333ea)' }}
-                    >
-                      {sending
-                        ? <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                        : <span className="material-symbols-outlined text-[18px]">send</span>
-                      }
-                    </motion.button>
-                  </div>
-                </motion.div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, background: T.subtle, border: `1.5px solid ${T.ele}`, borderRadius: 16, padding: '10px 10px 10px 16px', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+                  onFocusCapture={(e) => { e.currentTarget.style.borderColor = T.indigo; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                  onBlurCapture={(e) => { e.currentTarget.style.borderColor = T.ele; e.currentTarget.style.boxShadow = 'none'; }}>
+                  <textarea ref={textareaRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={handleKeyDown} disabled={sending} rows={1}
+                    placeholder="Ask anything about your document…"
+                    style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', resize: 'none', fontSize: 14, color: T.ink, lineHeight: 1.6, overflow: 'hidden', paddingTop: 2 }} />
+                  <motion.button whileHover={{ scale: canSend ? 1.08 : 1 }} whileTap={{ scale: canSend ? 0.9 : 1 }}
+                    onClick={handleSend} disabled={!canSend}
+                    style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 12, background: canSend ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : T.ele, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: canSend ? 'pointer' : 'not-allowed', transition: 'all 0.2s', boxShadow: canSend ? '0 4px 12px rgba(99,102,241,0.3)' : 'none' }}>
+                    {sending
+                      ? <span className="material-symbols-outlined animate-spin" style={{ fontSize: 18, color: T.muted }}>progress_activity</span>
+                      : <span className="material-symbols-outlined" style={{ fontSize: 18, color: canSend ? '#fff' : T.muted }}>send</span>}
+                  </motion.button>
+                </div>
 
-                <p className="mt-2 text-center text-[10px] text-on-surface-variant/25 font-label">
-                  Ctrl+Enter to send · AI-generated — always verify with a qualified lawyer
+                <p style={{ marginTop: 8, textAlign: 'center', fontSize: 11, color: T.muted }}>
+                  Ctrl+Enter to send · Always verify AI responses with a qualified lawyer
                 </p>
               </div>
             </div>
@@ -808,23 +648,10 @@ export default function AskAI() {
         )}
       </div>
 
-      <ConsentPanel
-        isOpen={consentOpen}
-        onConfirm={handleConsentConfirm}
-        onCancel={() => { setConsentOpen(false); setQuestion(pendingQuestion); }}
-        title="Send Message to AI"
-        confirmLabel="Confirm & Send"
-        preview={consentPreview}
-        previewLoading={consentLoading}
-        wordCount={consentMeta.wordCount}
-        charCount={consentMeta.charCount}
-        details={[
-          'Your question (shown above)',
-          'Relevant document text chunks',
-          'Last 6 messages for context',
-          'No personal or account data included',
-        ]}
-      />
+      <ConsentPanel isOpen={consentOpen} onConfirm={handleConsentConfirm} onCancel={() => { setConsentOpen(false); setQuestion(pendingQuestion); }}
+        title="Send Message to AI" confirmLabel="Confirm & Send" preview={consentPreview} previewLoading={consentLoading}
+        wordCount={consentMeta.wordCount} charCount={consentMeta.charCount}
+        details={['Your question (shown above)', 'Relevant document text chunks', 'Last 6 messages for context', 'No personal or account data included']} />
     </div>
   );
 }

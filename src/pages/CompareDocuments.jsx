@@ -34,30 +34,52 @@ async function extractDocxInBrowser(file, onProgress) {
   return result.value.trim();
 }
 
+/* ── design tokens ─────────────────────────────────────────────────── */
+const T = {
+  bg:      '#f4f6fd',
+  sur:     '#ffffff',
+  bdr:     '#e5e7f5',
+  indigo:  '#6366f1',
+  indigoS: 'rgba(99,102,241,0.08)',
+  indigoBdr:'rgba(99,102,241,0.2)',
+  ink:     '#1e1b4b',
+  muted:   '#6b7099',
+  subtle:  '#f0f2ff',
+  ele:     '#eaecf8',
+  amber:   '#f59e0b',
+  amberS:  'rgba(245,158,11,0.08)',
+  amberBdr:'rgba(245,158,11,0.22)',
+  red:     '#ef4444',
+  redS:    'rgba(239,68,68,0.07)',
+  redBdr:  'rgba(239,68,68,0.22)',
+  green:   '#16a34a',
+  greenS:  'rgba(22,163,74,0.07)',
+  greenBdr:'rgba(22,163,74,0.22)',
+};
+
 /* ── helpers ──────────────────────────────────────────────────────── */
 const riskChangeMeta = (rc) => {
   if (!rc) return null;
   const v = rc.toLowerCase();
-  if (v === 'improved')  return { label: 'Risk Improved',  icon: 'trending_up',   cls: 'text-primary border-primary/30 bg-primary/10'   };
-  if (v === 'worsened')  return { label: 'Risk Worsened',  icon: 'trending_down', cls: 'text-error border-error/30 bg-error/10'         };
-  return                        { label: 'Risk Neutral',   icon: 'trending_flat', cls: 'text-on-surface-variant border-white/10 bg-white/5' };
+  if (v === 'improved') return { label: 'Risk Improved', icon: 'trending_up',   color: T.green,  bg: T.greenS, bdr: T.greenBdr };
+  if (v === 'worsened') return { label: 'Risk Worsened', icon: 'trending_down', color: T.red,    bg: T.redS,   bdr: T.redBdr   };
+  return                       { label: 'Risk Neutral',  icon: 'trending_flat', color: T.muted,  bg: T.subtle, bdr: T.bdr      };
 };
 
 const severityMeta = (s) => {
   const v = (s || 'low').toLowerCase();
-  if (v === 'high')   return { label: 'High Risk',   cls: 'bg-error/10 text-error border-error/30'        };
-  if (v === 'medium') return { label: 'Medium Risk', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/30' };
-  return                     { label: 'Low Risk',    cls: 'bg-primary/10 text-primary border-primary/30'  };
+  if (v === 'high')   return { label: 'High Risk',   color: T.red,    bg: T.redS,   bdr: T.redBdr   };
+  if (v === 'medium') return { label: 'Medium Risk', color: T.amber,  bg: T.amberS, bdr: T.amberBdr };
+  return                     { label: 'Low Risk',    color: T.indigo, bg: T.indigoS,bdr: T.indigoBdr };
 };
 
 /* ── DocSlot ─────────────────────────────────────────────────────── */
 function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
-  const isA = slot === 'A';
-  const accentText   = isA ? 'text-amber-400'    : 'text-primary';
-  const accentBorder = isA ? 'border-amber-400/30' : 'border-primary/30';
-  const accentBg     = isA ? 'bg-amber-400/10'   : 'bg-primary/10';
-  const accentFill   = isA ? 'bg-amber-400'      : 'bg-primary';
-  const accentBar    = isA ? 'border-amber-400'  : 'border-primary';
+  const isA   = slot === 'A';
+  const accent    = isA ? T.amber  : T.indigo;
+  const accentS   = isA ? T.amberS : T.indigoS;
+  const accentBdr = isA ? T.amberBdr : T.indigoBdr;
+  const accentTxt = isA ? '#92400e' : '#4338ca';
 
   const [tab,       setTab]       = useState('select');
   const [search,    setSearch]    = useState('');
@@ -71,7 +93,7 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
 
   const selectedDoc  = docs.find((d) => d._id === docId);
   const filteredDocs = docs.filter((d) =>
-    d.originalName.toLowerCase().includes(search.toLowerCase())
+    d.originalName.toLowerCase().includes(search.toLowerCase()),
   );
 
   const pickFile = (f) => {
@@ -113,42 +135,45 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
   };
 
   return (
-    <div className={`rounded-2xl border ${accentBorder} bg-surface-container-low overflow-hidden flex flex-col`}>
+    <div style={{ borderRadius: 16, border: `1.5px solid ${accentBdr}`, background: T.sur, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: `0 4px 20px ${accentS}` }}>
       {/* Header */}
-      <div className={`flex items-center gap-3 px-5 py-3.5 border-b ${accentBorder} ${accentBg}`}>
-        <div className={`w-8 h-8 rounded-xl ${accentFill} flex items-center justify-center flex-shrink-0`}>
-          <span className="text-xs font-black text-on-primary">{slot}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderBottom: `1px solid ${accentBdr}`, background: accentS }}>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 12px ${accentBdr}` }}>
+          <span style={{ fontSize: 13, fontWeight: 900, color: isA ? '#000' : '#fff' }}>{slot}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted, margin: 0 }}>
             {isA ? 'Base Document (Original)' : 'Compare Document (Revised)'}
           </p>
           {selectedDoc && (
-            <p className={`text-xs font-semibold truncate ${accentText}`}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: accentTxt, margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {selectedDoc.originalName.replace(/\.[^.]+$/, '')}
             </p>
           )}
         </div>
         {selectedDoc && (
-          <button onClick={() => setDocId('')} className="text-on-surface-variant hover:text-white transition-colors flex-shrink-0">
-            <span className="material-symbols-outlined text-base">close</span>
+          <button onClick={() => setDocId('')} style={{ background: 'none', border: 'none', color: T.muted, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', borderRadius: 6 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
           </button>
         )}
       </div>
 
       {/* Mode tabs */}
-      <div className="flex border-b border-white/5">
-        {[['select','folder_open','My Documents'], ['upload','upload_file','Upload New']].map(([t, icon, label]) => (
+      <div style={{ display: 'flex', borderBottom: `1px solid ${T.bdr}` }}>
+        {[['select', 'folder_open', 'My Documents'], ['upload', 'upload_file', 'Upload New']].map(([t, icon, label]) => (
           <button
             key={t}
             onClick={() => { setTab(t); setErr(''); setFile(null); setProgress(0); setMsg(''); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-all ${
-              tab === t
-                ? `${accentText} border-b-2 ${accentBar} bg-white/[0.03]`
-                : 'text-on-surface-variant hover:text-white'
-            }`}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: '10px 12px', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
+              background: tab === t ? T.subtle : 'transparent',
+              color: tab === t ? accent : T.muted,
+              borderBottom: tab === t ? `2.5px solid ${accent}` : '2.5px solid transparent',
+              transition: 'all 0.15s',
+            }}
           >
-            <span className="material-symbols-outlined text-sm">{icon}</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 15 }}>{icon}</span>
             {label}
           </button>
         ))}
@@ -156,23 +181,23 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
 
       {/* Select tab */}
       {tab === 'select' && (
-        <div className="p-4 space-y-3 flex-1">
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base pointer-events-none">search</span>
+        <div style={{ padding: 16, flex: 1 }}>
+          <div style={{ position: 'relative', marginBottom: 12 }}>
+            <span className="material-symbols-outlined" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 16, color: T.muted, pointerEvents: 'none' }}>search</span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search documents…"
-              className="w-full bg-surface-container border border-white/5 focus:border-primary/50 text-on-surface text-xs pl-9 pr-3 py-2 rounded-xl outline-none placeholder:text-on-surface-variant/50 transition-colors"
+              style={{ width: '100%', background: T.subtle, border: `1px solid ${T.bdr}`, borderRadius: 10, padding: '8px 12px 8px 34px', fontSize: 12, color: T.ink, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
             />
           </div>
-          <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar">
+          <div style={{ maxHeight: 200, overflowY: 'auto' }}>
             {docsLoading ? (
-              <div className="flex items-center justify-center py-8 gap-2 text-on-surface-variant text-xs">
-                <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>Loading…
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: 8, color: T.muted, fontSize: 12 }}>
+                <span className="material-symbols-outlined animate-spin" style={{ fontSize: 16 }}>progress_activity</span>Loading…
               </div>
             ) : filteredDocs.length === 0 ? (
-              <p className="text-center py-8 text-on-surface-variant text-xs">
+              <p style={{ textAlign: 'center', padding: '32px 0', color: T.muted, fontSize: 12, margin: 0 }}>
                 {search ? 'No matching documents.' : 'No documents uploaded yet.'}
               </p>
             ) : (
@@ -180,17 +205,19 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
                 <button
                   key={d._id}
                   onClick={() => setDocId(d._id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
-                    docId === d._id
-                      ? `${accentBg} border ${accentBorder}`
-                      : 'hover:bg-white/[0.04] border border-transparent'
-                  }`}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px',
+                    borderRadius: 10, textAlign: 'left', cursor: 'pointer',
+                    border: `1px solid ${docId === d._id ? accentBdr : 'transparent'}`,
+                    background: docId === d._id ? accentS : 'transparent',
+                    marginBottom: 2, transition: 'all 0.12s',
+                  }}
                 >
-                  <span className={`material-symbols-outlined text-base flex-shrink-0 ${docId === d._id ? accentText : 'text-on-surface-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
-                  <span className={`text-xs font-medium truncate flex-1 ${docId === d._id ? 'text-white' : 'text-on-surface'}`}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16, flexShrink: 0, color: docId === d._id ? accent : T.muted, fontVariationSettings: "'FILL' 1" }}>description</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: T.ink }}>
                     {d.originalName.replace(/\.[^.]+$/, '')}
                   </span>
-                  {docId === d._id && <span className={`material-symbols-outlined text-sm flex-shrink-0 ${accentText}`}>check_circle</span>}
+                  {docId === d._id && <span className="material-symbols-outlined" style={{ fontSize: 16, flexShrink: 0, color: accent }}>check_circle</span>}
                 </button>
               ))
             )}
@@ -200,62 +227,68 @@ function DocSlot({ slot, docId, setDocId, docs, docsLoading, onDocAdded }) {
 
       {/* Upload tab */}
       {tab === 'upload' && (
-        <div className="p-4 space-y-3 flex-1">
+        <div style={{ padding: 16, flex: 1 }}>
           <div
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => { e.preventDefault(); setDragging(false); pickFile(e.dataTransfer.files[0]); }}
             onClick={() => !file && inputRef.current?.click()}
-            className={`relative rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-2 py-8 ${
-              dragging ? `${isA ? 'border-amber-400' : 'border-primary'} bg-white/[0.04]`
-              : file   ? `${isA ? 'border-amber-400/50' : 'border-primary/50'} bg-white/[0.02]`
-              :          'border-white/10 hover:border-white/20 hover:bg-white/[0.02]'
-            }`}
+            style={{
+              position: 'relative', borderRadius: 12,
+              border: `2px dashed ${dragging ? accent : file ? `${accent}aa` : T.bdr}`,
+              background: dragging ? accentS : file ? accentS : T.subtle,
+              cursor: 'pointer', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: 8, padding: '28px 16px', transition: 'all 0.15s',
+            }}
           >
-            <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.txt" className="hidden" onChange={(e) => pickFile(e.target.files[0])} />
+            <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.txt" style={{ display: 'none' }} onChange={(e) => pickFile(e.target.files[0])} />
             {file ? (
               <>
-                <span className={`material-symbols-outlined text-3xl ${accentText}`} style={{ fontVariationSettings: "'FILL' 1" }}>draft</span>
-                <p className="text-xs font-semibold text-on-surface text-center max-w-[180px] truncate px-2">{file.name}</p>
-                <p className="text-[10px] text-on-surface-variant">{(file.size / 1024).toFixed(0)} KB</p>
-                <button onClick={(e) => { e.stopPropagation(); setFile(null); setProgress(0); setMsg(''); setErr(''); }} className="absolute top-2 right-2 text-on-surface-variant hover:text-white">
-                  <span className="material-symbols-outlined text-base">close</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 34, color: accent, fontVariationSettings: "'FILL' 1" }}>draft</span>
+                <p style={{ fontSize: 12, fontWeight: 600, color: T.ink, textAlign: 'center', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{file.name}</p>
+                <p style={{ fontSize: 11, color: T.muted, margin: 0 }}>{(file.size / 1024).toFixed(0)} KB</p>
+                <button onClick={(e) => { e.stopPropagation(); setFile(null); setProgress(0); setMsg(''); setErr(''); }}
+                  style={{ position: 'absolute', top: 8, right: 8, background: T.ele, border: 'none', color: T.muted, cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 15 }}>close</span>
                 </button>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-3xl text-on-surface-variant">cloud_upload</span>
-                <p className="text-xs text-on-surface-variant text-center">
-                  Drag &amp; drop or <span className={`font-semibold ${accentText}`}>browse</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 34, color: T.muted }}>cloud_upload</span>
+                <p style={{ fontSize: 12, color: T.muted, textAlign: 'center', margin: 0 }}>
+                  Drag &amp; drop or <span style={{ fontWeight: 700, color: accent }}>browse</span>
                 </p>
-                <p className="text-[10px] text-on-surface-variant/50">PDF · DOCX · TXT</p>
+                <p style={{ fontSize: 11, color: `${T.muted}99`, margin: 0 }}>PDF · DOCX · TXT</p>
               </>
             )}
           </div>
 
           {uploading && (
-            <div className="space-y-1.5">
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all duration-300 ${isA ? 'bg-amber-400' : 'bg-primary'}`} style={{ width: `${progress}%` }} />
+            <div style={{ marginTop: 12 }}>
+              <div style={{ height: 5, width: '100%', background: T.ele, borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 999, background: accent, width: `${progress}%`, transition: 'width 0.3s' }} />
               </div>
-              <p className="text-[10px] text-on-surface-variant text-center">{msg || 'Processing…'}</p>
+              <p style={{ fontSize: 11, color: T.muted, textAlign: 'center', marginTop: 4 }}>{msg || 'Processing…'}</p>
             </div>
           )}
 
-          {err && <p className="text-[10px] text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2 text-center">{err}</p>}
+          {err && <p style={{ fontSize: 11, color: T.red, background: T.redS, border: `1px solid ${T.redBdr}`, borderRadius: 8, padding: '8px 12px', textAlign: 'center', marginTop: 8 }}>{err}</p>}
 
           <button
             onClick={handleUpload}
             disabled={!file || uploading}
-            className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              file && !uploading
-                ? `${isA ? 'bg-amber-400 text-black' : 'bg-primary text-on-primary'} hover:opacity-90 active:scale-[0.98]`
-                : 'bg-white/5 text-on-surface-variant cursor-not-allowed'
-            }`}
+            style={{
+              width: '100%', padding: '11px 0', borderRadius: 10, fontSize: 12, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 12,
+              background: file && !uploading ? accent : T.ele,
+              color: file && !uploading ? (isA ? '#000' : '#fff') : T.muted,
+              border: 'none', cursor: file && !uploading ? 'pointer' : 'not-allowed', transition: 'all 0.15s',
+            }}
           >
             {uploading
-              ? <><span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>Uploading…</>
-              : <><span className="material-symbols-outlined text-sm">upload</span>Upload &amp; Use</>
+              ? <><span className="material-symbols-outlined animate-spin" style={{ fontSize: 15 }}>progress_activity</span>Uploading…</>
+              : <><span className="material-symbols-outlined" style={{ fontSize: 15 }}>upload</span>Upload &amp; Use</>
             }
           </button>
         </div>
@@ -354,81 +387,116 @@ export default function CompareDocuments() {
   const badge = riskChangeMeta(result?.riskChange);
 
   return (
-    <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh' }}>
-      <header style={{ position:'sticky', top:0, zIndex:40, background:'rgba(7,9,31,0.92)', backdropFilter:'blur(18px)', borderBottom:'1px solid rgba(99,102,241,0.18)', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:12 }}>
-        <button onClick={() => navigate('/studio')} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', background:'none', border:'none', color:'rgba(240,240,255,0.5)', cursor:'pointer' }}>
-          <span className="material-symbols-outlined" style={{ fontSize:16 }}>arrow_back</span>
+    <div style={{ background: T.bg, minHeight: '100vh' }}>
+      {/* Header */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 40,
+        background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(18px)',
+        borderBottom: `1px solid ${T.bdr}`, padding: '0 24px', height: 64,
+        display: 'flex', alignItems: 'center', gap: 14,
+        boxShadow: '0 1px 16px rgba(99,102,241,0.07)',
+      }}>
+        <button
+          onClick={() => navigate('/studio')}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: T.subtle, border: `1px solid ${T.bdr}`, borderRadius: 8, color: T.muted, cursor: 'pointer', transition: 'all 0.15s' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_back</span>
         </button>
-        <span className="material-symbols-outlined" style={{ color:'#6366f1', fontSize:20, fontVariationSettings:"'FILL' 1" }}>compare_arrows</span>
-        <p style={{ flex:1, color:'#f0f0ff', fontWeight:700, fontSize:15 }}>Compare Documents</p>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#fff', fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
+        </div>
+        <div>
+          <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: T.ink, letterSpacing: '-0.01em' }}>Compare Documents</p>
+          <p style={{ margin: 0, fontSize: 11, color: T.muted }}>AI-powered clause-level diff analysis</p>
+        </div>
       </header>
 
-      <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
+      <div style={{ padding: '32px 24px', maxWidth: 1100, margin: '0 auto' }}>
 
         {/* ── Selector panel ─────────────────────────────────────── */}
-        <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.55, ease:[0.22,1,0.36,1] }}
-          className="rounded-2xl border border-white/5 overflow-hidden" style={{ background:'var(--surface)', backdropFilter:'blur(16px)' }}>
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
-            <motion.span animate={{ rotate:[0,10,-10,0] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}
-              className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</motion.span>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: T.sur, borderRadius: 20, border: `1px solid ${T.bdr}`, overflow: 'hidden', boxShadow: '0 4px 24px rgba(99,102,241,0.07)', marginBottom: 28 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 24px', borderBottom: `1px solid ${T.bdr}`, background: T.subtle }}>
+            <motion.span
+              animate={{ rotate: [0, 12, -12, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="material-symbols-outlined"
+              style={{ fontSize: 22, color: T.indigo, fontVariationSettings: "'FILL' 1" }}
+            >compare_arrows</motion.span>
             <div>
-              <h2 className="text-sm font-semibold text-on-surface">Document Comparison</h2>
-              <p className="text-[11px] text-on-surface-variant">Select or upload two versions to compare — AI finds every change</p>
+              <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.ink }}>Document Comparison</h2>
+              <p style={{ margin: 0, fontSize: 12, color: T.muted }}>Select or upload two versions — AI finds every change in seconds</p>
             </div>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_64px_1fr] gap-4 items-start">
-              <DocSlot slot="A" docId={docAId} setDocId={(id) => { setDocAId(id); setResult(null); setError(''); }} docs={docs} docsLoading={docsLoading} onDocAdded={handleDocAdded} />
-              <div className="flex flex-col items-center justify-center gap-2 pt-10">
-                <div className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center">
-                  <span className="text-[10px] font-black text-on-surface-variant tracking-widest">VS</span>
+
+          <div style={{ padding: 24 }}>
+            {/* Three-column grid: Slot A | VS | Slot B */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 72px 1fr', gap: 16, alignItems: 'start' }}>
+              <DocSlot
+                slot="A" docId={docAId}
+                setDocId={(id) => { setDocAId(id); setResult(null); setError(''); }}
+                docs={docs} docsLoading={docsLoading} onDocAdded={handleDocAdded}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 48 }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: T.ele, border: `2px solid ${T.bdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: T.muted, letterSpacing: '0.08em' }}>VS</span>
                 </div>
               </div>
-              <DocSlot slot="B" docId={docBId} setDocId={(id) => { setDocBId(id); setResult(null); setError(''); }} docs={docs} docsLoading={docsLoading} onDocAdded={handleDocAdded} />
+              <DocSlot
+                slot="B" docId={docBId}
+                setDocId={(id) => { setDocBId(id); setResult(null); setError(''); }}
+                docs={docs} docsLoading={docsLoading} onDocAdded={handleDocAdded}
+              />
             </div>
 
             {error && (
-              <div className="mt-4 flex items-center gap-2 text-error text-sm bg-error/10 border border-error/20 rounded-xl px-4 py-3">
-                <span className="material-symbols-outlined text-base flex-shrink-0">error</span>{error}
+              <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, color: T.red, fontSize: 13, background: T.redS, border: `1px solid ${T.redBdr}`, borderRadius: 12, padding: '12px 16px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18, flexShrink: 0 }}>error</span>{error}
               </div>
             )}
 
             <button
               onClick={handleCompare}
               disabled={!canCompare}
-              className={`mt-5 w-full h-14 font-bold text-sm rounded-xl flex items-center justify-center gap-3 transition-all ${
-                canCompare
-                  ? 'bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.005] active:scale-[0.995]'
-                  : 'bg-white/5 text-on-surface-variant cursor-not-allowed'
-              }`}
+              style={{
+                marginTop: 20, width: '100%', height: 52, fontWeight: 800, fontSize: 14,
+                borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                border: 'none', cursor: canCompare ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+                background: canCompare ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : T.ele,
+                color: canCompare ? '#fff' : T.muted,
+                boxShadow: canCompare ? '0 8px 24px rgba(99,102,241,0.25)' : 'none',
+              }}
             >
               {comparing ? (
-                <><span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>AI is analyzing both documents…</>
+                <><span className="material-symbols-outlined animate-spin" style={{ fontSize: 22 }}>progress_activity</span>AI is analysing both documents…</>
               ) : (
-                <><span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
+                <><span className="material-symbols-outlined" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
                   {canCompare ? 'Run AI Comparison' : 'Select two documents to compare'}</>
               )}
             </button>
           </div>
         </motion.div>
 
-        {/* ── Analyzing state ────────────────────────────────────── */}
+        {/* ── Analysing state ────────────────────────────────────── */}
         {comparing && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="flex flex-col items-center gap-5 py-20">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-4xl animate-pulse" style={{ fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '80px 0', background: T.sur, borderRadius: 20, border: `1px solid ${T.bdr}`, marginBottom: 28 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: 80, height: 80, borderRadius: '50%', background: T.indigoS, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span className="material-symbols-outlined animate-pulse" style={{ fontSize: 40, color: T.indigo, fontVariationSettings: "'FILL' 1" }}>compare_arrows</span>
               </div>
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary animate-ping opacity-40" />
+              <span style={{ position: 'absolute', top: -2, right: -2, width: 18, height: 18, borderRadius: '50%', background: T.indigo, display: 'block' }} className="animate-ping" />
             </div>
-            <div className="text-center space-y-1">
-              <p className="text-white font-semibold">Comparing documents…</p>
-              <p className="text-sm text-on-surface-variant">AI is reading every clause in both versions</p>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 700, fontSize: 16, color: T.ink }}>Comparing documents…</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.muted }}>AI is reading every clause in both versions</p>
             </div>
-            <div className="flex items-center gap-6 text-xs text-on-surface-variant">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, fontSize: 12, color: T.muted }}>
               {['Reading Document A', 'Finding differences', 'Assessing risk impact'].map((s, i) => (
-                <div key={s} className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.indigo, display: 'inline-block' }} className="animate-pulse" />
                   {s}
                 </div>
               ))}
@@ -436,21 +504,21 @@ export default function CompareDocuments() {
           </motion.div>
         )}
 
-        {/* ── Error result (bad saved comparison) ────────────────── */}
+        {/* ── Error result ────────────────────────────────────────── */}
         {result && isErrorResult && !comparing && (
-          <div className="flex flex-col items-center gap-5 py-20 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-error/10 border border-error/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-error text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '80px 0', background: T.sur, borderRadius: 20, border: `1px solid ${T.bdr}`, marginBottom: 28, textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: T.redS, border: `1px solid ${T.redBdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 32, color: T.red, fontVariationSettings: "'FILL' 1" }}>error</span>
             </div>
-            <div className="space-y-1.5">
-              <p className="text-white font-semibold">AI comparison failed</p>
-              <p className="text-sm text-on-surface-variant max-w-sm">
-                The AI could not complete this comparison. Please try running it again — the issue has been fixed.
+            <div>
+              <p style={{ margin: '0 0 8px', fontWeight: 700, fontSize: 16, color: T.ink }}>AI comparison failed</p>
+              <p style={{ margin: 0, fontSize: 13, color: T.muted, maxWidth: 340 }}>
+                The AI could not complete this comparison. Please try running it again.
               </p>
             </div>
             <button
               onClick={() => { setResult(null); setError(''); }}
-              className="px-6 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ padding: '10px 24px', borderRadius: 10, background: T.indigo, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}
             >
               Try Again
             </button>
@@ -459,248 +527,249 @@ export default function CompareDocuments() {
 
         {/* ── Results ────────────────────────────────────────────── */}
         {result && !isErrorResult && !comparing && (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-            {/* ── 1. Stats + Risk Change row ─────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* Stats row */}
+            <div style={{ display: 'grid', gridTemplateColumns: badge ? 'repeat(5,1fr)' : 'repeat(4,1fr)', gap: 14 }}>
               {[
-                { label: 'Total Changes', value: totalChanges,       color: 'text-white',     bg: 'bg-surface-container',  icon: 'change_circle'  },
-                { label: 'Additions',     value: additions.length,   color: 'text-primary',   bg: 'bg-primary/10',         icon: 'add_circle'     },
-                { label: 'Removals',      value: removals.length,    color: 'text-error',     bg: 'bg-error/10',           icon: 'remove_circle'  },
-                { label: 'Modifications', value: modifications.length, color: 'text-amber-400', bg: 'bg-amber-500/10',     icon: 'edit_note'      },
-              ].map(({ label, value, color, bg, icon }) => (
-                <div key={label} className={`${bg} rounded-2xl p-5 border border-white/5 flex flex-col items-center justify-center gap-2`}>
-                  <span className={`material-symbols-outlined text-2xl ${color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-                  <span className={`text-3xl font-headline font-extrabold ${color}`}>{value}</span>
-                  <span className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">{label}</span>
+                { label: 'Total Changes', value: totalChanges,         color: T.ink,    bg: T.sur,    icon: 'change_circle', bdr: T.bdr         },
+                { label: 'Additions',     value: additions.length,     color: T.green,  bg: T.greenS, icon: 'add_circle',    bdr: T.greenBdr    },
+                { label: 'Removals',      value: removals.length,      color: T.red,    bg: T.redS,   icon: 'remove_circle', bdr: T.redBdr      },
+                { label: 'Modifications', value: modifications.length, color: T.amber,  bg: T.amberS, icon: 'edit_note',     bdr: T.amberBdr    },
+              ].map(({ label, value, color, bg, icon, bdr }) => (
+                <div key={label} style={{ background: bg, borderRadius: 16, padding: '20px 16px', border: `1.5px solid ${bdr}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 24, color, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                  <span style={{ fontSize: 30, fontWeight: 800, color, lineHeight: 1 }}>{value}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>{label}</span>
                 </div>
               ))}
-              {/* Risk change card */}
               {badge && (
-                <div className={`rounded-2xl p-5 border flex flex-col items-center justify-center gap-2 ${badge.cls}`}>
-                  <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>{badge.icon}</span>
-                  <span className="text-sm font-bold text-center leading-tight">{badge.label}</span>
-                  <span className="text-[10px] font-label uppercase tracking-wider opacity-60">Risk Change</span>
+                <div style={{ background: badge.bg, borderRadius: 16, padding: '20px 16px', border: `1.5px solid ${badge.bdr}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 28, color: badge.color, fontVariationSettings: "'FILL' 1" }}>{badge.icon}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: badge.color, textAlign: 'center', lineHeight: 1.3 }}>{badge.label}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>Risk Change</span>
                 </div>
               )}
             </div>
 
-            {/* ── 2. Document names bar ──────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_40px_1fr] gap-3 items-center">
-              <div className="bg-surface-container-low rounded-xl px-5 py-4 border border-amber-400/20 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-black text-black">A</span>
+            {/* Doc names bar */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 48px 1fr', gap: 12, alignItems: 'center' }}>
+              <div style={{ background: T.amberS, borderRadius: 14, padding: '14px 18px', border: `1.5px solid ${T.amberBdr}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: T.amber, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: '#000' }}>A</span>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Original Version</p>
-                  <p className="text-sm font-semibold text-on-surface truncate">{docA?.originalName || 'Document A'}</p>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>Original Version</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{docA?.originalName || 'Document A'}</p>
                 </div>
               </div>
-              <div className="flex justify-center">
-                <span className="material-symbols-outlined text-on-surface-variant text-xl">compare_arrows</span>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 22, color: T.muted }}>compare_arrows</span>
               </div>
-              <div className="bg-surface-container-low rounded-xl px-5 py-4 border border-primary/20 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-black text-on-primary">B</span>
+              <div style={{ background: T.indigoS, borderRadius: 14, padding: '14px 18px', border: `1.5px solid ${T.indigoBdr}`, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: T.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>B</span>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Revised Version</p>
-                  <p className="text-sm font-semibold text-on-surface truncate">{docB?.originalName || 'Document B'}</p>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>Revised Version</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{docB?.originalName || 'Document B'}</p>
                 </div>
               </div>
             </div>
 
-            {/* ── 3. AI Summary ──────────────────────────────────── */}
+            {/* AI Summary */}
             {result.summary && (
-              <div className="bg-surface-container-low rounded-2xl px-6 py-5 border border-white/5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+              <div style={{ background: T.sur, borderRadius: 16, padding: '20px 24px', border: `1px solid ${T.bdr}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: T.indigoS, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, color: T.indigo, fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
                   </div>
-                  <span className="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">AI Summary</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.muted }}>AI Summary</span>
                 </div>
-                <p className="text-sm text-on-surface leading-relaxed">{result.summary}</p>
+                <p style={{ margin: 0, fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{result.summary}</p>
               </div>
             )}
 
-            {/* ── 4. Recommendation ──────────────────────────────── */}
+            {/* Recommendation */}
             {result.recommendation && (
-              <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/8 to-primary/3 px-6 py-5">
-                <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-2xl" />
-                <div className="flex items-start gap-4 pl-2">
-                  <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>tips_and_updates</span>
+              <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 16, border: `1.5px solid ${T.indigoBdr}`, background: T.indigoS, padding: '20px 24px 20px 32px' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 5, height: '100%', background: T.indigo, borderRadius: '8px 0 0 8px' }} />
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.indigo, fontVariationSettings: "'FILL' 1" }}>tips_and_updates</span>
                   </div>
                   <div>
-                    <p className="text-[10px] font-label text-primary uppercase tracking-wider mb-2">AI Recommendation</p>
-                    <p className="text-sm text-on-surface leading-relaxed">{result.recommendation}</p>
+                    <p style={{ margin: '0 0 8px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.indigo }}>AI Recommendation</p>
+                    <p style={{ margin: 0, fontSize: 14, color: T.ink, lineHeight: 1.7 }}>{result.recommendation}</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ── 5. Filter tabs ─────────────────────────────────── */}
-            <div className="flex gap-2 flex-wrap items-center">
+            {/* Filter tabs */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               {[
-                { label: 'All',           count: totalChanges,         icon: 'list'          },
-                { label: 'Additions',     count: additions.length,     icon: 'add_circle'    },
-                { label: 'Removals',      count: removals.length,      icon: 'remove_circle' },
-                { label: 'Modifications', count: modifications.length, icon: 'edit_note'     },
-              ].map(({ label, count, icon }) => (
-                <button
-                  key={label}
-                  onClick={() => setFilter(label)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                    filter === label
-                      ? 'bg-primary text-on-primary shadow-md shadow-primary/20'
-                      : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-                  {label}
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md min-w-[18px] text-center ${
-                    filter === label ? 'bg-white/20 text-white' : 'bg-white/5'
-                  }`}>{count}</span>
-                </button>
-              ))}
+                { label: 'All',           count: totalChanges,         icon: 'list',          activeColor: T.indigo },
+                { label: 'Additions',     count: additions.length,     icon: 'add_circle',    activeColor: T.green  },
+                { label: 'Removals',      count: removals.length,      icon: 'remove_circle', activeColor: T.red    },
+                { label: 'Modifications', count: modifications.length, icon: 'edit_note',     activeColor: T.amber  },
+              ].map(({ label, count, icon, activeColor }) => {
+                const active = filter === label;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setFilter(label)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10,
+                      fontSize: 13, fontWeight: 600, border: `1.5px solid ${active ? activeColor : T.bdr}`,
+                      background: active ? activeColor : T.sur, color: active ? '#fff' : T.muted,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                      boxShadow: active ? `0 4px 12px ${activeColor}30` : 'none',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                    {label}
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: '1px 7px', borderRadius: 6, minWidth: 20, textAlign: 'center',
+                      background: active ? 'rgba(255,255,255,0.25)' : T.ele,
+                      color: active ? '#fff' : T.muted,
+                    }}>{count}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* ── 6. Diff viewer ─────────────────────────────────── */}
-            <div className="space-y-4">
+            {/* Diff viewer */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
               {/* ADDITIONS */}
               {(filter === 'All' || filter === 'Additions') && additions.length > 0 && (
-                <div className="space-y-2">
+                <div>
                   {filter === 'All' && (
-                    <div className="flex items-center gap-2 px-1">
-                      <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
-                      <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                        Additions <span className="text-primary ml-1">{additions.length}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, paddingLeft: 4 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.green, fontVariationSettings: "'FILL' 1" }}>add_circle</span>
+                      <h3 style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.muted }}>
+                        Additions <span style={{ color: T.green, marginLeft: 4 }}>{additions.length}</span>
                       </h3>
                     </div>
                   )}
-                  {additions.map((text, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-primary/5 border border-primary/15 rounded-xl px-5 py-4 border-l-4 border-l-primary">
-                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="material-symbols-outlined text-on-primary text-sm">add</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {additions.map((text, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, background: T.greenS, border: `1px solid ${T.greenBdr}`, borderLeft: `4px solid ${T.green}`, borderRadius: '0 12px 12px 0', padding: '14px 18px' }}>
+                        <div style={{ width: 26, height: 26, borderRadius: '50%', background: T.green, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#fff' }}>add</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.green }}>ADDED</span>
+                          <p style={{ margin: '6px 0 0', fontSize: 13, color: T.ink, lineHeight: 1.65 }}>{text}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary mr-2">ADDED</span>
-                        <p className="text-sm text-on-surface leading-relaxed mt-1">{text}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* REMOVALS */}
               {(filter === 'All' || filter === 'Removals') && removals.length > 0 && (
-                <div className="space-y-2">
+                <div>
                   {filter === 'All' && (
-                    <div className="flex items-center gap-2 px-1 mt-2">
-                      <span className="material-symbols-outlined text-error text-base" style={{ fontVariationSettings: "'FILL' 1" }}>remove_circle</span>
-                      <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                        Removals <span className="text-error ml-1">{removals.length}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, paddingLeft: 4, marginTop: 6 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.red, fontVariationSettings: "'FILL' 1" }}>remove_circle</span>
+                      <h3 style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.muted }}>
+                        Removals <span style={{ color: T.red, marginLeft: 4 }}>{removals.length}</span>
                       </h3>
                     </div>
                   )}
-                  {removals.map((text, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-error/5 border border-error/15 rounded-xl px-5 py-4 border-l-4 border-l-error">
-                      <div className="w-6 h-6 rounded-full bg-error flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="material-symbols-outlined text-on-surface text-sm">remove</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {removals.map((text, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, background: T.redS, border: `1px solid ${T.redBdr}`, borderLeft: `4px solid ${T.red}`, borderRadius: '0 12px 12px 0', padding: '14px 18px' }}>
+                        <div style={{ width: 26, height: 26, borderRadius: '50%', background: T.red, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#fff' }}>remove</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.red }}>REMOVED</span>
+                          <p style={{ margin: '6px 0 0', fontSize: 13, color: `${T.ink}99`, lineHeight: 1.65, textDecoration: 'line-through', textDecorationColor: `${T.red}80` }}>{text}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-error mr-2">REMOVED</span>
-                        <p className="text-sm text-on-surface/70 leading-relaxed mt-1 line-through decoration-error/40">{text}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* MODIFICATIONS */}
               {(filter === 'All' || filter === 'Modifications') && modifications.length > 0 && (
-                <div className="space-y-3">
+                <div>
                   {filter === 'All' && (
-                    <div className="flex items-center gap-2 px-1 mt-2">
-                      <span className="material-symbols-outlined text-amber-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>edit_note</span>
-                      <h3 className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                        Modifications <span className="text-amber-400 ml-1">{modifications.length}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, paddingLeft: 4, marginTop: 6 }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.amber, fontVariationSettings: "'FILL' 1" }}>edit_note</span>
+                      <h3 style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.muted }}>
+                        Modifications <span style={{ color: T.amber, marginLeft: 4 }}>{modifications.length}</span>
                       </h3>
                     </div>
                   )}
-                  {modifications.map((mod, i) => {
-                    const sm = severityMeta(mod.severity);
-                    return (
-                      <div key={i} className="bg-surface-container-low rounded-2xl border border-white/5 border-l-4 border-l-amber-400/60 overflow-hidden">
-                        {/* Mod header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-amber-500/[0.04]">
-                          <div className="flex items-center gap-3 flex-wrap min-w-0">
-                            <span className="w-6 h-6 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-black text-amber-400">{i + 1}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {modifications.map((mod, i) => {
+                      const sm = severityMeta(mod.severity);
+                      return (
+                        <div key={i} style={{ background: T.sur, borderRadius: 16, border: `1px solid ${T.bdr}`, borderLeft: `4px solid ${T.amber}`, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                          {/* Mod header */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: `1px solid ${T.bdr}`, background: T.amberS }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                              <span style={{ width: 26, height: 26, borderRadius: '50%', background: T.amberS, border: `1.5px solid ${T.amberBdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 900, color: T.amber }}>{i + 1}</span>
+                              <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {mod.clauseName || `Change ${i + 1}`}
+                              </h4>
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: `1px solid ${sm.bdr}`, background: sm.bg, color: sm.color, flexShrink: 0, marginLeft: 12 }}>
+                              {sm.label}
                             </span>
-                            <h4 className="font-semibold text-sm text-on-surface truncate">
-                              {mod.clauseName || `Change ${i + 1}`}
-                            </h4>
                           </div>
-                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border flex-shrink-0 ml-3 ${sm.cls}`}>
-                            {sm.label}
-                          </span>
-                        </div>
 
-                        <div className="p-5 space-y-3">
-                          {/* Before */}
-                          {mod.before && (
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-4 h-4 rounded bg-error/20 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-error text-xs font-bold">A</span>
-                                </span>
-                                <span className="text-[10px] font-label font-bold uppercase tracking-wider text-error/70">Before (Version A)</span>
-                              </div>
-                              <div className="bg-error/8 border border-error/20 rounded-xl px-4 py-3 border-l-2 border-l-error/50">
-                                <p className="text-xs text-error/80 leading-relaxed font-mono">{mod.before}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* After */}
-                          {mod.after && (
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-primary text-xs font-bold">B</span>
-                                </span>
-                                <span className="text-[10px] font-label font-bold uppercase tracking-wider text-primary/70">After (Version B)</span>
-                              </div>
-                              <div className="bg-primary/8 border border-primary/20 rounded-xl px-4 py-3 border-l-2 border-l-primary/50">
-                                <p className="text-xs text-primary/90 leading-relaxed font-mono">{mod.after}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Impact */}
-                          {mod.impact && (
-                            <div className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/15 rounded-xl px-4 py-3">
-                              <span className="material-symbols-outlined text-amber-400 text-base flex-shrink-0 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
+                          <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            {mod.before && (
                               <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-0.5">What this means for you</span>
-                                <p className="text-xs text-on-surface leading-relaxed">{mod.impact}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                  <span style={{ width: 18, height: 18, borderRadius: 4, background: T.redS, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: T.red }}>A</span>
+                                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: `${T.red}bb` }}>Before (Version A)</span>
+                                </div>
+                                <div style={{ background: T.redS, border: `1px solid ${T.redBdr}`, borderLeft: `2px solid ${T.red}`, borderRadius: '0 10px 10px 0', padding: '10px 14px' }}>
+                                  <p style={{ margin: 0, fontSize: 12, color: `${T.red}cc`, lineHeight: 1.65, fontFamily: 'monospace' }}>{mod.before}</p>
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                            {mod.after && (
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                  <span style={{ width: 18, height: 18, borderRadius: 4, background: T.indigoS, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: T.indigo }}>B</span>
+                                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: `${T.indigo}bb` }}>After (Version B)</span>
+                                </div>
+                                <div style={{ background: T.indigoS, border: `1px solid ${T.indigoBdr}`, borderLeft: `2px solid ${T.indigo}`, borderRadius: '0 10px 10px 0', padding: '10px 14px' }}>
+                                  <p style={{ margin: 0, fontSize: 12, color: T.indigo, lineHeight: 1.65, fontFamily: 'monospace' }}>{mod.after}</p>
+                                </div>
+                              </div>
+                            )}
+                            {mod.impact && (
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: T.amberS, border: `1px solid ${T.amberBdr}`, borderRadius: 10, padding: '10px 14px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.amber, flexShrink: 0, marginTop: 1, fontVariationSettings: "'FILL' 1" }}>info</span>
+                                <div>
+                                  <span style={{ display: 'block', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: T.amber, marginBottom: 4 }}>What this means for you</span>
+                                  <p style={{ margin: 0, fontSize: 12, color: T.ink, lineHeight: 1.65 }}>{mod.impact}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
-              {/* Empty state for filter */}
+              {/* Empty states */}
               {totalChanges === 0 && (
-                <div className="text-center py-16 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-4xl mb-3 block opacity-30">check_circle</span>
-                  <p>No changes found between these documents.</p>
+                <div style={{ textAlign: 'center', padding: '60px 0', color: T.muted }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 48, opacity: 0.25, display: 'block', marginBottom: 12 }}>check_circle</span>
+                  <p style={{ margin: 0, fontSize: 14 }}>No changes found between these documents.</p>
                 </div>
               )}
               {totalChanges > 0 && filter !== 'All' && (
@@ -708,18 +777,18 @@ export default function CompareDocuments() {
                 (filter === 'Removals' && removals.length === 0) ||
                 (filter === 'Modifications' && modifications.length === 0)
               ) && (
-                <div className="text-center py-12 text-on-surface-variant">
-                  <span className="material-symbols-outlined text-3xl mb-2 block opacity-30">
+                <div style={{ textAlign: 'center', padding: '48px 0', color: T.muted }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.25, display: 'block', marginBottom: 10 }}>
                     {filter === 'Additions' ? 'add_circle' : filter === 'Removals' ? 'remove_circle' : 'edit_note'}
                   </span>
-                  <p className="text-sm">No {filter.toLowerCase()} in this comparison.</p>
+                  <p style={{ margin: 0, fontSize: 13 }}>No {filter.toLowerCase()} in this comparison.</p>
                 </div>
               )}
             </div>
 
-            {/* ── Disclaimer ─────────────────────────────────────── */}
-            <div className="flex items-center gap-2 text-xs text-on-surface-variant/50 border-t border-white/5 pt-4">
-              <span className="material-symbols-outlined text-sm flex-shrink-0">warning</span>
+            {/* Disclaimer */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: `${T.muted}99`, borderTop: `1px solid ${T.bdr}`, paddingTop: 16 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14, flexShrink: 0 }}>warning</span>
               AI analysis based on the first ~3000 characters of each document. For very long contracts, changes in later sections may not be detected. Always verify with a qualified lawyer.
             </div>
           </div>
@@ -727,31 +796,31 @@ export default function CompareDocuments() {
 
         {/* ── Empty state ─────────────────────────────────────────── */}
         {!result && !comparing && !error && (
-          <div className="text-center py-24">
-            <div className="inline-flex flex-col items-center gap-5">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-2xl bg-surface-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-6xl text-on-surface-variant opacity-20">compare</span>
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ width: 96, height: 96, borderRadius: 24, background: T.subtle, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${T.bdr}` }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 52, color: T.muted, opacity: 0.25 }}>compare</span>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                <div style={{ position: 'absolute', bottom: -6, right: -6, width: 32, height: 32, borderRadius: 10, background: T.indigoS, border: `1.5px solid ${T.indigoBdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16, color: T.indigo, fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-lg font-headline font-bold text-white/30">No comparison yet</p>
-                <p className="text-sm text-on-surface-variant max-w-sm">
+              <div>
+                <p style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 800, color: `${T.ink}55` }}>No comparison yet</p>
+                <p style={{ margin: 0, fontSize: 13, color: T.muted, maxWidth: 340 }}>
                   Select or upload Document A (original) and Document B (revised), then click Run AI Comparison
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-center text-xs text-on-surface-variant mt-2">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, textAlign: 'center', marginTop: 8 }}>
                 {[
-                  { icon: 'add_circle',    color: 'text-primary',   label: 'Additions identified' },
-                  { icon: 'remove_circle', color: 'text-error',     label: 'Removals flagged' },
-                  { icon: 'edit_note',     color: 'text-amber-400', label: 'Changes explained' },
+                  { icon: 'add_circle',    color: T.green, label: 'Additions identified' },
+                  { icon: 'remove_circle', color: T.red,   label: 'Removals flagged'     },
+                  { icon: 'edit_note',     color: T.amber, label: 'Changes explained'     },
                 ].map(({ icon, color, label }) => (
-                  <div key={label} className="flex flex-col items-center gap-1.5">
-                    <span className={`material-symbols-outlined text-2xl ${color} opacity-40`} style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-                    <span className="opacity-50">{label}</span>
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 26, color, opacity: 0.4, fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                    <span style={{ fontSize: 11, color: `${T.muted}99` }}>{label}</span>
                   </div>
                 ))}
               </div>
@@ -761,25 +830,22 @@ export default function CompareDocuments() {
 
         {/* ── History table ───────────────────────────────────────── */}
         {history.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-on-surface-variant text-base">history</span>
-              <h3 className="text-sm font-label uppercase tracking-wider text-on-surface-variant">Past Comparisons</h3>
-              <span className="text-[10px] bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full border border-white/5">{history.length}</span>
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18, color: T.muted }}>history</span>
+              <h3 style={{ margin: 0, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted }}>Past Comparisons</h3>
+              <span style={{ fontSize: 11, fontWeight: 700, background: T.ele, color: T.muted, padding: '2px 10px', borderRadius: 99, border: `1px solid ${T.bdr}` }}>{history.length}</span>
             </div>
-            <div className="bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden">
-              <table className="w-full text-sm">
+            <div style={{ background: T.sur, borderRadius: 18, border: `1px solid ${T.bdr}`, overflow: 'hidden', boxShadow: '0 2px 12px rgba(99,102,241,0.05)' }}>
+              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="border-b border-white/5 text-[10px] font-label uppercase tracking-wider text-on-surface-variant">
-                    <th className="text-left px-5 py-3.5 font-normal">Document A</th>
-                    <th className="text-left px-5 py-3.5 font-normal">Document B</th>
-                    <th className="text-center px-4 py-3.5 font-normal">Changes</th>
-                    <th className="text-center px-4 py-3.5 font-normal">Risk</th>
-                    <th className="text-right px-5 py-3.5 font-normal">Date</th>
-                    <th className="text-center px-4 py-3.5 font-normal"></th>
+                  <tr style={{ borderBottom: `1px solid ${T.bdr}`, background: T.subtle }}>
+                    {['Document A', 'Document B', 'Changes', 'Risk', 'Date', ''].map((h) => (
+                      <th key={h} style={{ padding: '12px 18px', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: T.muted, textAlign: h === 'Date' ? 'right' : h === '' ? 'center' : 'left' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody>
                   {history.slice(0, 10).map((h, i) => {
                     const dA    = docs.find((d) => d._id === (h.docAId?._id || h.docAId));
                     const dB    = docs.find((d) => d._id === (h.docBId?._id || h.docBId));
@@ -789,43 +855,47 @@ export default function CompareDocuments() {
                       ? new Date(h.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
                       : '—';
                     return (
-                      <tr key={h._id || i} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded bg-amber-400/10 flex items-center justify-center flex-shrink-0 text-[9px] font-black text-amber-400">A</span>
-                            <span className="text-white font-medium truncate max-w-[140px] text-xs" title={dA?.originalName}>
+                      <tr key={h._id || i} style={{ borderBottom: i < history.slice(0, 10).length - 1 ? `1px solid ${T.bdr}` : 'none', transition: 'background 0.12s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = T.subtle}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{ padding: '12px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 22, height: 22, borderRadius: 6, background: T.amberS, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: T.amber, flexShrink: 0 }}>A</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
                               {(dA?.originalName || h.docAId?.originalName || 'Document A').replace(/\.[^.]+$/, '')}
                             </span>
                           </div>
                         </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 text-[9px] font-black text-primary">B</span>
-                            <span className="text-white font-medium truncate max-w-[140px] text-xs" title={dB?.originalName}>
+                        <td style={{ padding: '12px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 22, height: 22, borderRadius: 6, background: T.indigoS, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: T.indigo, flexShrink: 0 }}>B</span>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
                               {(dB?.originalName || h.docBId?.originalName || 'Document B').replace(/\.[^.]+$/, '')}
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 text-center">
-                          <div className="flex items-center justify-center gap-1 text-[11px] font-bold">
-                            <span className="text-primary">+{h.additions?.length || 0}</span>
-                            <span className="text-on-surface-variant opacity-40">·</span>
-                            <span className="text-error">−{h.removals?.length || 0}</span>
-                            <span className="text-on-surface-variant opacity-40">·</span>
-                            <span className="text-amber-400">~{h.modifications?.length || 0}</span>
+                        <td style={{ padding: '12px 18px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}>
+                            <span style={{ color: T.green }}>+{h.additions?.length || 0}</span>
+                            <span style={{ color: `${T.muted}66` }}>·</span>
+                            <span style={{ color: T.red }}>−{h.removals?.length || 0}</span>
+                            <span style={{ color: `${T.muted}66` }}>·</span>
+                            <span style={{ color: T.amber }}>~{h.modifications?.length || 0}</span>
                           </div>
-                          <p className="text-[10px] text-on-surface-variant mt-0.5">{total} total</p>
+                          <p style={{ margin: '2px 0 0', fontSize: 10, color: T.muted }}>{total} total</p>
                         </td>
-                        <td className="px-4 py-3.5 text-center">
-                          {hb ? (
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${hb.cls}`}>{hb.label}</span>
-                          ) : <span className="text-on-surface-variant text-xs">—</span>}
+                        <td style={{ padding: '12px 18px', textAlign: 'center' }}>
+                          {hb
+                            ? <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 99, border: `1px solid ${hb.bdr}`, background: hb.bg, color: hb.color }}>{hb.label}</span>
+                            : <span style={{ color: T.muted, fontSize: 12 }}>—</span>
+                          }
                         </td>
-                        <td className="px-5 py-3.5 text-right text-on-surface-variant text-xs">{date}</td>
-                        <td className="px-4 py-3.5 text-center">
+                        <td style={{ padding: '12px 18px', textAlign: 'right', color: T.muted, fontSize: 12 }}>{date}</td>
+                        <td style={{ padding: '12px 18px', textAlign: 'center' }}>
                           <button
                             onClick={() => loadHistory(h)}
-                            className="text-xs text-primary hover:text-on-primary hover:bg-primary px-3 py-1.5 rounded-lg border border-primary/30 hover:border-primary transition-all font-semibold opacity-0 group-hover:opacity-100"
+                            style={{ fontSize: 12, color: T.indigo, background: T.indigoS, border: `1px solid ${T.indigoBdr}`, padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s' }}
                           >
                             View
                           </button>

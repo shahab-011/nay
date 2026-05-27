@@ -185,7 +185,7 @@ function SidebarContent({ onItemClick }) {
       <div style={{ padding: '10px 8px 0', flexShrink: 0 }}>
         <motion.button
           whileHover={{ x: -2 }}
-          onClick={() => { navigate('/'); onItemClick?.(); }}
+          onClick={() => { navigate('/services'); onItemClick?.(); }}
           style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${SBDR}`, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: TM, transition: 'color 150ms' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
           onMouseLeave={e => { e.currentTarget.style.color = TM; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}

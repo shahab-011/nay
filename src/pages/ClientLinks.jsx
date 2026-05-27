@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { I } from '../components/Icons';
 import {
   sendLinkRequest,
   getLinkedClients,
@@ -17,11 +18,18 @@ import {
 import { getDocuments } from '../api/documents.api';
 import DirectMessagePanel from '../components/collaboration/DirectMessagePanel';
 
-/* ── Helpers ────────────────────────────────────────────────────────── */
+/* ── Style constants ── */
+const lbl   = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp   = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.3)' };
+const btnGhost  = { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: 'rgba(255,255,255,0.06)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 12, fontWeight: 600 };
+const btnDanger = { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', fontSize: 12, fontWeight: 600 };
+const card  = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 16, padding: '20px', backdropFilter: 'blur(12px)', marginBottom: 16 };
 
+/* ── Helpers ── */
 function formatDate(d) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function formatRelative(d) {
@@ -37,84 +45,82 @@ function formatRelative(d) {
   return formatDate(d);
 }
 
-const STATUS_CFG = {
-  pending:  { text: 'text-amber-400', bg: 'bg-amber-400/10', border: 'border-amber-400/20' },
-  accepted: { text: 'text-primary',   bg: 'bg-primary/10',   border: 'border-primary/20'   },
-  rejected: { text: 'text-error',     bg: 'bg-error/10',     border: 'border-error/20'     },
-  unlinked: { text: 'text-slate-400', bg: 'bg-slate-400/10', border: 'border-slate-400/20' },
+const STATUS_STYLE = {
+  pending:  { bg: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: 'rgba(251,191,36,0.25)' },
+  accepted: { bg: 'rgba(34,197,94,0.12)',  color: '#4ade80', border: 'rgba(34,197,94,0.25)'  },
+  rejected: { bg: 'rgba(239,68,68,0.12)',  color: '#f87171', border: 'rgba(239,68,68,0.25)'  },
+  unlinked: { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' },
 };
 
 function StatusBadge({ status }) {
-  const c = STATUS_CFG[status] || STATUS_CFG.pending;
+  const s = STATUS_STYLE[status] || STATUS_STYLE.pending;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${c.bg} ${c.text} ${c.border}`}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, background: s.bg, color: s.color, border: `1px solid ${s.border}`, fontSize: 11, fontWeight: 700 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
 
-function StatCard({ icon, label, value, color }) {
+function StatCard({ Ic, label, value, accent }) {
   return (
-    <div className="bg-surface-container-low rounded-2xl p-5 border border-white/5">
-      <span className={`material-symbols-outlined text-2xl ${color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
-      <div className="mt-3 text-3xl font-headline font-extrabold text-on-surface">{value}</div>
-      <div className="text-xs text-on-surface-variant mt-0.5">{label}</div>
-    </div>
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 14, padding: '18px 20px', backdropFilter: 'blur(12px)' }}
+    >
+      <div style={{ width: 36, height: 36, borderRadius: 10, background: `${accent}18`, border: `1px solid ${accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+        <Ic size={17} style={{ color: accent }} />
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: '#f0eeff', letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+    </motion.div>
   );
 }
 
 function TabBar({ tabs, active, onChange }) {
   return (
-    <div className="flex gap-1 border-b border-white/5">
+    <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
       {tabs.map(t => (
-        <button
+        <motion.button
           key={t.key}
+          whileTap={{ scale: 0.97 }}
           onClick={() => onChange(t.key)}
-          className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold font-headline rounded-t-lg transition-all ${
-            active === t.key
-              ? 'text-primary border-b-2 border-primary bg-primary/5'
-              : 'text-on-surface-variant hover:text-white'
-          }`}
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all 200ms', background: active === t.key ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'transparent', color: active === t.key ? '#fff' : 'rgba(240,238,255,0.5)', boxShadow: active === t.key ? '0 4px 12px rgba(124,58,237,0.3)' : 'none' }}
         >
           {t.label}
           {t.count > 0 && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none ${
-              active === t.key ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'
-            }`}>{t.count}</span>
+            <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 10, background: active === t.key ? 'rgba(255,255,255,0.25)' : 'rgba(124,58,237,0.2)', color: active === t.key ? '#fff' : '#c4b5fd', minWidth: 18, textAlign: 'center' }}>
+              {t.count}
+            </span>
           )}
-        </button>
+        </motion.button>
       ))}
     </div>
   );
 }
 
-function EmptyState({ icon, title, sub, action }) {
+function EmptyState({ Ic, title, sub, action }) {
   return (
-    <div className="text-center py-16 space-y-4 bg-surface-container-low rounded-2xl border border-white/5">
-      <span className="material-symbols-outlined text-5xl block text-primary opacity-20">{icon}</span>
-      <div>
-        <p className="text-white/60 font-headline font-bold text-lg">{title}</p>
-        <p className="text-sm text-on-surface-variant mt-1 max-w-xs mx-auto">{sub}</p>
+    <div style={{ textAlign: 'center', padding: '48px 24px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(124,58,237,0.12)', borderRadius: 14 }}>
+      <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+        <Ic size={24} style={{ color: 'rgba(167,139,250,0.5)' }} />
       </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(240,238,255,0.7)', marginBottom: 6 }}>{title}</div>
+      <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.35)', maxWidth: 280, margin: '0 auto 20px' }}>{sub}</div>
       {action && (
-        <button
-          onClick={action.onClick}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
-        >
-          <span className="material-symbols-outlined text-lg">{action.icon || 'add'}</span>
-          {action.label}
-        </button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={action.onClick} style={btnPurple}>
+          <I.Plus size={13} /> {action.label}
+        </motion.button>
       )}
     </div>
   );
 }
 
-function LoadingSkeleton() {
+function Skeleton() {
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {[1, 2, 3].map(n => (
-        <div key={n} className="bg-surface-container-low rounded-xl p-6 animate-pulse h-24" />
+        <div key={n} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, height: 88, animation: 'nyaya-pulse 1.5s ease-in-out infinite' }} />
       ))}
     </div>
   );
@@ -122,59 +128,56 @@ function LoadingSkeleton() {
 
 function ErrorBanner({ msg, onRetry }) {
   return (
-    <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-      <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
-      {msg}
-      {onRetry && <button onClick={onRetry} className="ml-auto underline font-bold">Retry</button>}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, marginBottom: 16 }}>
+      <I.Alert size={15} style={{ flexShrink: 0 }} />
+      <span style={{ flex: 1 }}>{msg}</span>
+      {onRetry && <button onClick={onRetry} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', fontWeight: 700, fontSize: 12, textDecoration: 'underline' }}>Retry</button>}
     </div>
   );
 }
 
-/* ── Main page ─────────────────────────────────────────────────────── */
-
+/* ── Main export ── */
 export default function ClientLinks() {
   const { user } = useAuth();
-  const isLawyer = user?.role === 'lawyer' || user?.role === 'admin';
+  const isLawyer = ['lawyer', 'admin', 'owner', 'attorney'].includes(user?.role);
 
   return (
-    <>
-      <Header title="Client Links" />
-      <div className="p-4 md:p-8 pb-24 space-y-8 max-w-5xl">
+    <div style={{ minHeight: '100vh', position: 'relative', padding: '32px 28px', color: '#f0eeff' }}>
+      {/* Ambient blobs */}
+      <div style={{ position: 'fixed', top: 100, left: '35%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: 120, right: '20%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 860, margin: '0 auto' }}>
         {isLawyer ? <LawyerView /> : <ClientView />}
       </div>
-    </>
+    </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    LAWYER VIEW
-══════════════════════════════════════════════════════════════════════ */
-
+══════════════════════════════════════════════════════════ */
 function LawyerView() {
-  const navigate            = useNavigate();
-  const [tab, setTab]       = useState('clients');
-  const [links, setLinks]   = useState([]);
+  const navigate   = useNavigate();
+  const [tab, setTab]     = useState('clients');
+  const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState('');
+  const [error, setError]     = useState('');
 
-  // Send request form state
-  const [reqEmail, setReqEmail] = useState('');
-  const [reqMsg,   setReqMsg]   = useState('');
-  const [sending,  setSending]  = useState(false);
-  const [sendResult, setSendResult] = useState(null); // { ok, msg }
+  const [reqEmail, setReqEmail]   = useState('');
+  const [reqMsg,   setReqMsg]     = useState('');
+  const [sending,  setSending]    = useState(false);
+  const [sendResult, setSendResult] = useState(null);
 
-  // Shared-docs viewer modal
-  const [docsModal, setDocsModal] = useState(null); // { link, docs[], loading, error }
-
-  // Direct messaging panel
-  const [msgPanel, setMsgPanel] = useState(null); // { linkId, otherName }
+  const [docsModal, setDocsModal] = useState(null);
+  const [msgPanel,  setMsgPanel]  = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
       const r = await getLinkedClients();
       setLinks(r.data.data.clients || []);
-    } catch { setError('Failed to load clients. Please retry.'); }
+    } catch { setError('Failed to load clients.'); }
     finally  { setLoading(false); }
   }, []);
 
@@ -219,27 +222,23 @@ function LawyerView() {
 
   return (
     <>
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      {/* Page heading */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">Client Links</h1>
-          <p className="text-on-surface-variant text-sm mt-1">Send link requests, manage connected clients, and view shared documents</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f0eeff', letterSpacing: '-0.02em', margin: 0 }}>Client Links</h1>
+          <p style={{ fontSize: 13, color: 'rgba(240,238,255,0.45)', marginTop: 4 }}>Send link requests, manage connected clients, and view shared documents.</p>
         </div>
-        <button
-          onClick={() => setTab('send')}
-          className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(0,201,167,0.2)]"
-        >
-          <span className="material-symbols-outlined text-lg">person_add</span>
-          Send Request
-        </button>
+        <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => setTab('send')} style={btnPurple}>
+          <I.UserPlus size={14} /> Send Request
+        </motion.button>
       </div>
 
       {/* Stats */}
       {!loading && (
-        <div className="grid grid-cols-3 gap-4">
-          <StatCard icon="group"     label="Linked Clients"   value={accepted.length}                                   color="text-primary"   />
-          <StatCard icon="schedule"  label="Pending Requests" value={pending.length}                                    color="text-amber-400" />
-          <StatCard icon="handshake" label="Total Requests"   value={links.length}                                      color="text-secondary" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
+          <StatCard Ic={I.Users}  label="Linked Clients"   value={accepted.length}    accent="#7c3aed" />
+          <StatCard Ic={I.Clock}  label="Pending Requests" value={pending.length}     accent="#fbbf24" />
+          <StatCard Ic={I.Hand}   label="Total Requests"   value={links.length}       accent="#60a5fa" />
         </div>
       )}
 
@@ -256,52 +255,53 @@ function LawyerView() {
         ]}
       />
 
-      {loading && <LoadingSkeleton />}
+      {loading && <Skeleton />}
 
-      {/* ── Linked Clients tab ── */}
-      {!loading && tab === 'clients' && (
-        <div className="space-y-4">
-          {accepted.length === 0
-            ? <EmptyState icon="group" title="No linked clients yet" sub="Send a link request and wait for your client to accept." action={{ label: 'Send Request', icon: 'person_add', onClick: () => setTab('send') }} />
-            : accepted.map(link => (
-                <LawyerClientCard
-                  key={link._id}
-                  link={link}
-                  onUnlink={() => handleUnlink(link._id)}
-                  onViewDocs={() => openDocs(link)}
-                  onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
-                  onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.clientId?.name || link.clientEmail })}
-                />
-              ))
-          }
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {/* Linked Clients */}
+        {!loading && tab === 'clients' && (
+          <motion.div key="clients" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {accepted.length === 0
+              ? <EmptyState Ic={I.Users} title="No linked clients yet" sub="Send a link request and wait for your client to accept." action={{ label: 'Send Request', onClick: () => setTab('send') }} />
+              : accepted.map(link => (
+                  <LawyerClientCard
+                    key={link._id}
+                    link={link}
+                    onUnlink={() => handleUnlink(link._id)}
+                    onViewDocs={() => openDocs(link)}
+                    onViewClient={() => navigate(`/lawyer/client/${link._id}`)}
+                    onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.clientId?.name || link.clientEmail })}
+                  />
+                ))
+            }
+          </motion.div>
+        )}
 
-      {/* ── All requests tab ── */}
-      {!loading && tab === 'requests' && (
-        <div className="space-y-3">
-          {nonAccepted.length === 0
-            ? <EmptyState icon="schedule" title="No requests yet" sub="Requests you send to clients will appear here." action={{ label: 'Send Request', icon: 'person_add', onClick: () => setTab('send') }} />
-            : nonAccepted.map(link => (
-                <RequestRow key={link._id} link={link} primaryLabel={link.clientEmail} />
-              ))
-          }
-        </div>
-      )}
+        {/* All Requests */}
+        {!loading && tab === 'requests' && (
+          <motion.div key="requests" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {nonAccepted.length === 0
+              ? <EmptyState Ic={I.Clock} title="No requests yet" sub="Requests you send to clients will appear here." action={{ label: 'Send Request', onClick: () => setTab('send') }} />
+              : nonAccepted.map(link => (
+                  <RequestRow key={link._id} link={link} primaryLabel={link.clientEmail} />
+                ))
+            }
+          </motion.div>
+        )}
 
-      {/* ── Send request tab ── */}
-      {tab === 'send' && (
-        <div className="max-w-lg">
-          <SendRequestForm
-            email={reqEmail}     setEmail={setReqEmail}
-            message={reqMsg}     setMessage={setReqMsg}
-            sending={sending}    result={sendResult}
-            onSubmit={handleSendRequest}
-          />
-        </div>
-      )}
+        {/* Send Request */}
+        {tab === 'send' && (
+          <motion.div key="send" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} style={{ maxWidth: 500 }}>
+            <SendRequestForm
+              email={reqEmail}   setEmail={setReqEmail}
+              message={reqMsg}   setMessage={setReqMsg}
+              sending={sending}  result={sendResult}
+              onSubmit={handleSendRequest}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Docs viewer modal */}
       {docsModal && (
         <LawyerDocsModal
           link={docsModal.link}
@@ -323,10 +323,9 @@ function LawyerView() {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════
    CLIENT VIEW
-══════════════════════════════════════════════════════════════════════ */
-
+══════════════════════════════════════════════════════════ */
 function ClientView() {
   const [tab,         setTab]         = useState('lawyers');
   const [allLinks,    setAllLinks]    = useState([]);
@@ -334,7 +333,7 @@ function ClientView() {
   const [error,       setError]       = useState('');
   const [actionError, setActionError] = useState('');
   const [shareModal,  setShareModal]  = useState(null);
-  const [msgPanel,    setMsgPanel]    = useState(null); // { linkId, otherName }
+  const [msgPanel,    setMsgPanel]    = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -354,14 +353,8 @@ function ClientView() {
     setActionError('');
     const prev = allLinks;
     setAllLinks(l => l.map(x => x._id === linkId ? { ...x, status: 'accepted' } : x));
-    try {
-      await apiAccept(linkId);
-      setTab('lawyers');
-      load();
-    } catch (err) {
-      setAllLinks(prev);
-      setActionError(err.response?.data?.message || 'Failed to accept request. Please try again.');
-    }
+    try { await apiAccept(linkId); setTab('lawyers'); load(); }
+    catch (err) { setAllLinks(prev); setActionError(err.response?.data?.message || 'Failed to accept.'); }
   };
 
   const handleReject = async (linkId) => {
@@ -369,10 +362,7 @@ function ClientView() {
     const prev = allLinks;
     setAllLinks(l => l.map(x => x._id === linkId ? { ...x, status: 'rejected' } : x));
     try { await apiReject(linkId); }
-    catch (err) {
-      setAllLinks(prev);
-      setActionError(err.response?.data?.message || 'Failed to reject request. Please try again.');
-    }
+    catch (err) { setAllLinks(prev); setActionError(err.response?.data?.message || 'Failed to reject.'); }
   };
 
   const handleUnlink = async (linkId) => {
@@ -385,83 +375,77 @@ function ClientView() {
 
   return (
     <>
-      {/* Page header */}
-      <div>
-        <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">My Lawyers</h1>
-        <p className="text-on-surface-variant text-sm mt-1">Manage your connected lawyers and control which documents they can view</p>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f0eeff', letterSpacing: '-0.02em', margin: 0 }}>My Lawyers</h1>
+        <p style={{ fontSize: 13, color: 'rgba(240,238,255,0.45)', marginTop: 4 }}>Manage your connected lawyers and control which documents they can view.</p>
       </div>
 
-      {/* Stats */}
       {!loading && (
-        <div className="grid grid-cols-3 gap-4">
-          <StatCard icon="gavel"     label="Linked Lawyers"    value={accepted.length} color="text-primary"   />
-          <StatCard icon="schedule"  label="Pending Requests"  value={pending.length}  color="text-amber-400" />
-          <StatCard icon="handshake" label="Total"             value={allLinks.length} color="text-secondary" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
+          <StatCard Ic={I.Scale}  label="Linked Lawyers"   value={accepted.length} accent="#7c3aed" />
+          <StatCard Ic={I.Clock}  label="Pending Requests" value={pending.length}  accent="#fbbf24" />
+          <StatCard Ic={I.Hand}   label="Total"            value={allLinks.length} accent="#60a5fa" />
         </div>
       )}
 
       {error && <ErrorBanner msg={error} onRetry={load} />}
       {actionError && (
-        <div className="flex items-center gap-2 bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm">
-          <span className="material-symbols-outlined text-base flex-shrink-0">error</span>
-          {actionError}
-          <button onClick={() => setActionError('')} className="ml-auto text-error/60 hover:text-error transition-colors">
-            <span className="material-symbols-outlined text-base">close</span>
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, marginBottom: 16 }}>
+          <I.Alert size={15} />
+          <span style={{ flex: 1 }}>{actionError}</span>
+          <button onClick={() => setActionError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', display: 'flex', alignItems: 'center' }}><I.X size={14} /></button>
         </div>
       )}
 
-      {/* Tabs */}
       <TabBar
         active={tab}
         onChange={setTab}
         tabs={[
-          { key: 'lawyers',  label: 'My Lawyers',      count: accepted.length },
-          { key: 'requests', label: 'Pending Requests', count: pending.length  },
+          { key: 'lawyers',  label: 'My Lawyers',       count: accepted.length },
+          { key: 'requests', label: 'Pending Requests',  count: pending.length  },
         ]}
       />
 
-      {loading && <LoadingSkeleton />}
+      {loading && <Skeleton />}
 
-      {/* ── My Lawyers tab ── */}
-      {!loading && tab === 'lawyers' && (
-        <div className="space-y-4">
-          {accepted.length === 0
-            ? <EmptyState icon="gavel" title="No lawyers linked yet" sub="When a lawyer sends you a link request and you accept, they will appear here." />
-            : accepted.map(link => (
-                <ClientLawyerCard
-                  key={link._id}
-                  link={link}
-                  onManageDocs={() => setShareModal(link)}
-                  onUnlink={() => handleUnlink(link._id)}
-                  onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.lawyerId?.name || link.lawyerId?.email || 'Lawyer' })}
-                />
-              ))
-          }
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {!loading && tab === 'lawyers' && (
+          <motion.div key="lawyers" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {accepted.length === 0
+              ? <EmptyState Ic={I.Scale} title="No lawyers linked yet" sub="When a lawyer sends you a link request and you accept, they will appear here." />
+              : accepted.map(link => (
+                  <ClientLawyerCard
+                    key={link._id}
+                    link={link}
+                    onManageDocs={() => setShareModal(link)}
+                    onUnlink={() => handleUnlink(link._id)}
+                    onMessage={() => setMsgPanel({ linkId: link._id, otherName: link.lawyerId?.name || link.lawyerId?.email || 'Lawyer' })}
+                  />
+                ))
+            }
+          </motion.div>
+        )}
 
-      {/* ── Pending Requests tab ── */}
-      {!loading && tab === 'requests' && (
-        <div className="space-y-3">
-          {pending.length === 0
-            ? <EmptyState icon="schedule" title="No pending requests" sub="Lawyer link requests sent to your email will appear here." />
-            : pending.map(link => (
-                <RequestRow
-                  key={link._id}
-                  link={link}
-                  primaryLabel={link.lawyerId?.name || link.lawyerId?.email || 'Unknown Lawyer'}
-                  secondaryLabel={link.lawyerId?.email}
-                  onAccept={() => handleAccept(link._id)}
-                  onReject={() => handleReject(link._id)}
-                  showActions
-                />
-              ))
-          }
-        </div>
-      )}
+        {!loading && tab === 'requests' && (
+          <motion.div key="requests" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            {pending.length === 0
+              ? <EmptyState Ic={I.Clock} title="No pending requests" sub="Lawyer link requests sent to your email will appear here." />
+              : pending.map(link => (
+                  <RequestRow
+                    key={link._id}
+                    link={link}
+                    primaryLabel={link.lawyerId?.name || link.lawyerId?.email || 'Unknown Lawyer'}
+                    secondaryLabel={link.lawyerId?.email}
+                    onAccept={() => handleAccept(link._id)}
+                    onReject={() => handleReject(link._id)}
+                    showActions
+                  />
+                ))
+            }
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Document sharing modal */}
       {shareModal && (
         <DocShareModal
           link={shareModal}
@@ -480,327 +464,253 @@ function ClientView() {
   );
 }
 
-/* ── Shared sub-components ─────────────────────────────────────────── */
-
+/* ── Lawyer Client Card ── */
 function LawyerClientCard({ link, onUnlink, onViewDocs, onViewClient, onMessage }) {
   const client  = link.clientId || {};
   const initial = (client.name || link.clientEmail || '?').charAt(0).toUpperCase();
 
   return (
-    <div
+    <motion.div
+      whileHover={{ scale: 1.005 }}
       onClick={onViewClient}
-      className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/30 hover:bg-surface-container cursor-pointer transition-all group"
+      style={{ ...card, cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}
     >
-      <div className="flex items-start gap-5 flex-wrap sm:flex-nowrap">
-        {/* Avatar */}
-        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 ring-1 ring-primary/20 group-hover:ring-primary/40 transition-all">
-          <span className="text-lg font-bold text-primary font-headline">{initial}</span>
+      {/* Avatar */}
+      <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#7c3aed,#a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+        {initial}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 180 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
+          <span style={{ fontWeight: 700, color: '#f0eeff', fontSize: 14 }}>{client.name || link.clientEmail}</span>
+          <StatusBadge status={link.status} />
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <span className="font-bold text-on-surface font-headline text-base group-hover:text-primary transition-colors">
-              {client.name || link.clientEmail}
-            </span>
-            <StatusBadge status={link.status} />
-            {client.plan === 'pro' && (
-              <span className="text-[10px] font-bold text-primary/80 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">PRO</span>
-            )}
-          </div>
-          <div className="text-xs text-on-surface-variant">{client.email || link.clientEmail}</div>
-
-          {/* Stats row */}
-          <div className="flex items-center gap-5 mt-3 flex-wrap">
-            {[
-              { icon: 'description', label: `${link.stats?.totalDocuments ?? 0} total docs`  },
-              { icon: 'share',       label: `${link.stats?.sharedDocuments ?? 0} shared`      },
-              { icon: 'folder_open', label: `${link.stats?.totalCases ?? 0} cases`            },
-              { icon: 'schedule',    label: `Linked ${formatRelative(link.acceptedAt)}`       },
-            ].map(({ icon, label }) => (
-              <span key={label} className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                <span className="material-symbols-outlined text-sm text-primary">{icon}</span>
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Actions — stop propagation so buttons don't also trigger card navigation */}
-        <div className="flex flex-col gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-          <button
-            onClick={onViewClient}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">analytics</span>
-            View Documents
-          </button>
-          <button
-            onClick={onMessage}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 text-xs font-bold hover:bg-secondary/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">chat</span>
-            Message
-          </button>
-          <button
-            onClick={onUnlink}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">link_off</span>
-            Unlink
-          </button>
+        <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.4)', marginBottom: 8 }}>{client.email || link.clientEmail}</div>
+        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+          {[
+            { label: `${link.stats?.totalDocuments ?? 0} total docs` },
+            { label: `${link.stats?.sharedDocuments ?? 0} shared` },
+            { label: `${link.stats?.totalCases ?? 0} cases` },
+            { label: `Linked ${formatRelative(link.acceptedAt)}` },
+          ].map(s => (
+            <span key={s.label} style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)' }}>{s.label}</span>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onViewClient} style={btnPurple}>
+          <I.Eye size={13} /> View Docs
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onMessage} style={btnGhost}>
+          <I.MessageCircle size={13} /> Message
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onUnlink} style={btnDanger}>
+          <I.X size={13} /> Unlink
+        </motion.button>
+      </div>
+    </motion.div>
   );
 }
 
+/* ── Client Lawyer Card ── */
 function ClientLawyerCard({ link, onManageDocs, onUnlink, onMessage }) {
   const lawyer  = link.lawyerId || {};
   const initial = (lawyer.name || lawyer.email || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="bg-surface-container-low rounded-2xl border border-white/5 p-6 hover:border-primary/20 transition-colors">
-      <div className="flex items-start gap-5 flex-wrap sm:flex-nowrap">
-        {/* Avatar */}
-        <div className="w-12 h-12 rounded-xl bg-amber-400/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-lg font-bold text-amber-400 font-headline">{initial}</span>
+    <motion.div
+      whileHover={{ scale: 1.005 }}
+      style={{ ...card, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}
+    >
+      <div style={{ width: 46, height: 46, borderRadius: 13, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fbbf24', flexShrink: 0 }}>
+        {initial}
+      </div>
+
+      <div style={{ flex: 1, minWidth: 180 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 3 }}>
+          <span style={{ fontWeight: 700, color: '#f0eeff', fontSize: 14 }}>{lawyer.name || lawyer.email || 'Unknown Lawyer'}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>
+            <I.Scale size={10} /> Lawyer
+          </span>
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap mb-0.5">
-            <span className="font-bold text-on-surface font-headline text-base">{lawyer.name || lawyer.email || 'Unknown Lawyer'}</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/10 text-amber-400 border border-amber-400/20">
-              <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>gavel</span>
-              Lawyer
-            </span>
-          </div>
-          <div className="text-xs text-on-surface-variant">{lawyer.email}</div>
-
-          <div className="flex items-center gap-5 mt-3 flex-wrap">
-            <span className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-              <span className="material-symbols-outlined text-sm text-primary">share</span>
-              {link.sharedDocuments?.length ?? 0} docs shared
-            </span>
-            <span className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-              <span className="material-symbols-outlined text-sm">schedule</span>
-              Linked {formatRelative(link.acceptedAt)}
-            </span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-          <button
-            onClick={onManageDocs}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">tune</span>
-            Manage Docs
-          </button>
-          <button
-            onClick={onMessage}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-secondary/10 text-secondary border border-secondary/20 text-xs font-bold hover:bg-secondary/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">chat</span>
-            Message
-          </button>
-          <button
-            onClick={onUnlink}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">link_off</span>
-            Unlink
-          </button>
+        <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.4)', marginBottom: 8 }}>{lawyer.email}</div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <span style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)' }}>{link.sharedDocuments?.length ?? 0} docs shared</span>
+          <span style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)' }}>Linked {formatRelative(link.acceptedAt)}</span>
         </div>
       </div>
-    </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', flexShrink: 0 }}>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onManageDocs} style={btnPurple}>
+          <I.Filter size={13} /> Manage Docs
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onMessage} style={btnGhost}>
+          <I.MessageCircle size={13} /> Message
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.96 }} onClick={onUnlink} style={btnDanger}>
+          <I.X size={13} /> Unlink
+        </motion.button>
+      </div>
+    </motion.div>
   );
 }
 
+/* ── Request Row ── */
 function RequestRow({ link, primaryLabel, secondaryLabel, onAccept, onReject, showActions }) {
   const initial = (primaryLabel || '?').charAt(0).toUpperCase();
-  const [busy,  setBusy]  = useState(false);
-
+  const [busy, setBusy] = useState(false);
   const act = async (fn) => { setBusy(true); try { await fn(); } finally { setBusy(false); } };
 
   return (
-    <div className="bg-surface-container-low rounded-xl border border-white/5 p-5 flex items-start gap-4 hover:border-white/10 transition-colors">
-      <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
-        <span className="text-sm font-bold text-on-surface-variant font-headline">{initial}</span>
+    <motion.div
+      whileHover={{ scale: 1.003 }}
+      style={{ ...card, display: 'flex', alignItems: 'flex-start', gap: 14 }}
+    >
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'rgba(240,238,255,0.7)', flexShrink: 0 }}>
+        {initial}
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-on-surface text-sm">{primaryLabel}</span>
-          {secondaryLabel && <span className="text-xs text-on-surface-variant">{secondaryLabel}</span>}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 600, color: '#f0eeff', fontSize: 13 }}>{primaryLabel}</span>
+          {secondaryLabel && <span style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)' }}>{secondaryLabel}</span>}
           <StatusBadge status={link.status} />
         </div>
         {link.message && (
-          <p className="text-xs text-on-surface-variant mt-1.5 italic line-clamp-2">"{link.message}"</p>
+          <p style={{ fontSize: 12, color: 'rgba(240,238,255,0.45)', marginTop: 5, fontStyle: 'italic' }}>"{link.message}"</p>
         )}
-        <div className="text-[10px] text-on-surface-variant mt-1">{formatDate(link.createdAt)}</div>
+        <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.3)', marginTop: 5 }}>{formatDate(link.createdAt)}</div>
       </div>
 
       {showActions && link.status === 'pending' && (
-        <div className="flex gap-2 flex-shrink-0">
-          <button
-            onClick={() => act(onAccept)}
-            disabled={busy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary/20 transition-colors disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-sm">check</span>
-            Accept
-          </button>
-          <button
-            onClick={() => act(onReject)}
-            disabled={busy}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-error/10 text-error border border-error/20 text-xs font-bold hover:bg-error/20 transition-colors disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-sm">close</span>
-            Reject
-          </button>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <motion.button whileTap={{ scale: 0.96 }} onClick={() => act(onAccept)} disabled={busy} style={{ ...btnPurple, opacity: busy ? 0.6 : 1 }}>
+            <I.Check size={13} /> Accept
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.96 }} onClick={() => act(onReject)} disabled={busy} style={{ ...btnDanger, opacity: busy ? 0.6 : 1 }}>
+            <I.X size={13} /> Reject
+          </motion.button>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
+/* ── Send Request Form ── */
 function SendRequestForm({ email, setEmail, message, setMessage, sending, result, onSubmit }) {
   return (
-    <div className="bg-surface-container-low rounded-2xl border border-white/5 p-7">
-      <div className="mb-6">
-        <h3 className="text-base font-bold font-headline text-on-surface">Send Link Request</h3>
-        <p className="text-xs text-on-surface-variant mt-1">
-          Enter your client's registered email. They'll receive a notification to accept or reject.
-        </p>
+    <div style={card}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#f0eeff', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <I.UserPlus size={16} style={{ color: '#a78bfa' }} /> Send Link Request
+        </div>
+        <p style={{ fontSize: 12, color: 'rgba(240,238,255,0.4)' }}>Enter your client's registered email. They'll receive a notification to accept or reject.</p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Client Email *</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="client@example.com"
-            className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors placeholder-slate-600"
-          />
+      <form onSubmit={onSubmit}>
+        <div style={{ marginBottom: 14 }}>
+          <label style={lbl}>Client Email *</label>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="client@example.com" style={inp} />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Message (optional)</label>
+        <div style={{ marginBottom: 16 }}>
+          <label style={lbl}>Message (optional)</label>
           <textarea
             rows={3}
             value={message}
             onChange={e => setMessage(e.target.value)}
             placeholder="Introduce yourself or explain why you're connecting…"
-            className="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors resize-none placeholder-slate-600"
+            style={{ ...inp, resize: 'vertical', lineHeight: 1.6 }}
           />
         </div>
 
         {result && (
-          <div className={`flex items-start gap-2 text-sm px-3 py-2.5 rounded-xl border ${
-            result.ok
-              ? 'bg-primary/10 border-primary/20 text-primary'
-              : 'bg-error/10 border-error/20 text-error'
-          }`}>
-            <span className="material-symbols-outlined text-base flex-shrink-0">
-              {result.ok ? 'check_circle' : 'error'}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 9, marginBottom: 14, background: result.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${result.ok ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`, color: result.ok ? '#4ade80' : '#f87171', fontSize: 13 }}>
+            {result.ok ? <I.Check size={14} /> : <I.Alert size={14} />}
             {result.msg}
           </div>
         )}
 
-        <button
+        <motion.button
           type="submit"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           disabled={sending}
-          className="w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold text-sm hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,201,167,0.15)]"
+          style={{ ...btnPurple, width: '100%', justifyContent: 'center', padding: '11px', opacity: sending ? 0.7 : 1 }}
         >
           {sending
-            ? <><span className="material-symbols-outlined text-base animate-spin">progress_activity</span>Sending…</>
-            : <><span className="material-symbols-outlined text-base">send</span>Send Link Request</>
+            ? <><div style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'nyaya-spin 0.75s linear infinite' }} /> Sending…</>
+            : <><I.Send size={14} /> Send Link Request</>
           }
-        </button>
+        </motion.button>
       </form>
     </div>
   );
 }
 
-/* ── Lawyer: view client's shared docs (read-only) ─────────────────── */
-
+/* ── Lawyer: view client's shared docs ── */
 function LawyerDocsModal({ link, docs, loading, error, onClose }) {
   const client = link.clientId || {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="relative bg-[#0e1a2e] border border-white/10 rounded-2xl w-full max-w-xl shadow-2xl max-h-[80vh] flex flex-col"
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(6,4,18,0.75)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 18, width: '100%', maxWidth: 540, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid rgba(124,58,237,0.15)', flexShrink: 0 }}>
           <div>
-            <h2 className="text-base font-bold font-headline text-on-surface">Shared Documents</h2>
-            <p className="text-xs text-on-surface-variant mt-0.5">From {client.name || link.clientEmail}</p>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#f0eeff' }}>Shared Documents</div>
+            <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginTop: 2 }}>From {client.name || link.clientEmail}</div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-on-surface-variant transition-colors">
-            <span className="material-symbols-outlined text-base">close</span>
-          </button>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,238,255,0.6)' }}>
+            <I.X size={14} />
+          </motion.button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 22px' }}>
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <span className="material-symbols-outlined animate-spin text-3xl text-primary">progress_activity</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+              <div style={{ width: 28, height: 28, border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'nyaya-spin 0.75s linear infinite' }} />
             </div>
           )}
-          {error && <p className="text-error text-sm text-center py-8">{error}</p>}
+          {error && <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>{error}</p>}
           {!loading && !error && docs.length === 0 && (
-            <div className="text-center py-12 space-y-2">
-              <span className="material-symbols-outlined text-4xl text-on-surface-variant opacity-30">description</span>
-              <p className="text-sm text-on-surface-variant">No documents shared yet.</p>
-              <p className="text-xs text-on-surface-variant">The client hasn't shared any documents with you.</p>
-            </div>
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(240,238,255,0.35)', fontSize: 13 }}>No documents shared yet.</div>
           )}
           {!loading && docs.length > 0 && (
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {docs.map(doc => (
-                <div key={doc._id} className="flex items-center gap-3 p-3.5 rounded-xl bg-surface-container border border-white/5">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="material-symbols-outlined text-primary text-lg">description</span>
+                <div key={doc._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,58,237,0.12)' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <I.Doc size={16} style={{ color: '#a78bfa' }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-on-surface truncate">{doc.originalName}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-on-surface-variant">{doc.docType || 'Unknown type'}</span>
-                      {doc.healthScore !== undefined && (
-                        <span className={`text-xs font-bold ${doc.healthScore >= 70 ? 'text-primary' : doc.healthScore >= 40 ? 'text-amber-400' : 'text-error'}`}>
-                          {doc.healthScore}% health
-                        </span>
-                      )}
-                    </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#f0eeff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.originalName}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginTop: 2 }}>{doc.docType || 'Unknown type'}</div>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
-/* ── Client: manage document sharing with a lawyer ─────────────────── */
-
+/* ── Client: manage document sharing ── */
 function DocShareModal({ link, onClose }) {
-  const lawyer  = link.lawyerId || {};
+  const lawyer   = link.lawyerId || {};
   const [allDocs, setAllDocs] = useState([]);
   const [shared,  setShared]  = useState(new Set(link.sharedDocuments?.map(String) || []));
   const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(new Set()); // IDs currently being toggled
+  const [saving,  setSaving]  = useState(new Set());
   const [fetchErr, setFetchErr] = useState('');
 
   useEffect(() => {
@@ -814,16 +724,12 @@ function DocShareModal({ link, onClose }) {
     const id = String(docId);
     if (saving.has(id)) return;
     const wasShared = shared.has(id);
-
-    // Optimistic update
     setSaving(s => new Set(s).add(id));
     setShared(s => { const n = new Set(s); wasShared ? n.delete(id) : n.add(id); return n; });
-
     try {
       if (wasShared) await apiUnshare(link._id, docId);
       else           await apiShare(link._id, docId);
     } catch {
-      // Revert on failure
       setShared(s => { const n = new Set(s); wasShared ? n.add(id) : n.delete(id); return n; });
     } finally {
       setSaving(s => { const n = new Set(s); n.delete(id); return n; });
@@ -831,115 +737,85 @@ function DocShareModal({ link, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="relative bg-[#0e1a2e] border border-white/10 rounded-2xl w-full max-w-xl shadow-2xl max-h-[85vh] flex flex-col"
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(6,4,18,0.75)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ background: '#120d2e', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 18, width: '100%', maxWidth: 540, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid rgba(124,58,237,0.15)', flexShrink: 0 }}>
           <div>
-            <h2 className="text-base font-bold font-headline text-on-surface">Manage Shared Documents</h2>
-            <p className="text-xs text-on-surface-variant mt-0.5">
-              Sharing with {lawyer.name || lawyer.email} · <span className="text-primary font-semibold">{shared.size} doc{shared.size !== 1 ? 's' : ''} shared</span>
-            </p>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#f0eeff' }}>Manage Shared Documents</div>
+            <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginTop: 2 }}>
+              Sharing with {lawyer.name || lawyer.email} · <span style={{ color: '#c4b5fd', fontWeight: 600 }}>{shared.size} doc{shared.size !== 1 ? 's' : ''} shared</span>
+            </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-on-surface-variant transition-colors">
-            <span className="material-symbols-outlined text-base">close</span>
-          </button>
+          <motion.button whileTap={{ scale: 0.9 }} onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(240,238,255,0.6)' }}>
+            <I.X size={14} />
+          </motion.button>
         </div>
 
-        {/* Info banner */}
-        <div className="mx-6 mt-5 flex items-start gap-2.5 p-3 bg-primary/5 border border-primary/15 rounded-xl flex-shrink-0">
-          <span className="material-symbols-outlined text-primary text-base flex-shrink-0 mt-0.5">info</span>
-          <p className="text-xs text-on-surface-variant leading-relaxed">
-            Toggle each document to share or unshare with your lawyer. Changes are saved automatically — no submit needed.
-          </p>
+        <div style={{ margin: '14px 22px 0', padding: '10px 14px', borderRadius: 9, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'flex-start', gap: 8, flexShrink: 0 }}>
+          <I.Info size={14} style={{ color: '#a78bfa', marginTop: 1, flexShrink: 0 }} />
+          <p style={{ fontSize: 12, color: 'rgba(240,238,255,0.55)', lineHeight: 1.55, margin: 0 }}>Toggle each document to share or unshare. Changes are saved automatically.</p>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 22px' }}>
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <span className="material-symbols-outlined animate-spin text-3xl text-primary">progress_activity</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+              <div style={{ width: 28, height: 28, border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed', borderRadius: '50%', animation: 'nyaya-spin 0.75s linear infinite' }} />
             </div>
           )}
-          {fetchErr && <p className="text-error text-sm text-center py-8">{fetchErr}</p>}
+          {fetchErr && <p style={{ color: '#f87171', fontSize: 13, textAlign: 'center' }}>{fetchErr}</p>}
           {!loading && !fetchErr && allDocs.length === 0 && (
-            <div className="text-center py-12 space-y-2">
-              <span className="material-symbols-outlined text-4xl text-on-surface-variant opacity-30">description</span>
-              <p className="text-sm text-on-surface-variant">No documents uploaded yet.</p>
-            </div>
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(240,238,255,0.3)', fontSize: 13 }}>No documents uploaded yet.</div>
           )}
           {!loading && allDocs.length > 0 && (
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {allDocs.map(doc => {
                 const id       = String(doc._id);
                 const isShared = shared.has(id);
                 const isBusy   = saving.has(id);
                 return (
-                  <button
+                  <motion.button
                     key={id}
+                    whileTap={{ scale: 0.99 }}
                     onClick={() => toggle(doc._id)}
                     disabled={isBusy}
-                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left group ${
-                      isShared
-                        ? 'bg-primary/8 border-primary/25 hover:bg-primary/12'
-                        : 'bg-surface-container border-white/5 hover:border-white/15'
-                    } disabled:opacity-60`}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: isShared ? 'rgba(124,58,237,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isShared ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.06)'}`, cursor: 'pointer', textAlign: 'left', transition: 'all 150ms', opacity: isBusy ? 0.6 : 1 }}
                   >
                     {/* Checkbox */}
-                    <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
-                      isShared ? 'bg-primary border-primary' : 'bg-transparent border-outline-variant group-hover:border-primary/50'
-                    }`}>
-                      {isBusy
-                        ? <span className="material-symbols-outlined text-[11px] text-on-surface animate-spin">progress_activity</span>
-                        : isShared && <span className="material-symbols-outlined text-[11px] text-on-primary">check</span>
-                      }
+                    <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isShared ? '#7c3aed' : 'rgba(255,255,255,0.2)'}`, background: isShared ? '#7c3aed' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 150ms' }}>
+                      {isShared && !isBusy && <I.Check size={10} style={{ color: '#fff' }} />}
+                      {isBusy && <div style={{ width: 10, height: 10, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'nyaya-spin 0.75s linear infinite' }} />}
                     </div>
 
-                    {/* Doc icon */}
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isShared ? 'bg-primary/20' : 'bg-surface-container-high'}`}>
-                      <span className={`material-symbols-outlined text-lg ${isShared ? 'text-primary' : 'text-on-surface-variant'}`}>description</span>
+                    <div style={{ width: 34, height: 34, borderRadius: 9, background: isShared ? 'rgba(124,58,237,0.15)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <I.Doc size={16} style={{ color: isShared ? '#a78bfa' : 'rgba(240,238,255,0.3)' }} />
                     </div>
 
-                    {/* Doc info */}
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-semibold truncate ${isShared ? 'text-on-surface' : 'text-on-surface-variant'}`}>
-                        {doc.originalName}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-on-surface-variant">{doc.docType || 'Unknown type'}</span>
-                        {doc.healthScore !== undefined && (
-                          <span className={`text-xs font-bold ${doc.healthScore >= 70 ? 'text-primary' : doc.healthScore >= 40 ? 'text-amber-400' : 'text-error'}`}>
-                            {doc.healthScore}% health
-                          </span>
-                        )}
-                      </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: isShared ? '#f0eeff' : 'rgba(240,238,255,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.originalName}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.35)', marginTop: 1 }}>{doc.docType || 'Unknown type'}</div>
                     </div>
 
                     {isShared && (
-                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex-shrink-0">
-                        SHARED
-                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>SHARED</span>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/5 flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="w-full py-3 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold hover:bg-white/5 transition-colors"
-          >
+        <div style={{ padding: '14px 22px', borderTop: '1px solid rgba(124,58,237,0.12)', flexShrink: 0 }}>
+          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={onClose} style={{ ...btnGhost, width: '100%', justifyContent: 'center', padding: 11 }}>
             Done
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

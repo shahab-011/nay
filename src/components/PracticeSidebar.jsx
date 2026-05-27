@@ -277,6 +277,7 @@ function MobileBar({ onOpen }) {
     '/esign': 'E-Signatures', '/communications': 'Communications', '/manage-ai': 'AI Assistant',
     '/notifications': 'Notifications', '/accounting': 'Accounting',
     '/practice-profile': 'My Profile',
+    '/client-links': 'Client Links',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

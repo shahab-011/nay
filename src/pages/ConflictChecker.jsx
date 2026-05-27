@@ -4,11 +4,11 @@ import { I } from '../components/Icons';
 import { conflictsApi } from '../api/conflicts.api';
 
 /* ─── Constants ───────────────────────────────────────────────── */
-const RISK_COLOR  = { none: '#059669', low: '#D97706', medium: '#EA580C', high: '#DC2626' };
-const RISK_BG     = { none: '#ECFDF5', low: '#FFF7ED', medium: '#FFF4ED', high: '#FEE2E2' };
-const RISK_BORDER = { none: '#6EE7B7', low: '#FED7AA', medium: '#FDBA74', high: '#FCA5A5' };
-const SEV_COLOR   = { high: '#DC2626', medium: '#D97706', low: '#2563EB' };
-const SEV_BG      = { high: '#FEE2E2', medium: '#FEF3C7', low: '#DBEAFE' };
+const RISK_COLOR  = { none: '#22c55e', low: '#f59e0b', medium: '#f97316', high: '#ef4444' };
+const RISK_BG     = { none: 'rgba(34,197,94,0.15)', low: 'rgba(245,158,11,0.15)', medium: 'rgba(249,115,22,0.15)', high: 'rgba(239,68,68,0.15)' };
+const RISK_BORDER = { none: 'rgba(34,197,94,0.3)', low: 'rgba(245,158,11,0.3)', medium: 'rgba(249,115,22,0.3)', high: 'rgba(239,68,68,0.3)' };
+const SEV_COLOR   = { high: '#ef4444', medium: '#f59e0b', low: '#3b82f6' };
+const SEV_BG      = { high: 'rgba(239,68,68,0.15)', medium: 'rgba(245,158,11,0.15)', low: 'rgba(59,130,246,0.15)' };
 
 const TERM_TYPES = ['name', 'email', 'phone', 'company'];
 
@@ -46,16 +46,16 @@ function ConflictFlag({ detail }) {
 
 function ResultRow({ icon: Ic, iconBg, iconColor, title, sub, badge, badgeColor, badgeBg }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 10, border: '1.5px solid #E5E7EB', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, border: '1px solid rgba(124,58,237,0.18)', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
       <div style={{ width: 36, height: 36, borderRadius: 9, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <Ic size={16} style={{ color: iconColor }} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
-        {sub && <div style={{ fontSize: 12, color: '#6B7280', marginTop: 1 }}>{sub}</div>}
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+        {sub && <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)', marginTop: 1 }}>{sub}</div>}
       </div>
       {badge && (
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: badgeBg || '#F3F4F6', color: badgeColor || '#6B7280', whiteSpace: 'nowrap' }}>{badge}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: badgeBg || 'rgba(255,255,255,0.08)', color: badgeColor || 'rgba(240,238,255,0.5)', whiteSpace: 'nowrap' }}>{badge}</span>
       )}
     </div>
   );

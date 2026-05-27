@@ -557,3 +557,260 @@ main [style*="background:linear-gradient"] .text-white { color: #fff; }
 
 /* Legacy status-online */
 .status-online { background: var(--green); border-radius: 50%; border: 2px solid var(--surface); }
+
+/* ══════════════════════════════════════════════════════
+   Practice Management — Dark glass theme
+   Applied via className="pm-main" on the <main> element
+   in Layout.jsx for all practice management routes.
+   ══════════════════════════════════════════════════════ */
+.pm-main {
+  /* ── CSS variable overrides ─────────────────────────── */
+  --bg:             #0c0a1e;
+  --bg-tint:        #130f2e;
+  --surface:        rgba(255,255,255,0.05);
+  --elevated:       rgba(255,255,255,0.08);
+  --active:         rgba(124,58,237,0.14);
+  --border:         rgba(124,58,237,0.18);
+  --border-active:  rgba(124,58,237,0.38);
+  --ink:            #f0eeff;
+  --ink-soft:       rgba(240,238,255,0.85);
+  --text:           #f0eeff;
+  --text-secondary: rgba(240,238,255,0.55);
+  --text-muted:     rgba(240,238,255,0.35);
+  --purple:         #7c3aed;
+  --purple-hover:   #6d28d9;
+  --purple-soft:    rgba(124,58,237,0.14);
+  --purple-mist:    rgba(124,58,237,0.28);
+  --purple-glow:    rgba(124,58,237,0.22);
+  --purple-bg:      rgba(124,58,237,0.1);
+  --green:          #22c55e;
+  --green-bg:       rgba(34,197,94,0.14);
+  --amber:          #f59e0b;
+  --amber-bg:       rgba(245,158,11,0.14);
+  --red:            #ef4444;
+  --red-bg:         rgba(239,68,68,0.14);
+  --blue:           #3b82f6;
+  --blue-bg:        rgba(59,130,246,0.14);
+  --shadow-card:    0 4px 24px rgba(0,0,0,0.4);
+  --shadow-float:   0 12px 48px rgba(0,0,0,0.5);
+  --shadow-pill:    0 2px 8px rgba(0,0,0,0.3);
+  color: #f0eeff;
+}
+
+/* ── Scrollbar in dark mode ─────────────────────────── */
+.pm-main::-webkit-scrollbar-track { background: #0c0a1e; }
+.pm-main::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); }
+
+/* ── Override card/glass classes ────────────────────── */
+.pm-main .card,
+.pm-main .card-elev,
+.pm-main .card-flat,
+.pm-main .glass-card {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(124,58,237,0.18) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Modal overlay + box in dark PM ─────────────────── */
+.pm-main-overlay,
+.pm-modal-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.pm-modal-box {
+  background: #120d2e !important;
+  border: 1px solid rgba(124,58,237,0.28) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Btn hover in dark PM ────────────────────────────── */
+.pm-main .btn-secondary {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(124,58,237,0.2) !important;
+  color: #f0eeff !important;
+}
+.pm-main .btn-secondary:hover {
+  background: rgba(255,255,255,0.11) !important;
+  border-color: rgba(124,58,237,0.38) !important;
+}
+
+/* ── Skeleton in dark PM ─────────────────────────────── */
+.pm-main .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.06) 100%) !important;
+  background-size: 200% 100% !important;
+}
+
+/* ── Dropdown menus in dark PM ───────────────────────── */
+.pm-main select option {
+  background: #16113a;
+  color: #f0eeff;
+}
+
+/* ── hr dividers in dark PM ──────────────────────────── */
+.pm-main hr { border-color: rgba(124,58,237,0.12) !important; }
+
+/* ── Override Tailwind bg utilities ─────────────────── */
+.pm-main .bg-white,
+.pm-main .bg-gray-50,
+.pm-main .bg-gray-100 { background-color: rgba(255,255,255,0.05) !important; }
+.pm-main .bg-gray-200 { background-color: rgba(255,255,255,0.08) !important; }
+
+/* ── Override Tailwind text utilities ───────────────── */
+.pm-main .text-gray-900,
+.pm-main .text-gray-800 { color: #f0eeff !important; }
+.pm-main .text-gray-700,
+.pm-main .text-gray-600 { color: rgba(240,238,255,0.7) !important; }
+.pm-main .text-gray-500,
+.pm-main .text-gray-400 { color: rgba(240,238,255,0.45) !important; }
+.pm-main .text-gray-300 { color: rgba(240,238,255,0.3) !important; }
+
+/* ── Override Tailwind border utilities ─────────────── */
+.pm-main .border-gray-200,
+.pm-main .border-gray-300 { border-color: rgba(124,58,237,0.18) !important; }
+.pm-main .divide-gray-200 > * + * { border-color: rgba(124,58,237,0.12) !important; }
+
+/* ── Input / select dark overrides ──────────────────── */
+.pm-main .input,
+.pm-main .nyaya-input,
+.pm-main input[type="text"],
+.pm-main input[type="email"],
+.pm-main input[type="number"],
+.pm-main input[type="date"],
+.pm-main input[type="search"],
+.pm-main textarea,
+.pm-main select {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(124,58,237,0.22) !important;
+  color: #f0eeff !important;
+}
+.pm-main input::placeholder,
+.pm-main textarea::placeholder { color: rgba(240,238,255,0.3) !important; }
+.pm-main input:focus,
+.pm-main textarea:focus,
+.pm-main select:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15) !important;
+}
+
+/* ── Topbar/header in PM dark ────────────────────────── */
+.pm-main .topbar {
+  background: rgba(12,10,30,0.85) !important;
+  border-bottom-color: rgba(124,58,237,0.18) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Tab active state ────────────────────────────────── */
+.pm-main .tab.active { border-bottom-color: #7c3aed; color: #f0eeff; }
+.pm-main .tab { color: rgba(240,238,255,0.45); }
+.pm-main .tab:hover { color: rgba(240,238,255,0.8); }
+
+/* ── Pills in dark ───────────────────────────────────── */
+.pm-main .pill { background: rgba(255,255,255,0.06); border-color: rgba(124,58,237,0.2); color: #f0eeff; }
+
+/* ── Text-white keeps working inside pm-main ─────────── */
+.pm-main .text-white { color: #f0eeff !important; }
+.pm-main .text-white\/60 { color: rgba(240,238,255,0.6) !important; }
+.pm-main .text-white\/50 { color: rgba(240,238,255,0.5) !important; }
+.pm-main .text-white\/30 { color: rgba(240,238,255,0.3) !important; }
+
+/* ── Sidebar wrapper ─────────────────────────────────── */
+.pm-main .sidebar, .pm-main .glass-sidebar {
+  background: #0c0a1e !important;
+  border-right-color: rgba(124,58,237,0.18) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   Dark Studio — Document Studio dark theme overlay
+   Apply className="dark-studio" to the outermost wrapper
+   of Document Studio pages for a dark experience.
+   ══════════════════════════════════════════════════════ */
+.dark-studio {
+  --ink:            #f0f0ff;
+  --ink-soft:       rgba(240,240,255,0.8);
+  --text:           #f0f0ff;
+  --text-secondary: rgba(240,240,255,0.6);
+  --text-muted:     rgba(240,240,255,0.4);
+  --surface:        #0e1033;
+  --elevated:       rgba(255,255,255,0.06);
+  --active:         rgba(99,102,241,0.14);
+  --border:         rgba(255,255,255,0.08);
+  --border-active:  rgba(99,102,241,0.4);
+  --bg:             #07091f;
+  --shadow-card:    0 4px 24px rgba(0,0,0,0.4);
+  --shadow-float:   0 12px 48px rgba(0,0,0,0.5);
+  --purple:         #6366f1;
+  --purple-hover:   #4f46e5;
+  --purple-soft:    rgba(99,102,241,0.12);
+  --purple-mist:    rgba(99,102,241,0.2);
+  --purple-glow:    rgba(99,102,241,0.18);
+  --purple-bg:      rgba(99,102,241,0.1);
+}
+
+/* ── Hardcoded Tailwind color overrides ─────────────────── */
+.dark-studio .text-on-surface          { color: #f0f0ff !important; }
+.dark-studio .text-on-surface-variant  { color: rgba(240,240,255,0.5) !important; }
+.dark-studio .text-on-surface-muted    { color: rgba(240,240,255,0.35) !important; }
+.dark-studio .text-on-background       { color: #f0f0ff !important; }
+.dark-studio .text-ink                 { color: #f0f0ff !important; }
+.dark-studio .text-ink-soft            { color: rgba(240,240,255,0.8) !important; }
+.dark-studio .bg-surface               { background-color: #0e1033 !important; }
+.dark-studio .bg-background            { background-color: #07091f !important; }
+.dark-studio .bg-active-bg             { background-color: rgba(99,102,241,0.1) !important; }
+
+/* ── Undo main .text-white overrides inside dark-studio ─── */
+.dark-studio .text-white               { color: #fff !important; }
+.dark-studio .text-white\/30           { color: rgba(255,255,255,0.3) !important; }
+.dark-studio .text-white\/50           { color: rgba(255,255,255,0.5) !important; }
+.dark-studio .text-white\/60           { color: rgba(255,255,255,0.6) !important; }
+.dark-studio .text-white\/80           { color: rgba(255,255,255,0.8) !important; }
+
+/* ── Gradient text in dark studio uses indigo/cyan ─────── */
+.dark-studio .gradient-text {
+  background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* ── Card / Input adapt via CSS variables ──────────────── */
+.dark-studio .card,
+.dark-studio .card-elev,
+.dark-studio .card-flat,
+.dark-studio .glass-card {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+
+.dark-studio .input,
+.dark-studio .nyaya-input {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* ── Tab active state in dark ───────────────────────────── */
+.dark-studio .tab.active { border-bottom-color: #6366f1; }
+
+/* ── Pill adapts via CSS variables ─────────────────────── */
+.dark-studio .pill { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+
+/* ── Topbar / sticky bars ───────────────────────────────── */
+.dark-studio .topbar {
+  background: #0e1033;
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+
+/* ── Dividers ───────────────────────────────────────────── */
+.dark-studio .divider { background: rgba(255,255,255,0.08); }
+
+/* ── Animate-pulse stays visible on dark ───────────────── */
+.dark-studio .animate-pulse { opacity: 0.8; }

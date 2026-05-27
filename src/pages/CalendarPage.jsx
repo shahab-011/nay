@@ -27,16 +27,16 @@ const EVENT_TYPES = [
 ];
 
 const TYPE_COLORS = {
-  court_date:      { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B' },
-  hearing:         { bg: '#FCE7F3', border: '#EC4899', text: '#9D174D' },
-  deposition:      { bg: '#E0E7FF', border: '#6366F1', text: '#3730A3' },
-  client_meeting:  { bg: '#DBEAFE', border: '#3B82F6', text: '#1E40AF' },
-  filing_deadline: { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E' },
-  conference_call: { bg: '#D1FAE5', border: '#10B981', text: '#065F46' },
-  appointment:     { bg: '#F5F3FF', border: '#7C3AED', text: '#4C1D95' },
-  reminder:        { bg: '#F0FDF4', border: '#22C55E', text: '#166534' },
-  sol:             { bg: '#FFF7ED', border: '#F97316', text: '#9A3412' },
-  other:           { bg: '#F3F4F6', border: '#6B7280', text: '#374151' },
+  court_date:      { bg: 'rgba(239,68,68,0.18)',   border: '#ef4444', text: '#f87171' },
+  hearing:         { bg: 'rgba(236,72,153,0.18)',   border: '#ec4899', text: '#f9a8d4' },
+  deposition:      { bg: 'rgba(99,102,241,0.18)',   border: '#818cf8', text: '#a5b4fc' },
+  client_meeting:  { bg: 'rgba(59,130,246,0.18)',   border: '#3b82f6', text: '#60a5fa' },
+  filing_deadline: { bg: 'rgba(245,158,11,0.18)',   border: '#f59e0b', text: '#fbbf24' },
+  conference_call: { bg: 'rgba(16,185,129,0.18)',   border: '#10b981', text: '#34d399' },
+  appointment:     { bg: 'rgba(124,58,237,0.18)',   border: '#7c3aed', text: '#c4b5fd' },
+  reminder:        { bg: 'rgba(34,197,94,0.18)',    border: '#22c55e', text: '#4ade80' },
+  sol:             { bg: 'rgba(249,115,22,0.18)',   border: '#f97316', text: '#fb923c' },
+  other:           { bg: 'rgba(240,238,255,0.08)',  border: 'rgba(240,238,255,0.2)', text: 'rgba(240,238,255,0.5)' },
 };
 
 const typeLabel = v => EVENT_TYPES.find(t => t.value === v)?.label || v;

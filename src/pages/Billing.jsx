@@ -15,12 +15,12 @@ function todayStr()  { return new Date().toISOString().slice(0, 10); }
 function addDays(n)  { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
 
 const STATUS_META = {
-  draft:           { label: 'Draft',          bg: '#F3F4F6', color: '#6B7280' },
-  sent:            { label: 'Sent',           bg: '#DBEAFE', color: '#1E40AF' },
-  partially_paid:  { label: 'Partial',        bg: '#FEF3C7', color: '#92400E' },
-  paid:            { label: 'Paid',           bg: '#D1FAE5', color: '#065F46' },
-  overdue:         { label: 'Overdue',        bg: '#FEE2E2', color: '#991B1B' },
-  void:            { label: 'Void',           bg: '#F3F4F6', color: '#9CA3AF' },
+  draft:           { label: 'Draft',    bg: 'rgba(240,238,255,0.08)', color: 'rgba(240,238,255,0.45)' },
+  sent:            { label: 'Sent',     bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6'                },
+  partially_paid:  { label: 'Partial',  bg: 'rgba(245,158,11,0.15)',  color: '#f59e0b'                },
+  paid:            { label: 'Paid',     bg: 'rgba(34,197,94,0.15)',   color: '#22c55e'                },
+  overdue:         { label: 'Overdue',  bg: 'rgba(239,68,68,0.15)',   color: '#ef4444'                },
+  void:            { label: 'Void',     bg: 'rgba(240,238,255,0.05)', color: 'rgba(240,238,255,0.3)'  },
 };
 
 function StatusBadge({ status }) {
@@ -53,7 +53,7 @@ function ModalWrap({ onClose, title, subtitle, children, wide }) {
     >
       <motion.div
         initial={{ scale: 0.96, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
-        style={{ background: 'var(--surface)', borderRadius: 20, width: '100%', maxWidth: wide ? 720 : 520, boxShadow: 'var(--shadow-float)', marginBottom: 24, overflow: 'hidden' }}
+        style={{ background: '#120d2e', borderRadius: 20, width: '100%', maxWidth: wide ? 720 : 520, boxShadow: '0 24px 64px rgba(0,0,0,0.6)', border: '1px solid rgba(124,58,237,0.28)', marginBottom: 24, overflow: 'hidden' }}
       >
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>

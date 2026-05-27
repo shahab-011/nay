@@ -124,11 +124,11 @@ function ContactModal({ contact, onClose, onSave }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(11,11,20,0.45)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.25, ease }}
-        style={{ width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto', background: 'var(--surface)', borderRadius: 24, boxShadow: '0 32px 80px rgba(11,11,20,0.18)', border: '1px solid var(--border)' }}>
+        style={{ width: '100%', maxWidth: 580, maxHeight: '90vh', overflowY: 'auto', background: '#120d2e', borderRadius: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.6)', border: '1px solid rgba(124,58,237,0.28)' }}>
         <div style={{ padding: '24px 28px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="h-title" style={{ fontSize: 22 }}>{contact ? 'Edit Contact' : 'New Contact'}</div>
           <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--active)', display: 'grid', placeItems: 'center', color: 'var(--text-secondary)' }}><I.X size={16} /></button>
@@ -220,11 +220,11 @@ function MergeModal({ primary, allContacts, onClose, onMerge }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(11,11,20,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0 }} transition={{ duration: 0.2, ease }}
-        style={{ width: '100%', maxWidth: 480, background: 'var(--surface)', borderRadius: 20, border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(11,11,20,0.18)', padding: '28px 28px 24px' }}>
+        style={{ width: '100%', maxWidth: 480, background: '#120d2e', borderRadius: 20, border: '1px solid rgba(124,58,237,0.28)', boxShadow: '0 24px 64px rgba(0,0,0,0.6)', padding: '28px 28px 24px' }}>
         <div className="h-title" style={{ fontSize: 20, marginBottom: 6 }}>Merge Contacts</div>
         <p className="t-secondary" style={{ fontSize: 13, marginBottom: 20 }}>
           <strong>{fullName(primary)}</strong> will keep all data. The duplicate will be soft-deleted and all linked records re-assigned.
@@ -686,7 +686,11 @@ export default function Contacts() {
 
   /* List view */
   return (
-    <div style={{ padding: '80px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position:'fixed', top:'8%', right:'4%', width:420, height:420, borderRadius:'50%', background:'radial-gradient(circle, rgba(124,58,237,0.09) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+      <div style={{ position:'fixed', bottom:'15%', left:'2%', width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle, rgba(196,181,253,0.06) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+      <div style={{ position: 'relative', zIndex: 1, padding: '28px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
       <input ref={importRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
 
       {/* Header */}
@@ -788,6 +792,7 @@ export default function Contacts() {
           />
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

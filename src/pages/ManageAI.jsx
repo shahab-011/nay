@@ -28,8 +28,8 @@ function Tab({ label, icon: Ic, active, onClick }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px',
         borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600,
-        background: active ? '#7C3AED' : 'transparent',
-        color: active ? '#fff' : '#6B7280',
+        background: active ? '#7c3aed' : 'rgba(255,255,255,0.06)',
+        color: active ? '#fff' : 'rgba(240,238,255,0.5)',
         transition: 'all 0.15s',
       }}
     >
@@ -41,8 +41,8 @@ function Tab({ label, icon: Ic, active, onClick }) {
 function Card({ children, style }) {
   return (
     <div style={{
-      background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.05)', ...style,
+      background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)', ...style,
     }}>
       {children}
     </div>

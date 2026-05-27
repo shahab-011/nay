@@ -7,18 +7,18 @@ import { timeApi }     from '../api/timeTracking.api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const STATUSES = [
-  { value: 'to_do',       label: 'To Do',       color: '#6B7280', bg: '#F3F4F6' },
-  { value: 'in_progress', label: 'In Progress',  color: '#3B82F6', bg: '#DBEAFE' },
-  { value: 'in_review',   label: 'In Review',    color: '#8B5CF6', bg: '#EDE9FE' },
-  { value: 'blocked',     label: 'Blocked',      color: '#EF4444', bg: '#FEE2E2' },
-  { value: 'completed',   label: 'Completed',    color: '#10B981', bg: '#D1FAE5' },
+  { value: 'to_do',       label: 'To Do',       color: 'rgba(240,238,255,0.5)', bg: 'rgba(240,238,255,0.08)' },
+  { value: 'in_progress', label: 'In Progress',  color: '#3b82f6',              bg: 'rgba(59,130,246,0.15)'  },
+  { value: 'in_review',   label: 'In Review',    color: '#c4b5fd',              bg: 'rgba(124,58,237,0.15)'  },
+  { value: 'blocked',     label: 'Blocked',      color: '#ef4444',              bg: 'rgba(239,68,68,0.15)'   },
+  { value: 'completed',   label: 'Completed',    color: '#22c55e',              bg: 'rgba(34,197,94,0.15)'   },
 ];
 
 const PRIORITIES = [
-  { value: 'urgent', label: 'Urgent', color: '#EF4444', bg: '#FEE2E2' },
-  { value: 'high',   label: 'High',   color: '#F97316', bg: '#FFEDD5' },
-  { value: 'medium', label: 'Medium', color: '#F59E0B', bg: '#FEF3C7' },
-  { value: 'low',    label: 'Low',    color: '#6B7280', bg: '#F3F4F6' },
+  { value: 'urgent', label: 'Urgent', color: '#ef4444', bg: 'rgba(239,68,68,0.15)'   },
+  { value: 'high',   label: 'High',   color: '#f97316', bg: 'rgba(249,115,22,0.15)'  },
+  { value: 'medium', label: 'Medium', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)'  },
+  { value: 'low',    label: 'Low',    color: 'rgba(240,238,255,0.4)', bg: 'rgba(240,238,255,0.07)' },
 ];
 
 const ACTIVITY_TYPES = [

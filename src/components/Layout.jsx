@@ -115,12 +115,12 @@ export default function Layout({ children }) {
   // 3. Practice Management — Clio-style PracticeSidebar, no main sidebar
   if (isPracticePath(path)) {
     return (
-      <div style={{ minHeight: '100vh', background: '#F8F9FC' }}>
+      <div style={{ minHeight: '100vh', background: '#0c0a1e' }}>
         <PracticeSidebar />
         {/* desktop: offset by sidebar width; mobile: offset by top bar */}
         <main
-          style={{ background: '#F8F9FC', minHeight: '100vh' }}
-          className="md:ml-[236px] pt-14 md:pt-0"
+          className="pm-main md:ml-[240px] pt-14 md:pt-0"
+          style={{ minHeight: '100vh', background: '#0c0a1e' }}
         >
           <PageContent>{children}</PageContent>
         </main>
@@ -132,7 +132,7 @@ export default function Layout({ children }) {
   return (
     <MobileMenuProvider>
       <Sidebar />
-      <main className="md:ml-[236px] min-h-screen" style={{ background: 'var(--bg)' }}>
+      <main className="md:ml-[236px] min-h-screen" style={{ background: '#07091f' }}>
         <PrivacyBanner />
         <PageContent>{children}</PageContent>
       </main>

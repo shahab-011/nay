@@ -5,10 +5,10 @@ import { firmApi } from '../api/firm.api';
 import { CURRENCIES, setStoredCurrency } from '../utils/currency';
 
 /* ─── Shared styles ─────────────────────────────────────────────── */
-const lbl = { display:'block', fontSize:12, fontWeight:600, color:'#374151', marginBottom:5 };
-const inp = { width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid #E5E7EB', fontSize:13, color:'#111827', background:'#fff', outline:'none', boxSizing:'border-box' };
-const btnPurple = { display:'flex', alignItems:'center', gap:6, padding:'9px 20px', borderRadius:9, background:'#7C3AED', color:'#fff', border:'none', cursor:'pointer', fontSize:13, fontWeight:700 };
-const btnGhost  = { padding:'9px 18px', borderRadius:9, background:'#F3F4F6', color:'#374151', border:'none', cursor:'pointer', fontSize:13, fontWeight:600 };
+const lbl = { display:'block', fontSize:12, fontWeight:600, color:'rgba(240,238,255,0.5)', marginBottom:5, textTransform:'uppercase', letterSpacing:'0.06em' };
+const inp = { width:'100%', padding:'9px 12px', borderRadius:9, border:'1px solid rgba(124,58,237,0.22)', fontSize:13, color:'#f0eeff', background:'rgba(255,255,255,0.07)', outline:'none', boxSizing:'border-box' };
+const btnPurple = { display:'flex', alignItems:'center', gap:6, padding:'9px 20px', borderRadius:9, background:'linear-gradient(135deg,#7c3aed,#5b21b6)', color:'#fff', border:'none', cursor:'pointer', fontSize:13, fontWeight:700, boxShadow:'0 4px 14px rgba(124,58,237,0.35)' };
+const btnGhost  = { padding:'9px 18px', borderRadius:9, background:'rgba(255,255,255,0.07)', color:'#f0eeff', border:'1px solid rgba(124,58,237,0.2)', cursor:'pointer', fontSize:13, fontWeight:600 };
 
 const ROLES = ['owner','admin','attorney','paralegal','staff'];
 const ROLE_COLOR = { owner:'#111827', admin:'#7C3AED', attorney:'#3B82F6', paralegal:'#10B981', staff:'#9CA3AF', lawyer:'#3B82F6', client:'#F59E0B', viewer:'#9CA3AF' };
@@ -23,8 +23,8 @@ function SaveButton({ onClick, saving, saved }) {
 
 function Toggle({ value, onChange }) {
   return (
-    <button onClick={() => onChange(!value)} style={{ width:44, height:24, borderRadius:12, border:'none', cursor:'pointer', background:value?'#7C3AED':'#E5E7EB', position:'relative', flexShrink:0, transition:'background 200ms' }}>
-      <div style={{ position:'absolute', top:3, left:value?23:3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left 200ms', boxShadow:'0 1px 4px rgba(0,0,0,0.2)' }} />
+    <button onClick={() => onChange(!value)} style={{ width:44, height:24, borderRadius:12, border:'none', cursor:'pointer', background:value?'linear-gradient(135deg,#7c3aed,#5b21b6)':'rgba(255,255,255,0.1)', position:'relative', flexShrink:0, transition:'background 200ms' }}>
+      <div style={{ position:'absolute', top:3, left:value?23:3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left 200ms', boxShadow:'0 1px 4px rgba(0,0,0,0.3)' }} />
     </button>
   );
 }
@@ -116,8 +116,8 @@ function TeamMembers() {
 
       <AnimatePresence>
         {showInvite && (
-          <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}} style={{ background:'#F5F3FF', borderRadius:14, border:'1.5px solid #DDD6FE', padding:20, marginBottom:20, overflow:'hidden' }}>
-            <div style={{ fontSize:14, fontWeight:700, color:'#6D28D9', marginBottom:14 }}>Invite New Team Member</div>
+          <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}} style={{ background:'rgba(124,58,237,0.1)', borderRadius:14, border:'1px solid rgba(124,58,237,0.28)', padding:20, marginBottom:20, overflow:'hidden', backdropFilter:'blur(12px)' }}>
+            <div style={{ fontSize:14, fontWeight:700, color:'#c4b5fd', marginBottom:14 }}>Invite New Team Member</div>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 140px 120px', gap:12, marginBottom:14 }}>
               {[['name','Full Name','text'],['email','Email Address','email']].map(([k,pl,type])=>(
                 <div key={k}>
@@ -144,45 +144,45 @@ function TeamMembers() {
         )}
       </AnimatePresence>
 
-      <div style={{ background:'#fff', borderRadius:14, border:'1.5px solid #E5E7EB', overflow:'hidden' }}>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, border:'1px solid rgba(124,58,237,0.18)', overflow:'hidden', backdropFilter:'blur(12px)' }}>
         {loading ? (
-          <div style={{ textAlign:'center', padding:40, color:'#9CA3AF', fontSize:14 }}>Loading team…</div>
+          <div style={{ textAlign:'center', padding:40, color:'rgba(240,238,255,0.4)', fontSize:14 }}>Loading team…</div>
         ) : team.length === 0 ? (
-          <div style={{ textAlign:'center', padding:40, color:'#9CA3AF', fontSize:14 }}>No team members yet.</div>
+          <div style={{ textAlign:'center', padding:40, color:'rgba(240,238,255,0.4)', fontSize:14 }}>No team members yet.</div>
         ) : (
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead>
-              <tr style={{ background:'#F9FAFB', borderBottom:'1px solid #E5E7EB' }}>
+              <tr style={{ background:'rgba(255,255,255,0.03)', borderBottom:'1px solid rgba(124,58,237,0.18)' }}>
                 {['Member','Email','Role','Rate','Status','Actions'].map(h=>(
-                  <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</th>
+                  <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'rgba(240,238,255,0.45)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {team.map((m,i)=>(
-                <tr key={m._id} style={{ borderBottom:i<team.length-1?'1px solid #F3F4F6':'none' }}>
+                <tr key={m._id} style={{ borderBottom:i<team.length-1?'1px solid rgba(124,58,237,0.1)':'none' }}>
                   <td style={{ padding:'12px 14px' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                      <div style={{ width:32,height:32,borderRadius:10,background:(ROLE_COLOR[m.role]||'#9CA3AF')+'20',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:ROLE_COLOR[m.role]||'#9CA3AF' }}>
+                      <div style={{ width:32,height:32,borderRadius:10,background:(ROLE_COLOR[m.role]||'#9CA3AF')+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,color:ROLE_COLOR[m.role]||'#9CA3AF' }}>
                         {m.initials||(m.name||'?')[0]}
                       </div>
-                      <span style={{ fontSize:13, fontWeight:600, color:'#111827' }}>{m.name}</span>
+                      <span style={{ fontSize:13, fontWeight:600, color:'#f0eeff' }}>{m.name}</span>
                     </div>
                   </td>
-                  <td style={{ padding:'12px 14px', fontSize:13, color:'#6B7280' }}>{m.email}</td>
+                  <td style={{ padding:'12px 14px', fontSize:13, color:'rgba(240,238,255,0.5)' }}>{m.email}</td>
                   <td style={{ padding:'12px 14px' }}>
-                    <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20, background:(ROLE_COLOR[m.role]||'#9CA3AF')+'18', color:ROLE_COLOR[m.role]||'#9CA3AF', textTransform:'capitalize' }}>{m.role}</span>
+                    <span style={{ fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20, background:(ROLE_COLOR[m.role]||'#9CA3AF')+'22', color:ROLE_COLOR[m.role]||'#9CA3AF', textTransform:'capitalize' }}>{m.role}</span>
                   </td>
-                  <td style={{ padding:'12px 14px', fontSize:12, color:'#374151' }}>{m.billingRate?`$${m.billingRate}/hr`:'—'}</td>
+                  <td style={{ padding:'12px 14px', fontSize:12, color:'rgba(240,238,255,0.55)' }}>{m.billingRate?`$${m.billingRate}/hr`:'—'}</td>
                   <td style={{ padding:'12px 14px' }}>
-                    <span style={{ fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:m.status==='active'?'#ECFDF5':m.status==='invited'?'#FFF7ED':'#F3F4F6',color:m.status==='active'?'#059669':m.status==='invited'?'#D97706':'#6B7280' }}>{m.status}</span>
+                    <span style={{ fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,background:m.status==='active'?'rgba(34,197,94,0.15)':m.status==='invited'?'rgba(245,158,11,0.15)':'rgba(255,255,255,0.07)',color:m.status==='active'?'#4ade80':m.status==='invited'?'#fbbf24':'rgba(240,238,255,0.4)' }}>{m.status}</span>
                   </td>
                   <td style={{ padding:'12px 14px' }}>
                     <div style={{ display:'flex', gap:6 }}>
-                      <button onClick={()=>toggleStatus(m._id)} style={{ padding:'5px 10px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#fff',color:'#374151',cursor:'pointer',fontSize:11,fontWeight:600 }}>
+                      <button onClick={()=>toggleStatus(m._id)} style={{ padding:'5px 10px',borderRadius:7,border:'1px solid rgba(124,58,237,0.22)',background:'rgba(255,255,255,0.07)',color:'rgba(240,238,255,0.7)',cursor:'pointer',fontSize:11,fontWeight:600 }}>
                         {m.status==='active'?'Deactivate':'Activate'}
                       </button>
-                      <button onClick={()=>removeMember(m._id)} style={{ padding:'5px 9px',borderRadius:7,border:'1.5px solid #FECDD3',background:'#FFF1F2',color:'#DC2626',cursor:'pointer',fontSize:11 }}>
+                      <button onClick={()=>removeMember(m._id)} style={{ padding:'5px 9px',borderRadius:7,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.12)',color:'#f87171',cursor:'pointer',fontSize:11 }}>
                         <I.X size={12}/>
                       </button>
                     </div>
@@ -256,27 +256,27 @@ function BillingConfig({ billing, setBilling }) {
           <input value={billing.trustAccountBank||''} onChange={e=>set('trustAccountBank',e.target.value)} style={inp} />
         </div>
       </div>
-      <div style={{ background:'#F9FAFB', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'16px 18px', marginBottom:20 }}>
-        <div style={{ fontSize:12, fontWeight:800, color:'#374151', marginBottom:12 }}>Invoice Display Options</div>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, border:'1px solid rgba(124,58,237,0.18)', padding:'16px 18px', marginBottom:20, backdropFilter:'blur(8px)' }}>
+        <div style={{ fontSize:12, fontWeight:800, color:'rgba(240,238,255,0.6)', marginBottom:12, textTransform:'uppercase', letterSpacing:'0.06em' }}>Invoice Display Options</div>
         {[
           ['showRatesOnInvoice','Show hourly rates on invoice'],
           ['showTimekeeperNames','Show timekeeper names on invoice'],
           ['showEntryDates','Show individual entry dates on invoice'],
           ['allowPartialPayment','Allow partial payments'],
         ].map(([k,label])=>(
-          <div key={k} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #F3F4F6' }}>
-            <span style={{ fontSize:13, color:'#374151' }}>{label}</span>
+          <div key={k} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(124,58,237,0.1)' }}>
+            <span style={{ fontSize:13, color:'rgba(240,238,255,0.7)' }}>{label}</span>
             <Toggle value={billing[k]!==false} onChange={v=>set(k,v)} />
           </div>
         ))}
       </div>
 
       {/* Time Rounding */}
-      <div style={{ background:'#F9FAFB', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'16px 18px', marginBottom:20 }}>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, border:'1px solid rgba(124,58,237,0.18)', padding:'16px 18px', marginBottom:20, backdropFilter:'blur(8px)' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
           <div>
-            <div style={{ fontSize:12, fontWeight:800, color:'#374151' }}>Time Rounding</div>
-            <div style={{ fontSize:11, color:'#9CA3AF', marginTop:2 }}>Round time entries up to the nearest increment when saving</div>
+            <div style={{ fontSize:12, fontWeight:800, color:'rgba(240,238,255,0.6)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Time Rounding</div>
+            <div style={{ fontSize:11, color:'rgba(240,238,255,0.35)', marginTop:2 }}>Round time entries up to the nearest increment when saving</div>
           </div>
           <Toggle value={!!billing.timeRounding?.enabled} onChange={v=>set('timeRounding',{...billing.timeRounding,enabled:v})} />
         </div>
@@ -286,10 +286,10 @@ function BillingConfig({ billing, setBilling }) {
             <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:6 }}>
               {[1,6,10,15,30].map(n=>(
                 <button key={n} onClick={()=>set('timeRounding',{...billing.timeRounding,roundTo:n})}
-                  style={{ padding:'6px 14px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', border:'1.5px solid', transition:'all 150ms',
-                    background: billing.timeRounding?.roundTo===n ? '#7C3AED' : '#fff',
-                    borderColor: billing.timeRounding?.roundTo===n ? '#7C3AED' : '#E5E7EB',
-                    color: billing.timeRounding?.roundTo===n ? '#fff' : '#374151',
+                  style={{ padding:'6px 14px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', border:'1px solid', transition:'all 150ms',
+                    background: billing.timeRounding?.roundTo===n ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'rgba(255,255,255,0.07)',
+                    borderColor: billing.timeRounding?.roundTo===n ? '#7c3aed' : 'rgba(124,58,237,0.22)',
+                    color: billing.timeRounding?.roundTo===n ? '#fff' : 'rgba(240,238,255,0.6)',
                   }}>
                   {n === 1 ? 'None (1 min)' : `${n} min`}
                 </button>
@@ -300,16 +300,16 @@ function BillingConfig({ billing, setBilling }) {
       </div>
 
       {/* Invoice Payment Reminders */}
-      <div style={{ background:'#F9FAFB', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'16px 18px', marginBottom:20 }}>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, border:'1px solid rgba(124,58,237,0.18)', padding:'16px 18px', marginBottom:20, backdropFilter:'blur(8px)' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
           <div>
-            <div style={{ fontSize:12, fontWeight:800, color:'#374151' }}>Automatic Invoice Reminders</div>
-            <div style={{ fontSize:11, color:'#9CA3AF', marginTop:2 }}>Automatically email clients about unpaid invoices via the daily 08:00 cron job</div>
+            <div style={{ fontSize:12, fontWeight:800, color:'rgba(240,238,255,0.6)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Automatic Invoice Reminders</div>
+            <div style={{ fontSize:11, color:'rgba(240,238,255,0.35)', marginTop:2 }}>Automatically email clients about unpaid invoices via the daily 08:00 cron job</div>
           </div>
           <Toggle value={!!billing.invoiceReminders?.enabled} onChange={v=>set('invoiceReminders',{...billing.invoiceReminders,enabled:v})} />
         </div>
         {billing.invoiceReminders?.enabled && (
-          <div style={{ marginTop:8, padding:'10px 14px', borderRadius:8, background:'#EDE9FE', border:'1px solid #DDD6FE', fontSize:12, color:'#6D28D9' }}>
+          <div style={{ marginTop:8, padding:'10px 14px', borderRadius:8, background:'rgba(124,58,237,0.15)', border:'1px solid rgba(124,58,237,0.28)', fontSize:12, color:'#c4b5fd' }}>
             Reminders are sent automatically every 7 days to clients with outstanding invoices (sent, partially paid, or overdue).
           </div>
         )}
@@ -350,12 +350,12 @@ function Notifications({ notifs, setNotifs }) {
 
   return (
     <div style={{ maxWidth:640 }}>
-      <div style={{ background:'#fff', borderRadius:14, border:'1.5px solid #E5E7EB', overflow:'hidden', marginBottom:16 }}>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, border:'1px solid rgba(124,58,237,0.18)', overflow:'hidden', marginBottom:16, backdropFilter:'blur(12px)' }}>
         {items.map(([key,title,desc],i)=>(
-          <div key={key} style={{ display:'flex', alignItems:'center', gap:16, padding:'15px 20px', borderBottom:i<items.length-1?'1px solid #F3F4F6':'none' }}>
+          <div key={key} style={{ display:'flex', alignItems:'center', gap:16, padding:'15px 20px', borderBottom:i<items.length-1?'1px solid rgba(124,58,237,0.1)':'none' }}>
             <div style={{ flex:1 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:'#111827' }}>{title}</div>
-              <div style={{ fontSize:12, color:'#9CA3AF', marginTop:2 }}>{desc}</div>
+              <div style={{ fontSize:13, fontWeight:600, color:'#f0eeff' }}>{title}</div>
+              <div style={{ fontSize:12, color:'rgba(240,238,255,0.4)', marginTop:2 }}>{desc}</div>
             </div>
             <Toggle value={notifs[key]!==false} onChange={()=>toggle(key)} />
           </div>
@@ -420,7 +420,7 @@ function RolesTab() {
 
   const CATEGORY_LABELS = ['Matters','Contacts','Billing','Trust','Time','Tasks','Leads','Reports','E-Sign','Firm Settings'];
 
-  if (loading) return <div style={{ textAlign:'center',padding:40,color:'#9CA3AF' }}>Loading roles…</div>;
+  if (loading) return <div style={{ textAlign:'center',padding:40,color:'rgba(240,238,255,0.4)' }}>Loading roles…</div>;
 
   return (
     <div>
@@ -429,7 +429,7 @@ function RolesTab() {
       </div>
 
       {editing && (
-        <div style={{ background:'#fff', borderRadius:16, border:'1.5px solid #E5E7EB', padding:22, marginBottom:20 }}>
+        <div style={{ background:'rgba(255,255,255,0.05)', borderRadius:16, border:'1px solid rgba(124,58,237,0.25)', padding:22, marginBottom:20, backdropFilter:'blur(12px)' }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:18 }}>
             <div>
               <label style={lbl}>Role Name</label>
@@ -440,15 +440,15 @@ function RolesTab() {
               <input value={editing.description||''} onChange={e=>setEditing(r=>({...r,description:e.target.value}))} style={inp} />
             </div>
           </div>
-          <div style={{ fontSize:12, fontWeight:800, color:'#374151', marginBottom:12, textTransform:'uppercase', letterSpacing:'0.06em' }}>Permissions</div>
+          <div style={{ fontSize:12, fontWeight:800, color:'rgba(240,238,255,0.5)', marginBottom:12, textTransform:'uppercase', letterSpacing:'0.06em' }}>Permissions</div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:12, marginBottom:18 }}>
             {ALL_PERMS.map((group,gi)=>(
-              <div key={gi} style={{ background:'#F9FAFB', borderRadius:10, padding:'12px 14px' }}>
-                <div style={{ fontSize:11, fontWeight:800, color:'#6B7280', marginBottom:8 }}>{CATEGORY_LABELS[gi]}</div>
+              <div key={gi} style={{ background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'12px 14px', border:'1px solid rgba(124,58,237,0.14)' }}>
+                <div style={{ fontSize:11, fontWeight:800, color:'rgba(240,238,255,0.45)', marginBottom:8, textTransform:'uppercase', letterSpacing:'0.05em' }}>{CATEGORY_LABELS[gi]}</div>
                 {group.map(p=>(
                   <label key={p} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:6, cursor:'pointer' }}>
                     <input type="checkbox" checked={!!editing.permissions?.[p]} onChange={e=>setEditing(r=>({...r,permissions:{...r.permissions,[p]:e.target.checked}}))} />
-                    <span style={{ fontSize:12, color:'#374151' }}>{p.split(':').pop()}</span>
+                    <span style={{ fontSize:12, color:'rgba(240,238,255,0.65)' }}>{p.split(':').pop()}</span>
                   </label>
                 ))}
               </div>
@@ -462,19 +462,19 @@ function RolesTab() {
       )}
 
       {roles.length===0&&!editing ? (
-        <div style={{ textAlign:'center',padding:'40px 20px',color:'#9CA3AF',fontSize:13 }}>No custom roles yet. Create one above.</div>
+        <div style={{ textAlign:'center',padding:'40px 20px',color:'rgba(240,238,255,0.4)',fontSize:13 }}>No custom roles yet. Create one above.</div>
       ) : roles.map(role=>(
-        <div key={role._id} style={{ background:'#fff', borderRadius:12, border:'1.5px solid #E5E7EB', padding:'14px 18px', display:'flex', alignItems:'center', gap:14, marginBottom:8 }}>
-          <div style={{ width:36,height:36,borderRadius:9,background:'#F5F3FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-            <I.Shield size={16} style={{ color:'#7C3AED' }} />
+        <div key={role._id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, border:'1px solid rgba(124,58,237,0.18)', padding:'14px 18px', display:'flex', alignItems:'center', gap:14, marginBottom:8, backdropFilter:'blur(8px)' }}>
+          <div style={{ width:36,height:36,borderRadius:9,background:'rgba(124,58,237,0.18)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+            <I.Shield size={16} style={{ color:'#c4b5fd' }} />
           </div>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:13, fontWeight:700, color:'#111827' }}>{role.name}</div>
-            <div style={{ fontSize:11, color:'#9CA3AF', marginTop:2 }}>{role.description||'No description'} · {Object.values(role.permissions||{}).filter(Boolean).length} permissions</div>
+            <div style={{ fontSize:13, fontWeight:700, color:'#f0eeff' }}>{role.name}</div>
+            <div style={{ fontSize:11, color:'rgba(240,238,255,0.4)', marginTop:2 }}>{role.description||'No description'} · {Object.values(role.permissions||{}).filter(Boolean).length} permissions</div>
           </div>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={()=>setEditing(role)} style={{ padding:'6px 12px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#F9FAFB',color:'#374151',cursor:'pointer',fontSize:12,fontWeight:600 }}>Edit</button>
-            <button onClick={()=>deleteRole(role._id)} style={{ padding:'6px 10px',borderRadius:7,border:'1.5px solid #FECDD3',background:'#FFF1F2',color:'#DC2626',cursor:'pointer',fontSize:12 }}><I.X size={13}/></button>
+            <button onClick={()=>setEditing(role)} style={{ padding:'6px 12px',borderRadius:7,border:'1px solid rgba(124,58,237,0.22)',background:'rgba(255,255,255,0.07)',color:'rgba(240,238,255,0.7)',cursor:'pointer',fontSize:12,fontWeight:600 }}>Edit</button>
+            <button onClick={()=>deleteRole(role._id)} style={{ padding:'6px 10px',borderRadius:7,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.12)',color:'#f87171',cursor:'pointer',fontSize:12 }}><I.X size={13}/></button>
           </div>
         </div>
       ))}
@@ -509,33 +509,33 @@ function SecurityTab({ security, setSecurity }) {
 
   return (
     <div style={{ maxWidth:620 }}>
-      <div style={{ background:'#fff', borderRadius:14, border:'1.5px solid #E5E7EB', overflow:'hidden', marginBottom:20 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #F3F4F6' }}>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, border:'1px solid rgba(124,58,237,0.18)', overflow:'hidden', marginBottom:20, backdropFilter:'blur(12px)' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid rgba(124,58,237,0.1)' }}>
           <div>
-            <div style={{ fontSize:13, fontWeight:700, color:'#111827' }}>Enforce Two-Factor Authentication</div>
-            <div style={{ fontSize:12, color:'#9CA3AF', marginTop:2 }}>Require all team members to enable 2FA</div>
+            <div style={{ fontSize:13, fontWeight:700, color:'#f0eeff' }}>Enforce Two-Factor Authentication</div>
+            <div style={{ fontSize:12, color:'rgba(240,238,255,0.4)', marginTop:2 }}>Require all team members to enable 2FA</div>
           </div>
           <Toggle value={!!security.enforce2FA} onChange={v=>set('enforce2FA',v)} />
         </div>
-        <div style={{ padding:'16px 20px', borderBottom:'1px solid #F3F4F6' }}>
+        <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(124,58,237,0.1)' }}>
           <label style={lbl}>Session Timeout</label>
           <select value={security.sessionTimeoutMinutes||60} onChange={e=>set('sessionTimeoutMinutes',Number(e.target.value))} style={{ ...inp, maxWidth:200 }}>
             {[[15,'15 minutes'],[30,'30 minutes'],[60,'1 hour'],[480,'8 hours'],[0,'Never']].map(([v,l])=>(
-              <option key={v} value={v}>{l}</option>
+              <option key={v} value={v} style={{ background:'#16113a' }}>{l}</option>
             ))}
           </select>
         </div>
         <div style={{ padding:'16px 20px' }}>
-          <div style={{ fontSize:13, fontWeight:700, color:'#111827', marginBottom:8 }}>IP Allowlist</div>
-          <div style={{ fontSize:12, color:'#9CA3AF', marginBottom:10 }}>Restrict access to specific IP addresses or ranges. Leave empty to allow all IPs.</div>
+          <div style={{ fontSize:13, fontWeight:700, color:'#f0eeff', marginBottom:8 }}>IP Allowlist</div>
+          <div style={{ fontSize:12, color:'rgba(240,238,255,0.4)', marginBottom:10 }}>Restrict access to specific IP addresses or ranges. Leave empty to allow all IPs.</div>
           <div style={{ display:'flex', gap:8, marginBottom:10 }}>
             <input value={ip} onChange={e=>setIp(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addIp()} placeholder="e.g. 192.168.1.0/24" style={{ ...inp, flex:1 }} />
             <button onClick={addIp} style={{ ...btnPurple, whiteSpace:'nowrap' }}><I.Plus size={13}/> Add</button>
           </div>
           {(security.ipAllowlist||[]).map(addr=>(
-            <div key={addr} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background:'#F9FAFB', borderRadius:8, marginBottom:6, fontSize:13, color:'#374151' }}>
+            <div key={addr} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', background:'rgba(255,255,255,0.05)', borderRadius:8, marginBottom:6, fontSize:13, color:'rgba(240,238,255,0.7)' }}>
               {addr}
-              <button onClick={()=>removeIp(addr)} style={{ background:'none', border:'none', cursor:'pointer', color:'#9CA3AF', padding:0 }}><I.X size={13}/></button>
+              <button onClick={()=>removeIp(addr)} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(240,238,255,0.4)', padding:0 }}><I.X size={13}/></button>
             </div>
           ))}
         </div>
@@ -574,25 +574,25 @@ function IntegrationsTab({ integrations, setIntegrations }) {
       {INTEGRATIONS.map(({name,label,icon,desc,color})=>{
         const connected = integrations[`${name}Connected`];
         return (
-          <div key={name} style={{ background:'#fff', borderRadius:14, border:`1.5px solid ${connected?color+'40':'#E5E7EB'}`, padding:'18px 20px' }}>
+          <div key={name} style={{ background:'rgba(255,255,255,0.05)', borderRadius:14, border:`1px solid ${connected?color+'55':'rgba(124,58,237,0.18)'}`, padding:'18px 20px', backdropFilter:'blur(12px)' }}>
             <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
-              <div style={{ width:38,height:38,borderRadius:10,background:color+'18',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:900,color }}>
+              <div style={{ width:38,height:38,borderRadius:10,background:color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:900,color }}>
                 {icon}
               </div>
               <div>
-                <div style={{ fontSize:14, fontWeight:700, color:'#111827' }}>{label}</div>
-                <div style={{ fontSize:11, color:'#9CA3AF' }}>{desc}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:'#f0eeff' }}>{label}</div>
+                <div style={{ fontSize:11, color:'rgba(240,238,255,0.4)' }}>{desc}</div>
               </div>
             </div>
             {connected ? (
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <span style={{ fontSize:12,fontWeight:700,color:'#059669',display:'flex',alignItems:'center',gap:4 }}><I.Check size={12}/> Connected</span>
-                <button onClick={()=>disconnect(name)} disabled={disconnecting===name} style={{ padding:'5px 12px',borderRadius:7,border:'1.5px solid #FECDD3',background:'#FFF1F2',color:'#DC2626',cursor:'pointer',fontSize:11,fontWeight:600,opacity:disconnecting===name?.7:1 }}>
+                <span style={{ fontSize:12,fontWeight:700,color:'#4ade80',display:'flex',alignItems:'center',gap:4 }}><I.Check size={12}/> Connected</span>
+                <button onClick={()=>disconnect(name)} disabled={disconnecting===name} style={{ padding:'5px 12px',borderRadius:7,border:'1px solid rgba(239,68,68,0.3)',background:'rgba(239,68,68,0.12)',color:'#f87171',cursor:'pointer',fontSize:11,fontWeight:600,opacity:disconnecting===name?.7:1 }}>
                   {disconnecting===name?'…':'Disconnect'}
                 </button>
               </div>
             ) : (
-              <button style={{ width:'100%',padding:'8px 0',borderRadius:8,border:`1.5px solid ${color}`,background:`${color}10`,color,cursor:'pointer',fontSize:12,fontWeight:700 }}>
+              <button style={{ width:'100%',padding:'8px 0',borderRadius:8,border:`1px solid ${color}55`,background:`${color}15`,color,cursor:'pointer',fontSize:12,fontWeight:700 }}>
                 Connect {label}
               </button>
             )}
@@ -638,16 +638,16 @@ function PracticeAreas({ areas, setAreas }) {
       </div>
 
       {areas.length===0 ? (
-        <div style={{ textAlign:'center',padding:'48px 20px',color:'#9CA3AF',fontSize:13 }}>No practice areas configured. Add one above.</div>
+        <div style={{ textAlign:'center',padding:'48px 20px',color:'rgba(240,238,255,0.4)',fontSize:13 }}>No practice areas configured. Add one above.</div>
       ) : (
         areas.map((area,i)=>(
-          <div key={i} style={{ background:'#fff', borderRadius:14, border:`1.5px solid ${area.color||'#E5E7EB'}40`, marginBottom:10, overflow:'hidden' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 18px', cursor:'pointer', borderBottom:editIdx===i?'1px solid #F3F4F6':'none' }} onClick={()=>setEditIdx(editIdx===i?null:i)}>
+          <div key={i} style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, border:`1px solid ${area.color||'#7c3aed'}44`, marginBottom:10, overflow:'hidden', backdropFilter:'blur(8px)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 18px', cursor:'pointer', borderBottom:editIdx===i?'1px solid rgba(124,58,237,0.1)':'none' }} onClick={()=>setEditIdx(editIdx===i?null:i)}>
               <div style={{ width:12,height:12,borderRadius:'50%',background:area.color||'#7C3AED',flexShrink:0 }} />
-              <div style={{ flex:1, fontSize:14, fontWeight:700, color:'#111827' }}>{area.name||'Unnamed'}</div>
-              <span style={{ fontSize:11,color:'#9CA3AF' }}>{area.defaultBillingType} · ${area.defaultHourlyRate||0}/hr</span>
-              <button onClick={e=>{e.stopPropagation();remove(i);}} style={{ background:'none',border:'none',cursor:'pointer',color:'#9CA3AF',padding:4 }}><I.X size={13}/></button>
-              <I.ChevronDown size={14} style={{ color:'#9CA3AF', transform:editIdx===i?'rotate(180deg)':'none', transition:'transform 200ms' }} />
+              <div style={{ flex:1, fontSize:14, fontWeight:700, color:'#f0eeff' }}>{area.name||'Unnamed'}</div>
+              <span style={{ fontSize:11,color:'rgba(240,238,255,0.4)' }}>{area.defaultBillingType} · ${area.defaultHourlyRate||0}/hr</span>
+              <button onClick={e=>{e.stopPropagation();remove(i);}} style={{ background:'none',border:'none',cursor:'pointer',color:'rgba(240,238,255,0.35)',padding:4 }}><I.X size={13}/></button>
+              <I.ChevronDown size={14} style={{ color:'rgba(240,238,255,0.35)', transform:editIdx===i?'rotate(180deg)':'none', transition:'transform 200ms' }} />
             </div>
             {editIdx===i && (
               <div style={{ padding:'16px 18px', display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
@@ -659,14 +659,14 @@ function PracticeAreas({ areas, setAreas }) {
                   <label style={lbl}>Color</label>
                   <div style={{ display:'flex', gap:6, marginTop:2 }}>
                     {COLORS.map(c=>(
-                      <div key={c} onClick={()=>update(i,'color',c)} style={{ width:22,height:22,borderRadius:6,background:c,cursor:'pointer',border:area.color===c?`3px solid #111827`:'3px solid transparent' }} />
+                      <div key={c} onClick={()=>update(i,'color',c)} style={{ width:22,height:22,borderRadius:6,background:c,cursor:'pointer',border:area.color===c?`3px solid #f0eeff`:'3px solid transparent' }} />
                     ))}
                   </div>
                 </div>
                 <div>
                   <label style={lbl}>Billing Type</label>
                   <select value={area.defaultBillingType||'hourly'} onChange={e=>update(i,'defaultBillingType',e.target.value)} style={inp}>
-                    {['hourly','flat_fee','contingency','retainer','pro_bono'].map(t=><option key={t} value={t}>{t.replace('_',' ')}</option>)}
+                    {['hourly','flat_fee','contingency','retainer','pro_bono'].map(t=><option key={t} value={t} style={{ background:'#16113a' }}>{t.replace('_',' ')}</option>)}
                   </select>
                 </div>
                 <div>
@@ -741,32 +741,38 @@ export default function FirmSettings() {
   }, []);
 
   return (
-    <div style={{ paddingTop:80, minHeight:'100vh', background:'#F8F9FC' }}>
-      <div style={{ maxWidth:1060, margin:'0 auto', padding:'32px 24px 80px' }}>
+    <div style={{ minHeight:'100vh', position:'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:'-5%', right:'5%', width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', filter:'blur(40px)' }} />
+        <div style={{ position:'absolute', bottom:'10%', left:'0%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%)', filter:'blur(40px)' }} />
+      </div>
+
+      <div style={{ maxWidth:1060, margin:'0 auto', padding:'32px 24px 80px', position:'relative', zIndex:1 }}>
 
         <motion.div initial={{opacity:0,y:-12}} animate={{opacity:1,y:0}} style={{marginBottom:28}}>
           <div style={{display:'flex',alignItems:'center',gap:14}}>
-            <div style={{width:44,height:44,borderRadius:12,background:'linear-gradient(135deg,#374151,#111827)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <div style={{width:44,height:44,borderRadius:12,background:'linear-gradient(135deg,#7c3aed,#5b21b6)',display:'flex',alignItems:'center',justifyContent:'center'}}>
               <I.Settings size={22} style={{color:'#fff'}}/>
             </div>
             <div>
-              <h1 style={{margin:0,fontSize:24,fontWeight:800,color:'#111827'}}>Firm Settings</h1>
-              <p style={{margin:0,fontSize:13,color:'#6B7280'}}>Profile, team, billing, permissions, security, and integrations</p>
+              <h1 style={{margin:0,fontSize:24,fontWeight:800,color:'#f0eeff'}}>Firm Settings</h1>
+              <p style={{margin:0,fontSize:13,color:'rgba(240,238,255,0.45)'}}>Profile, team, billing, permissions, security, and integrations</p>
             </div>
           </div>
         </motion.div>
 
         {/* Tab bar */}
-        <div style={{display:'flex',gap:2,background:'#fff',borderRadius:14,padding:4,border:'1.5px solid #E5E7EB',marginBottom:28,overflowX:'auto'}}>
+        <div style={{display:'flex',gap:2,background:'rgba(255,255,255,0.05)',borderRadius:14,padding:4,border:'1px solid rgba(124,58,237,0.2)',marginBottom:28,overflowX:'auto',backdropFilter:'blur(8px)'}}>
           {TABS.map(({id,label,icon:Ic})=>(
-            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:tab===id?'#111827':'transparent',color:tab===id?'#fff':'#6B7280',transition:'all 150ms',whiteSpace:'nowrap'}}>
+            <button key={id} onClick={()=>setTab(id)} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px',borderRadius:10,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:tab===id?'linear-gradient(135deg,#7c3aed,#5b21b6)':'transparent',color:tab===id?'#fff':'rgba(240,238,255,0.5)',transition:'all 150ms',whiteSpace:'nowrap',boxShadow:tab===id?'0 4px 14px rgba(124,58,237,0.3)':'none'}}>
               <Ic size={13}/> {label}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div style={{textAlign:'center',padding:60,color:'#9CA3AF',fontSize:14}}>Loading settings…</div>
+          <div style={{textAlign:'center',padding:60,color:'rgba(240,238,255,0.4)',fontSize:14}}>Loading settings…</div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:.15}}>

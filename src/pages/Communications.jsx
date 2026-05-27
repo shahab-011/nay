@@ -12,26 +12,26 @@ const TYPES = [
 ];
 
 const TYPE_META = {
-  'Email Sent':            { icon: I.Mail,          color: '#059669', bg: '#ECFDF5' },
-  'Email Received':        { icon: I.Mail,          color: '#10B981', bg: '#F0FDF4' },
-  'Phone Call (Outbound)': { icon: I.Phone,         color: '#3B82F6', bg: '#EFF6FF' },
-  'Phone Call (Inbound)':  { icon: I.Phone,         color: '#1D4ED8', bg: '#DBEAFE' },
-  'Video Call':            { icon: I.Video,         color: '#7C3AED', bg: '#F5F3FF' },
-  'Meeting (In-Person)':   { icon: I.Users,         color: '#D97706', bg: '#FFF7ED' },
-  'Court Appearance':      { icon: I.Briefcase,     color: '#DC2626', bg: '#FEF2F2' },
-  'Text Message':          { icon: I.MessageSquare, color: '#0891B2', bg: '#ECFEFF' },
-  'Letter Sent':           { icon: I.Doc,            color: '#6D28D9', bg: '#EDE9FE' },
-  'Letter Received':       { icon: I.Doc,            color: '#4F46E5', bg: '#EEF2FF' },
-  'Note':                  { icon: I.Edit,          color: '#F59E0B', bg: '#FFF7ED' },
+  'Email Sent':            { icon: I.Mail,          color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+  'Email Received':        { icon: I.Mail,          color: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+  'Phone Call (Outbound)': { icon: I.Phone,         color: '#60a5fa', bg: 'rgba(96,165,250,0.12)' },
+  'Phone Call (Inbound)':  { icon: I.Phone,         color: '#93c5fd', bg: 'rgba(147,197,253,0.12)' },
+  'Video Call':            { icon: I.Video,         color: '#c4b5fd', bg: 'rgba(196,181,253,0.12)' },
+  'Meeting (In-Person)':   { icon: I.Users,         color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
+  'Court Appearance':      { icon: I.Briefcase,     color: '#f87171', bg: 'rgba(248,113,113,0.12)' },
+  'Text Message':          { icon: I.MessageSquare, color: '#22d3ee', bg: 'rgba(34,211,238,0.12)'  },
+  'Letter Sent':           { icon: I.Doc,            color: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+  'Letter Received':       { icon: I.Doc,            color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
+  'Note':                  { icon: I.Edit,          color: '#fbbf24', bg: 'rgba(251,191,36,0.12)'  },
 };
 
 const TEMPLATE_CATEGORIES = ['General', 'Case Status Update', 'Appointment Reminder', 'Document Request', 'Invoice Follow-Up', 'Welcome', 'Closing'];
 
-const lbl     = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
-const inp     = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
-const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
-const btnGhost  = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
-const btnGreen  = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 9, background: '#059669', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
+const lbl     = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp     = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' };
+const btnGhost  = { padding: '9px 18px', borderRadius: 9, background: 'rgba(255,255,255,0.07)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
+const btnGreen  = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 9, background: 'linear-gradient(135deg,#059669,#047857)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
 
 /* ─── Time Entry Prompt ──────────────────────────────────────────── */
 function TimeEntryPrompt({ log, onAccept, onDismiss }) {
@@ -51,12 +51,12 @@ function TimeEntryPrompt({ log, onAccept, onDismiss }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-      style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 300, background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB', boxShadow: '0 12px 40px rgba(0,0,0,0.14)', padding: 20, width: 340 }}>
+      style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 300, background: '#120d2e', borderRadius: 16, border: '1px solid rgba(124,58,237,0.3)', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: 20, width: 340 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ fontWeight: 800, fontSize: 14, color: '#111827' }}>Create time entry?</div>
-        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}><I.X size={16} /></button>
+        <div style={{ fontWeight: 800, fontSize: 14, color: '#f0eeff' }}>Create time entry?</div>
+        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.4)' }}><I.X size={16} /></button>
       </div>
-      <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 14 }}>
+      <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.5)', marginBottom: 14 }}>
         {log.type} · {log.subject || log.contact}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
@@ -112,13 +112,13 @@ function LogModal({ onClose, onSave, matters }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(11,11,20,0.55)', backdropFilter: 'blur(4px)' }}>
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 620, maxHeight: '92vh', overflowY: 'auto', padding: 28 }}>
+        style={{ background: '#120d2e', borderRadius: 20, width: '100%', maxWidth: 620, maxHeight: '92vh', overflowY: 'auto', padding: 28, border: '1px solid rgba(124,58,237,0.28)' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#111827' }}>Log Communication</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={20} /></button>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#f0eeff' }}>Log Communication</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.4)' }}><I.X size={20} /></button>
         </div>
-        {err && <div style={{ background: '#FEF2F2', color: '#DC2626', padding: '10px 14px', borderRadius: 9, fontSize: 13, marginBottom: 14 }}>{err}</div>}
+        {err && <div style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', padding: '10px 14px', borderRadius: 9, fontSize: 13, marginBottom: 14, border: '1px solid rgba(239,68,68,0.3)' }}>{err}</div>}
 
         {/* Type selector */}
         <div style={{ marginBottom: 16 }}>
@@ -128,7 +128,7 @@ function LogModal({ onClose, onSave, matters }) {
               const m = TYPE_META[t];
               const active = form.type === t;
               return (
-                <button key={t} onClick={() => set('type', t)} style={{ padding: '8px 10px', borderRadius: 9, border: `1.5px solid ${active ? m.color : '#E5E7EB'}`, background: active ? m.bg : '#fff', color: active ? m.color : '#6B7280', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}>
+                <button key={t} onClick={() => set('type', t)} style={{ padding: '8px 10px', borderRadius: 9, border: `1px solid ${active ? m.color : 'rgba(124,58,237,0.2)'}`, background: active ? m.bg : 'rgba(255,255,255,0.05)', color: active ? m.color : 'rgba(240,238,255,0.5)', cursor: 'pointer', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, textAlign: 'left' }}>
                   <m.icon size={13} /> {t}
                 </button>
               );
@@ -184,12 +184,12 @@ function LogModal({ onClose, onSave, matters }) {
         </div>
 
         {/* Billable + Follow-up */}
-        <div style={{ background: '#F9FAFB', borderRadius: 12, padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 20, marginBottom: 20 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 20, marginBottom: 20, border: '1px solid rgba(124,58,237,0.15)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'rgba(240,238,255,0.7)' }}>
             <input type="checkbox" checked={form.isBillable} onChange={e => set('isBillable', e.target.checked)} />
             Billable
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'rgba(240,238,255,0.7)' }}>
             <input type="checkbox" checked={form.followUpRequired} onChange={e => set('followUpRequired', e.target.checked)} />
             Follow-up required
           </label>
@@ -231,12 +231,12 @@ function TemplateModal({ tpl, onClose, onSave }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.5)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
+        style={{ background: '#120d2e', borderRadius: 20, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', padding: 28, border: '1px solid rgba(124,58,237,0.28)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>{tpl ? 'Edit Template' : 'New Email Template'}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={18} /></button>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#f0eeff' }}>{tpl ? 'Edit Template' : 'New Email Template'}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.4)' }}><I.X size={18} /></button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div>
@@ -258,11 +258,11 @@ function TemplateModal({ tpl, onClose, onSave }) {
           <label style={lbl}>Body</label>
           <textarea value={form.body} onChange={e => set('body', e.target.value)} style={{ ...inp, height: 200, resize: 'vertical', fontFamily: 'inherit' }} placeholder="Dear {{client_name}},&#10;&#10;I wanted to update you regarding {{matter_title}}…" />
         </div>
-        <div style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 18 }}>
-          Available variables: <code style={{ background: '#F3F4F6', padding: '1px 5px', borderRadius: 4 }}>{'{{client_name}}'}</code>{' '}
-          <code style={{ background: '#F3F4F6', padding: '1px 5px', borderRadius: 4 }}>{'{{matter_title}}'}</code>{' '}
-          <code style={{ background: '#F3F4F6', padding: '1px 5px', borderRadius: 4 }}>{'{{attorney_name}}'}</code>{' '}
-          <code style={{ background: '#F3F4F6', padding: '1px 5px', borderRadius: 4 }}>{'{{firm_name}}'}</code>
+        <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginBottom: 18 }}>
+          Available variables: <code style={{ background: 'rgba(124,58,237,0.15)', padding: '1px 5px', borderRadius: 4, color: '#c4b5fd' }}>{'{{client_name}}'}</code>{' '}
+          <code style={{ background: 'rgba(124,58,237,0.15)', padding: '1px 5px', borderRadius: 4, color: '#c4b5fd' }}>{'{{matter_title}}'}</code>{' '}
+          <code style={{ background: 'rgba(124,58,237,0.15)', padding: '1px 5px', borderRadius: 4, color: '#c4b5fd' }}>{'{{attorney_name}}'}</code>{' '}
+          <code style={{ background: 'rgba(124,58,237,0.15)', padding: '1px 5px', borderRadius: 4, color: '#c4b5fd' }}>{'{{firm_name}}'}</code>
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnGhost}>Cancel</button>
@@ -298,7 +298,7 @@ function TemplatesView() {
     setTemplates(ts => ts.filter(t => t._id !== id));
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>Loading templates…</div>;
+  if (loading) return <div style={{ textAlign: 'center', padding: 60, color: 'rgba(240,238,255,0.4)' }}>Loading templates…</div>;
 
   return (
     <div>
@@ -308,7 +308,7 @@ function TemplatesView() {
         </button>
       </div>
       {templates.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(240,238,255,0.4)' }}>
           <I.Mail size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
           <div style={{ fontSize: 14 }}>No email templates yet</div>
           <div style={{ fontSize: 12, marginTop: 4 }}>Save common email formats for quick reuse</div>
@@ -316,25 +316,25 @@ function TemplatesView() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {templates.map(t => (
-            <div key={t._id} style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '16px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div key={t._id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.2)', padding: '16px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, backdropFilter: 'blur(8px)' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 800, fontSize: 14, color: '#111827' }}>{t.name}</span>
-                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: '#EDE9FE', color: '#6D28D9', fontWeight: 700 }}>{t.category}</span>
+                  <span style={{ fontWeight: 800, fontSize: 14, color: '#f0eeff' }}>{t.name}</span>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', fontWeight: 700 }}>{t.category}</span>
                 </div>
-                <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>{t.subject}</div>
-                <div style={{ fontSize: 12, color: '#9CA3AF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 500 }}>{t.body?.replace(/<[^>]+>/g, '').slice(0, 120)}…</div>
+                <div style={{ fontSize: 13, color: 'rgba(240,238,255,0.7)', marginBottom: 4 }}>{t.subject}</div>
+                <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 500 }}>{t.body?.replace(/<[^>]+>/g, '').slice(0, 120)}…</div>
                 {t.variables?.length > 0 && (
                   <div style={{ marginTop: 6, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                     {t.variables.map(v => (
-                      <code key={v} style={{ fontSize: 10, background: '#F3F4F6', padding: '1px 6px', borderRadius: 4, color: '#6D28D9' }}>{`{{${v}}}`}</code>
+                      <code key={v} style={{ fontSize: 10, background: 'rgba(124,58,237,0.15)', padding: '1px 6px', borderRadius: 4, color: '#c4b5fd' }}>{`{{${v}}}`}</code>
                     ))}
                   </div>
                 )}
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <button onClick={() => { setEditing(t); setShowModal(true); }} style={{ ...btnGhost, padding: '6px 12px', fontSize: 12 }}>Edit</button>
-                <button onClick={() => handleDelete(t._id)} style={{ background: 'none', border: '1.5px solid #FCA5A5', borderRadius: 9, padding: '6px 12px', color: '#EF4444', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>
+                <button onClick={() => handleDelete(t._id)} style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 9, padding: '6px 12px', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>
               </div>
             </div>
           ))}
@@ -355,8 +355,8 @@ function EntryCard({ entry, onDelete }) {
     : entry.matterId?.title || '';
 
   return (
-    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
-      style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '15px 18px', display: 'flex', gap: 14 }}>
+    <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} whileHover={{ scale: 1.005 }}
+      style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '15px 18px', display: 'flex', gap: 14, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
       <div style={{ width: 40, height: 40, borderRadius: 11, background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <meta.icon size={16} style={{ color: meta.color }} />
       </div>
@@ -364,31 +364,31 @@ function EntryCard({ entry, onDelete }) {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 4 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{entry.contact || entry.contactId?.firstName}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff' }}>{entry.contact || entry.contactId?.firstName}</span>
               <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: meta.bg, color: meta.color }}>{entry.type}</span>
-              {entry.isBillable && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: '#FFF7ED', color: '#D97706' }}>Billable</span>}
-              {entry.followUpRequired && !entry.followUpCompleted && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: '#FEF2F2', color: '#DC2626' }}>Follow-up</span>}
-              {entry.source && entry.source !== 'manual' && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: '#EFF6FF', color: '#3B82F6' }}>{entry.source}</span>}
+              {entry.isBillable && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#fbbf24' }}>Billable</span>}
+              {entry.followUpRequired && !entry.followUpCompleted && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: 'rgba(239,68,68,0.15)', color: '#f87171' }}>Follow-up</span>}
+              {entry.source && entry.source !== 'manual' && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>{entry.source}</span>}
             </div>
-            {entry.subject && <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginTop: 3 }}>{entry.subject}</div>}
-            {matter && <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{matter}</div>}
+            {entry.subject && <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(240,238,255,0.8)', marginTop: 3 }}>{entry.subject}</div>}
+            {matter && <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.4)', marginTop: 2 }}>{matter}</div>}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{entry.date?.slice(0, 10)} {entry.time}</div>
-              {entry.duration && <div style={{ fontSize: 11, color: '#9CA3AF' }}>{entry.duration} min</div>}
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.6)' }}>{entry.date?.slice(0, 10)} {entry.time}</div>
+              {entry.duration && <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.35)' }}>{entry.duration} min</div>}
             </div>
-            <button onClick={() => onDelete(entry._id)} style={{ width: 26, height: 26, borderRadius: 7, border: '1px solid #E5E7EB', background: '#fff', color: '#9CA3AF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={() => onDelete(entry._id)} style={{ width: 26, height: 26, borderRadius: 7, border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(255,255,255,0.05)', color: 'rgba(240,238,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <I.X size={11} />
             </button>
           </div>
         </div>
-        {entry.summary && <div style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.55, marginTop: 4 }}>{entry.summary}</div>}
-        {entry.outcome && <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4, fontStyle: 'italic' }}>Outcome: {entry.outcome}</div>}
+        {entry.summary && <div style={{ fontSize: 13, color: 'rgba(240,238,255,0.65)', lineHeight: 1.55, marginTop: 4 }}>{entry.summary}</div>}
+        {entry.outcome && <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.45)', marginTop: 4, fontStyle: 'italic' }}>Outcome: {entry.outcome}</div>}
         {entry.followUpRequired && entry.followUpDueDate && (
-          <div style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>Follow-up due: {entry.followUpDueDate?.slice(0, 10)}</div>
+          <div style={{ fontSize: 11, color: '#f87171', marginTop: 4 }}>Follow-up due: {entry.followUpDueDate?.slice(0, 10)}</div>
         )}
-        {entry.userId?.name && <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>Logged by: {entry.userId.name}</div>}
+        {entry.userId?.name && <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.35)', marginTop: 4 }}>Logged by: {entry.userId.name}</div>}
       </div>
     </motion.div>
   );
@@ -408,40 +408,40 @@ function ExportModal({ matterId, matterName, onClose }) {
   const handlePrint = () => window.print();
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.5)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '88vh', overflowY: 'auto', padding: 28 }}>
+        style={{ background: '#120d2e', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '88vh', overflowY: 'auto', padding: 28, border: '1px solid rgba(124,58,237,0.28)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Timeline Export — {matterName}</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#f0eeff' }}>Timeline Export — {matterName}</h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={handlePrint} style={{ ...btnGreen, padding: '7px 14px', fontSize: 12 }}><I.Download size={13} /> Print / PDF</button>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}><I.X size={18} /></button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.4)' }}><I.X size={18} /></button>
           </div>
         </div>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>Loading…</div>
+          <div style={{ textAlign: 'center', padding: 40, color: 'rgba(240,238,255,0.4)' }}>Loading…</div>
         ) : !data?.logs?.length ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>No communications for this matter</div>
+          <div style={{ textAlign: 'center', padding: 40, color: 'rgba(240,238,255,0.4)' }}>No communications for this matter</div>
         ) : (
           <div>
-            <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 18 }}>
+            <div style={{ fontSize: 12, color: 'rgba(240,238,255,0.45)', marginBottom: 18 }}>
               {data.logs.length} entries · Exported {new Date().toLocaleDateString()}
             </div>
             {data.logs.map((e, i) => {
               const meta = TYPE_META[e.type] || TYPE_META['Note'];
               return (
-                <div key={i} style={{ borderBottom: '1px solid #E5E7EB', paddingBottom: 12, marginBottom: 12 }}>
+                <div key={i} style={{ borderBottom: '1px solid rgba(124,58,237,0.12)', paddingBottom: 12, marginBottom: 12 }}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, marginTop: 5, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', gap: 10, fontSize: 12, color: '#6B7280', marginBottom: 3 }}>
+                      <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'rgba(240,238,255,0.45)', marginBottom: 3 }}>
                         <span>{e.date?.slice(0, 10)}</span>
                         <span style={{ fontWeight: 700, color: meta.color }}>{e.type}</span>
                         {e.duration && <span>{e.duration} min</span>}
                       </div>
-                      {e.subject && <div style={{ fontWeight: 700, fontSize: 13, color: '#111827', marginBottom: 3 }}>{e.subject}</div>}
-                      <div style={{ fontSize: 13, color: '#374151' }}>{e.summary}</div>
-                      {e.userId?.name && <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>— {e.userId.name}</div>}
+                      {e.subject && <div style={{ fontWeight: 700, fontSize: 13, color: '#f0eeff', marginBottom: 3 }}>{e.subject}</div>}
+                      <div style={{ fontSize: 13, color: 'rgba(240,238,255,0.65)' }}>{e.summary}</div>
+                      {e.userId?.name && <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.35)', marginTop: 4 }}>— {e.userId.name}</div>}
                     </div>
                   </div>
                 </div>
@@ -530,7 +530,7 @@ export default function Communications() {
   };
 
   const viewBtn = (v, label) => (
-    <button onClick={() => setView(v)} style={{ padding: '8px 16px', borderRadius: 9, background: view === v ? '#7C3AED' : '#F3F4F6', color: view === v ? '#fff' : '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+    <button onClick={() => setView(v)} style={{ padding: '8px 16px', borderRadius: 9, background: view === v ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'rgba(255,255,255,0.07)', color: view === v ? '#fff' : 'rgba(240,238,255,0.55)', border: view === v ? 'none' : '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: view === v ? '0 4px 14px rgba(124,58,237,0.3)' : 'none' }}>
       {label}
     </button>
   );
@@ -538,8 +538,13 @@ export default function Communications() {
   const selectedMatter = matters.find(m => m._id === matterFilter);
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh', background: '#F8F9FC' }}>
-      <div style={{ maxWidth: 980, margin: '0 auto', padding: '32px 24px 80px' }}>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Ambient blobs */}
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:'-5%', right:'10%', width:380, height:380, borderRadius:'50%', background:'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)', filter:'blur(40px)' }} />
+        <div style={{ position:'absolute', bottom:'10%', left:'2%', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', filter:'blur(40px)' }} />
+      </div>
+      <div style={{ maxWidth: 980, margin: '0 auto', padding: '32px 24px 80px', position:'relative', zIndex:1 }}>
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
@@ -549,8 +554,8 @@ export default function Communications() {
                 <I.MessageSquare size={22} style={{ color: '#fff' }} />
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#111827' }}>Communications</h1>
-                <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>Complete log of all client interactions</p>
+                <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#f0eeff' }}>Communications</h1>
+                <p style={{ margin: 0, fontSize: 13, color: 'rgba(240,238,255,0.45)' }}>Complete log of all client interactions</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -565,14 +570,14 @@ export default function Communications() {
           <>
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 22 }}>
-              {[['Total', stats.total, '#7C3AED', I.Activity], ['Calls', stats.calls, '#3B82F6', I.Phone], ['Emails', stats.emails, '#10B981', I.Mail], ['Meetings', stats.meetings, '#D97706', I.Users], ['Follow-ups', stats.followUp, '#DC2626', I.Alert]].map(([label, val, color, Ic]) => (
-                <div key={label} style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '13px 15px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 9, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {[['Total', stats.total, '#c4b5fd', I.Activity], ['Calls', stats.calls, '#60a5fa', I.Phone], ['Emails', stats.emails, '#4ade80', I.Mail], ['Meetings', stats.meetings, '#fbbf24', I.Users], ['Follow-ups', stats.followUp, '#f87171', I.Alert]].map(([label, val, color, Ic]) => (
+                <div key={label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', padding: '13px 15px', display: 'flex', alignItems: 'center', gap: 10, backdropFilter: 'blur(8px)' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9, background: color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Ic size={15} style={{ color }} />
                   </div>
                   <div>
                     <div style={{ fontSize: 18, fontWeight: 800, color }}>{val}</div>
-                    <div style={{ fontSize: 10, color: '#9CA3AF' }}>{label}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(240,238,255,0.4)' }}>{label}</div>
                   </div>
                 </div>
               ))}
@@ -603,7 +608,7 @@ export default function Communications() {
                 const m = t === 'All' ? null : TYPE_META[t];
                 return (
                   <button key={t} onClick={() => setTypeFilter(t)}
-                    style={{ padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${typeFilter === t ? (m?.color || '#7C3AED') : '#E5E7EB'}`, background: typeFilter === t ? (m?.bg || '#EDE9FE') : '#fff', color: typeFilter === t ? (m?.color || '#7C3AED') : '#6B7280', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
+                    style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${typeFilter === t ? (m?.color || '#7C3AED') : 'rgba(124,58,237,0.2)'}`, background: typeFilter === t ? (m?.bg || 'rgba(124,58,237,0.2)') : 'rgba(255,255,255,0.05)', color: typeFilter === t ? (m?.color || '#c4b5fd') : 'rgba(240,238,255,0.5)', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>
                     {t}
                   </button>
                 );
@@ -612,22 +617,22 @@ export default function Communications() {
 
             {/* Timeline */}
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF' }}>
-                <div style={{ width: 28, height: 28, border: '3px solid #EDE9FE', borderTopColor: '#7C3AED', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto' }} />
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(240,238,255,0.4)' }}>
+                <div style={{ width: 28, height: 28, border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7C3AED', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto' }} />
               </div>
             ) : grouped.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#9CA3AF' }}>
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(240,238,255,0.4)' }}>
                 <I.MessageSquare size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
                 <p style={{ margin: 0, fontSize: 14 }}>No communications found</p>
               </div>
             ) : (
               grouped.map(([date, dayEntries]) => (
                 <div key={date} style={{ marginBottom: 22 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
                     <I.Calendar size={12} />
                     {date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Unknown date'}
-                    <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
-                    <span style={{ fontWeight: 600, color: '#9CA3AF' }}>{dayEntries.length}</span>
+                    <div style={{ flex: 1, height: 1, background: 'rgba(124,58,237,0.2)' }} />
+                    <span style={{ fontWeight: 600, color: 'rgba(240,238,255,0.35)' }}>{dayEntries.length}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <AnimatePresence>

@@ -1,105 +1,181 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import { getAlerts, markAsRead, markAllRead, deleteAlert } from '../api/alerts.api';
 import { useAlertCount } from '../context/AlertContext';
+import { I } from '../components/Icons';
+
+/* ── Design tokens ──────────────────────────────────────────────── */
+const BG     = '#07091f';
+const SUR    = 'rgba(255,255,255,0.04)';
+const ELE    = 'rgba(255,255,255,0.07)';
+const BORDER = 'rgba(255,255,255,0.08)';
+const T      = '#f0f0ff';
+const TM     = 'rgba(240,240,255,0.5)';
+const INDIGO = '#6366f1';
+const CYAN   = '#22d3ee';
+const ERR    = '#f43f5e';
 
 const FILTER_TABS = ['All', 'Unread', 'Expiry', 'Renewal', 'Compliance', 'Risk'];
 
 const TYPE_META = {
-  expiry:     { icon: 'schedule',     color: 'text-amber-400',          bg: 'bg-amber-400/10',     border: 'border-amber-400',     label: 'Contract Expiry'   },
-  renewal:    { icon: 'autorenew',    color: 'text-primary',            bg: 'bg-primary/10',       border: 'border-primary',       label: 'Renewal Due'       },
-  compliance: { icon: 'gavel',        color: 'text-error',              bg: 'bg-error/10',         border: 'border-error',         label: 'Compliance Alert'  },
-  risk:       { icon: 'warning',      color: 'text-secondary',          bg: 'bg-secondary/10',     border: 'border-secondary',     label: 'Risk Detected'     },
-  info:       { icon: 'info',         color: 'text-on-surface-variant', bg: 'bg-surface-container', border: 'border-outline-variant', label: 'Notification'    },
+  expiry:     { Ic: I.Clock,    color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  label: 'Contract Expiry'  },
+  renewal:    { Ic: I.Activity, color: INDIGO,    bg: 'rgba(99,102,241,0.12)',  label: 'Renewal Due'      },
+  compliance: { Ic: I.Shield,   color: ERR,       bg: 'rgba(244,63,94,0.12)',   label: 'Compliance Alert' },
+  risk:       { Ic: I.Alert,    color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  label: 'Risk Detected'    },
+  info:       { Ic: I.Info,     color: TM,        bg: ELE,                      label: 'Notification'     },
 };
 
-const TYPE_META_FALLBACK = TYPE_META.info;
-
-const SEVERITY_BADGE = {
-  high:   'bg-red-500/20 text-red-400',
-  medium: 'bg-amber-500/20 text-amber-400',
-  low:    'bg-yellow-500/15 text-yellow-400',
+const SEVERITY_STYLE = {
+  high:   { color: ERR,       bg: 'rgba(244,63,94,0.15)'   },
+  medium: { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)'  },
+  low:    { color: '#eab308', bg: 'rgba(234,179,8,0.1)'    },
 };
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1)   return 'just now';
-  if (m < 60)  return `${m}m ago`;
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);
-  if (h < 24)  return `${h}h ago`;
+  if (h < 24) return `${h}h ago`;
   const d = Math.floor(h / 24);
-  if (d < 7)   return `${d}d ago`;
+  if (d < 7)  return `${d}d ago`;
   return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 }
 
+/* ── AlertCard ──────────────────────────────────────────────────── */
+function AlertCard({ alert, onMarkRead, onDelete, onViewDoc }) {
+  const meta     = TYPE_META[alert.alertType] || TYPE_META.info;
+  const docId    = alert.documentId?._id || alert.documentId;
+  const docName  = alert.documentId?.originalName || null;
+  const severity = alert.severity || 'low';
+  const sevStyle = SEVERITY_STYLE[severity] || SEVERITY_STYLE.low;
+  const Ic       = meta.Ic;
+
+  return (
+    <motion.div
+      onClick={() => { if (!alert.isRead) onMarkRead(alert._id); }}
+      whileHover={{ x: 4 }}
+      whileTap={{ scale: 0.99 }}
+      style={{
+        borderRadius: 14, padding: '20px 22px', cursor: 'pointer',
+        background: alert.isRead ? SUR : `linear-gradient(135deg, ${meta.bg} 0%, rgba(255,255,255,0.02) 100%)`,
+        border: `1px solid ${alert.isRead ? BORDER : meta.color + '33'}`,
+        borderLeft: `3px solid ${alert.isRead ? 'transparent' : meta.color}`,
+        position: 'relative', overflow: 'hidden',
+      }}
+    >
+      {!alert.isRead && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, ${meta.color}66, transparent)` }} />
+      )}
+
+      <div style={{ display: 'flex', gap: 16 }}>
+        {/* Icon */}
+        <div style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, background: alert.isRead ? ELE : meta.bg, border: `1px solid ${alert.isRead ? BORDER : meta.color + '33'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Ic size={20} style={{ color: alert.isRead ? TM : meta.color }} />
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: alert.isRead ? TM : T }}>{alert.title || meta.label}</h3>
+              {!alert.isRead && <span style={{ width: 7, height: 7, borderRadius: '50%', background: INDIGO, flexShrink: 0, display: 'inline-block' }} />}
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 100, textTransform: 'uppercase', letterSpacing: '0.05em', background: sevStyle.bg, color: sevStyle.color }}>
+                {severity}
+              </span>
+            </div>
+            <span style={{ fontSize: 11, color: alert.isRead ? TM : meta.color, flexShrink: 0 }}>{timeAgo(alert.createdAt)}</span>
+          </div>
+
+          <p style={{ margin: '0 0 14px', fontSize: 13, lineHeight: 1.6, color: alert.isRead ? TM : 'rgba(240,240,255,0.8)' }}>
+            {alert.message}
+            {docName && <> — <span style={{ fontWeight: 600, color: meta.color }}>{docName}</span></>}
+          </p>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+            {docId && (
+              <button
+                onClick={() => onViewDoc(docId)}
+                style={{
+                  fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: alert.isRead ? ELE : `linear-gradient(135deg, ${INDIGO}, #4f46e5)`,
+                  color: alert.isRead ? TM : '#fff',
+                }}
+              >
+                View Document
+              </button>
+            )}
+            {!alert.isRead && (
+              <button
+                onClick={() => onMarkRead(alert._id)}
+                style={{ fontSize: 11, fontWeight: 700, padding: '5px 14px', borderRadius: 8, background: ELE, border: 'none', cursor: 'pointer', color: TM }}
+              >
+                Mark read
+              </button>
+            )}
+            <button
+              onClick={() => onDelete(alert._id)}
+              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: TM, background: 'none', border: 'none', cursor: 'pointer', padding: '5px 8px', borderRadius: 7 }}
+              onMouseEnter={e => { e.currentTarget.style.color = ERR; }}
+              onMouseLeave={e => { e.currentTarget.style.color = TM; }}
+            >
+              <I.X size={13} /> Dismiss
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Main component ──────────────────────────────────────────────── */
 export default function Alerts() {
   const navigate = useNavigate();
   const { refreshAlerts } = useAlertCount();
 
-  const [alerts, setAlerts]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
-  const [filter, setFilter]   = useState('All');
+  const [alerts,    setAlerts]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState('');
+  const [filter,    setFilter]    = useState('All');
   const [markingAll, setMarkingAll] = useState(false);
 
   const fetchAlerts = useCallback(async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const res = await getAlerts();
       setAlerts(res.data.data.alerts || []);
-    } catch {
-      setError('Failed to load alerts. Please retry.');
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError('Failed to load alerts. Please retry.'); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
 
-  /* ── mark single read ────────────────────────────────────────── */
   const handleMarkRead = async (id) => {
-    setAlerts((prev) => prev.map((a) => a._id === id ? { ...a, isRead: true } : a));
-    try {
-      await markAsRead(id);
-      refreshAlerts();
-    } catch {
-      setAlerts((prev) => prev.map((a) => a._id === id ? { ...a, isRead: false } : a));
-    }
+    setAlerts(prev => prev.map(a => a._id === id ? { ...a, isRead: true } : a));
+    try { await markAsRead(id); refreshAlerts(); }
+    catch { setAlerts(prev => prev.map(a => a._id === id ? { ...a, isRead: false } : a)); }
   };
 
-  /* ── mark all read ───────────────────────────────────────────── */
   const handleMarkAllRead = async () => {
     setMarkingAll(true);
     const prev = alerts;
-    setAlerts((all) => all.map((a) => ({ ...a, isRead: true })));
-    try {
-      await markAllRead();
-      refreshAlerts();
-    } catch {
-      setAlerts(prev);
-    } finally {
-      setMarkingAll(false);
-    }
+    setAlerts(all => all.map(a => ({ ...a, isRead: true })));
+    try { await markAllRead(); refreshAlerts(); }
+    catch { setAlerts(prev); }
+    finally { setMarkingAll(false); }
   };
 
-  /* ── delete ──────────────────────────────────────────────────── */
   const handleDelete = async (id) => {
     const prev = alerts;
-    setAlerts((all) => all.filter((a) => a._id !== id));
-    try {
-      await deleteAlert(id);
-      refreshAlerts();
-    } catch {
-      setAlerts(prev);
-    }
+    setAlerts(all => all.filter(a => a._id !== id));
+    try { await deleteAlert(id); refreshAlerts(); }
+    catch { setAlerts(prev); }
   };
 
-  /* ── filtered list ───────────────────────────────────────────── */
-  const filtered = alerts.filter((a) => {
+  const filtered = alerts.filter(a => {
     if (filter === 'Unread')     return !a.isRead;
     if (filter === 'Expiry')     return a.alertType === 'expiry';
     if (filter === 'Renewal')    return a.alertType === 'renewal';
@@ -108,82 +184,96 @@ export default function Alerts() {
     return true;
   });
 
-  const unreadCount = alerts.filter((a) => !a.isRead).length;
-  const hasUnread   = unreadCount > 0;
+  const unreadCount = alerts.filter(a => !a.isRead).length;
+
+  const tabCount = (tab) => {
+    if (tab === 'All')        return alerts.length;
+    if (tab === 'Unread')     return alerts.filter(a => !a.isRead).length;
+    if (tab === 'Expiry')     return alerts.filter(a => a.alertType === 'expiry').length;
+    if (tab === 'Renewal')    return alerts.filter(a => a.alertType === 'renewal').length;
+    if (tab === 'Compliance') return alerts.filter(a => a.alertType === 'compliance').length;
+    if (tab === 'Risk')       return alerts.filter(a => a.alertType === 'risk').length;
+    return 0;
+  };
 
   return (
-    <>
-      <Header title="Alerts Center">
-        {hasUnread && (
+    <div style={{ minHeight: '100vh', background: BG, padding: '36px 24px 64px' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ marginBottom: 32 }}>
           <button
-            onClick={handleMarkAllRead}
-            disabled={markingAll}
-            className="flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors font-semibold"
+            onClick={() => navigate('/studio')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: TM, fontSize: 13, fontWeight: 600, padding: '4px 0', marginBottom: 14 }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#a5b4fc'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = TM; }}
           >
-            <span className="material-symbols-outlined text-lg">done_all</span>
-            {markingAll ? 'Marking…' : 'Mark all read'}
+            <I.ArrowLeft size={14} /> Back to Studio
           </button>
-        )}
-      </Header>
 
-      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
-
-        {/* ── Page heading ──────────────────────────────────────── */}
-        <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
-          className="flex items-end justify-between">
-          <div>
-            <h1 className="text-4xl font-headline font-extrabold tracking-tight mb-2">
-              <span className="gradient-text">Notifications</span>
-            </h1>
-            <div className="flex items-center gap-3">
-              {loading ? (
-                <span className="text-sm text-on-surface-variant">Loading…</span>
-              ) : (
-                <>
-                  {unreadCount > 0 ? (
-                    <motion.span initial={{ scale:0 }} animate={{ scale:1 }} transition={{ type:'spring', stiffness:400, damping:20 }}
-                      className="bg-primary/20 text-primary text-sm px-3 py-1 rounded-full font-bold font-label">
-                      {unreadCount} UNREAD
-                    </motion.span>
-                  ) : (
-                    <span className="bg-surface-container text-on-surface-variant text-sm px-3 py-1 rounded-full font-label">
-                      ALL CAUGHT UP
-                    </span>
-                  )}
-                  <span className="text-sm text-on-surface-variant">
-                    {alerts.length} total alert{alerts.length !== 1 ? 's' : ''}
-                  </span>
-                </>
-              )}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+            <div>
+              <h1 style={{ margin: '0 0 8px', fontSize: 30, fontWeight: 900, color: T, letterSpacing: '-0.02em' }}>
+                <span style={{ background: `linear-gradient(135deg, ${INDIGO}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Alert</span> Center
+              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {loading ? (
+                  <span style={{ fontSize: 13, color: TM }}>Loading…</span>
+                ) : (
+                  <>
+                    {unreadCount > 0 ? (
+                      <motion.span
+                        initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                        style={{ fontSize: 12, fontWeight: 800, padding: '3px 12px', borderRadius: 100, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}
+                      >
+                        {unreadCount} UNREAD
+                      </motion.span>
+                    ) : (
+                      <span style={{ fontSize: 12, padding: '3px 12px', borderRadius: 100, background: ELE, color: TM }}>ALL CAUGHT UP</span>
+                    )}
+                    <span style={{ fontSize: 13, color: TM }}>{alerts.length} total alert{alerts.length !== 1 ? 's' : ''}</span>
+                  </>
+                )}
+              </div>
             </div>
+            {unreadCount > 0 && (
+              <motion.button
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                onClick={handleMarkAllRead}
+                disabled={markingAll}
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', borderRadius: 10, background: ELE, border: `1px solid ${BORDER}`, color: TM, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+              >
+                <I.Check size={14} />
+                {markingAll ? 'Marking…' : 'Mark all read'}
+              </motion.button>
+            )}
           </div>
         </motion.div>
 
-        {/* ── Filter tabs ───────────────────────────────────────── */}
-        <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.4, delay:0.1 }}
-          className="flex gap-2 flex-wrap">
-          {FILTER_TABS.map((tab) => {
-            const count =
-              tab === 'Unread'     ? alerts.filter((a) => !a.isRead).length :
-              tab === 'Expiry'     ? alerts.filter((a) => a.alertType === 'expiry').length :
-              tab === 'Renewal'    ? alerts.filter((a) => a.alertType === 'renewal').length :
-              tab === 'Compliance' ? alerts.filter((a) => a.alertType === 'compliance').length :
-              tab === 'Risk'       ? alerts.filter((a) => a.alertType === 'risk').length :
-              alerts.length;
-
+        {/* ── Filter tabs ─────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}
+        >
+          {FILTER_TABS.map(tab => {
+            const count = tabCount(tab);
+            const isActive = filter === tab;
             return (
-              <motion.button key={tab} onClick={() => setFilter(tab)}
-                whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold font-headline transition-colors flex items-center gap-2 relative ${
-                  filter === tab ? 'text-[#001a12]' : 'text-on-surface-variant hover:text-white border border-white/5'
-                }`}
-                style={filter === tab ? { background:'linear-gradient(135deg,#44e5c2,#38bfa1)', boxShadow:'0 4px 16px rgba(124,58,237,0.15)' } : { background:'var(--surface)' }}
+              <motion.button
+                key={tab}
+                onClick={() => setFilter(tab)}
+                whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+                  background: isActive ? `linear-gradient(135deg, ${INDIGO}, #4f46e5)` : ELE,
+                  color: isActive ? '#fff' : TM,
+                  boxShadow: isActive ? '0 4px 12px rgba(99,102,241,0.3)' : 'none',
+                }}
               >
                 {tab}
                 {count > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    filter === tab ? 'bg-[#001a12]/20 text-[#001a12]' : 'bg-surface-container-high text-on-surface-variant'
-                  }`}>
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 100, background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)', color: isActive ? '#fff' : TM }}>
                     {count}
                   </span>
                 )}
@@ -192,182 +282,82 @@ export default function Alerts() {
           })}
         </motion.div>
 
-        {/* ── States ───────────────────────────────────────────────── */}
+        {/* ── Loading skeleton ─────────────────────────────────────── */}
         {loading && (
-          <div className="space-y-4">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-surface-container-low rounded-xl p-6 animate-pulse">
-                <div className="flex gap-5">
-                  <div className="w-12 h-12 bg-surface-container rounded-xl flex-shrink-0" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-4 bg-surface-container rounded w-1/3" />
-                    <div className="h-3 bg-surface-container rounded w-2/3" />
-                  </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[1, 2, 3].map(n => (
+              <div key={n} style={{ borderRadius: 14, padding: '20px 22px', background: SUR, border: `1px solid ${BORDER}`, display: 'flex', gap: 16 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: ELE, flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ height: 14, width: '33%', borderRadius: 7, background: ELE, marginBottom: 10 }} />
+                  <div style={{ height: 11, width: '66%', borderRadius: 7, background: ELE }} />
                 </div>
               </div>
             ))}
           </div>
         )}
 
+        {/* ── Error state ─────────────────────────────────────────── */}
         {!loading && error && (
-          <div className="text-center py-16 space-y-4">
-            <span className="material-symbols-outlined text-error text-5xl block">error_outline</span>
-            <p className="text-on-surface-variant">{error}</p>
-            <button
-              onClick={fetchAlerts}
-              className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-semibold text-sm"
-            >
-              Retry
-            </button>
+          <div style={{ textAlign: 'center', padding: '72px 24px' }}>
+            <I.Alert size={48} style={{ color: ERR, display: 'block', margin: '0 auto 12px' }} />
+            <p style={{ color: TM, margin: '0 0 16px' }}>{error}</p>
+            <button onClick={fetchAlerts} style={{ padding: '10px 24px', borderRadius: 10, background: `linear-gradient(135deg, ${INDIGO}, #4f46e5)`, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Retry</button>
           </div>
         )}
 
+        {/* ── Empty state ─────────────────────────────────────────── */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="text-center py-20 space-y-3">
-            <span className="material-symbols-outlined text-5xl block opacity-20">notifications_off</span>
-            <p className="text-white/30 font-headline font-bold text-lg">No alerts here</p>
-            <p className="text-sm text-on-surface-variant">
-              {filter === 'All'
-                ? "You're all caught up. Upload a document to get started."
-                : `No ${filter.toLowerCase()} alerts at the moment.`}
+          <div style={{ textAlign: 'center', padding: '72px 24px' }}>
+            <I.Bell size={56} style={{ color: TM, display: 'block', margin: '0 auto 14px', opacity: 0.2 }} />
+            <p style={{ color: T, fontSize: 18, fontWeight: 800, margin: '0 0 8px' }}>No alerts here</p>
+            <p style={{ color: TM, fontSize: 13, margin: 0 }}>
+              {filter === 'All' ? "You're all caught up. Upload a document to get started." : `No ${filter.toLowerCase()} alerts at the moment.`}
             </p>
           </div>
         )}
 
-        {/* ── Alert cards ───────────────────────────────────────── */}
+        {/* ── Alert cards ─────────────────────────────────────────── */}
         {!loading && !error && filtered.length > 0 && (
-          <motion.div className="space-y-3"
-            variants={{ show: { transition: { staggerChildren: 0.06 } } }}
-            initial="hidden" animate="show">
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            variants={{ show: { transition: { staggerChildren: 0.05 } } }}
+            initial="hidden" animate="show"
+          >
             <AnimatePresence>
-            {filtered.map((alert) => (
-              <motion.div key={alert._id}
-                variants={{ hidden:{ opacity:0, y:16, scale:0.97 }, show:{ opacity:1, y:0, scale:1, transition:{ duration:0.35, ease:[0.22,1,0.36,1] } } }}
-                exit={{ opacity:0, x:20, scale:0.97, transition:{ duration:0.25 } }}>
-                <AlertCard
-                  alert={alert}
-                  onMarkRead={handleMarkRead}
-                  onDelete={handleDelete}
-                  onViewDoc={(docId) => navigate(`/analysis/${docId}`)}
-                />
-              </motion.div>
-            ))}
+              {filtered.map(alert => (
+                <motion.div
+                  key={alert._id}
+                  variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } } }}
+                  exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
+                >
+                  <AlertCard
+                    alert={alert}
+                    onMarkRead={handleMarkRead}
+                    onDelete={handleDelete}
+                    onViewDoc={docId => navigate(`/analysis/${docId}`)}
+                  />
+                </motion.div>
+              ))}
             </AnimatePresence>
           </motion.div>
         )}
 
-        {/* ── Footer ───────────────────────────────────────────── */}
+        {/* ── Footer ───────────────────────────────────────────────── */}
         {!loading && !error && alerts.length > 0 && (
-          <div className="flex items-center justify-between pt-6 border-t border-white/5 text-sm text-on-surface-variant">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
-                auto_awesome
-              </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 28, paddingTop: 20, borderTop: `1px solid ${BORDER}`, fontSize: 12, color: TM }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <I.Sparkle size={15} style={{ color: CYAN }} />
               <span>Alerts are generated automatically from your document analysis results.</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-              <span className="text-xs font-label">Live</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+              <span style={{ fontSize: 11, fontWeight: 700 }}>Live</span>
             </div>
           </div>
         )}
+
       </div>
-    </>
-  );
-}
-
-/* ── AlertCard ─────────────────────────────────────────────────────── */
-function AlertCard({ alert, onMarkRead, onDelete, onViewDoc }) {
-  const meta     = TYPE_META[alert.alertType] || TYPE_META_FALLBACK;
-  const docId    = alert.documentId?._id || alert.documentId;
-  const docName  = alert.documentId?.originalName || null;
-  const severity = alert.severity || 'low';
-
-  const handleClick = () => {
-    if (!alert.isRead) onMarkRead(alert._id);
-  };
-
-  return (
-    <motion.div
-      onClick={handleClick}
-      whileHover={{ x: 4, scale: 1.005 }}
-      whileTap={{ scale: 0.99 }}
-      className={`group relative overflow-hidden rounded-xl p-6 cursor-pointer border-l-4 ${
-        alert.isRead ? 'border-transparent' : meta.border
-      }`}
-      style={{ background: alert.isRead ? 'var(--surface)' : undefined, backdropFilter:'blur(12px)', border:'1px solid var(--border)', borderLeftWidth:'4px', borderLeftColor: alert.isRead ? 'transparent' : undefined }}
-    >
-      <div className="flex gap-5">
-        {/* Icon */}
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
-          alert.isRead ? 'bg-surface-container-high' : meta.bg
-        }`}>
-          <span
-            className={`material-symbols-outlined text-2xl ${alert.isRead ? 'text-on-surface-variant' : meta.color}`}
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            {meta.icon}
-          </span>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3 mb-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className={`text-base font-bold font-headline ${alert.isRead ? 'text-on-surface' : 'text-white'}`}>
-                {alert.title || meta.label}
-              </h3>
-              {!alert.isRead && (
-                <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-              )}
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${SEVERITY_BADGE[severity] || SEVERITY_BADGE.low}`}>
-                {severity}
-              </span>
-            </div>
-            <span className={`text-xs font-label flex-shrink-0 ${alert.isRead ? 'text-on-surface-variant' : meta.color}`}>
-              {timeAgo(alert.createdAt)}
-            </span>
-          </div>
-
-          <p className={`text-sm leading-relaxed mb-3 ${alert.isRead ? 'text-on-surface-variant' : 'text-on-surface'}`}>
-            {alert.message}
-            {docName && (
-              <> — <span className={`font-semibold ${meta.color}`}>{docName}</span></>
-            )}
-          </p>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {docId && (
-              <button
-                onClick={() => onViewDoc(docId)}
-                className={`text-xs px-4 py-1.5 rounded-lg font-bold transition-all ${
-                  alert.isRead
-                    ? 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'
-                    : `bg-primary text-on-primary hover:opacity-90`
-                }`}
-              >
-                View Document
-              </button>
-            )}
-            {!alert.isRead && (
-              <button
-                onClick={() => onMarkRead(alert._id)}
-                className="text-xs px-4 py-1.5 rounded-lg font-bold bg-white/5 text-on-surface-variant hover:bg-white/10 transition-colors"
-              >
-                Mark read
-              </button>
-            )}
-            <button
-              onClick={() => onDelete(alert._id)}
-              className="ml-auto text-xs text-on-surface-variant hover:text-error transition-colors flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-sm">delete</span>
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 }

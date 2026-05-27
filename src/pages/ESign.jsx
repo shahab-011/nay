@@ -5,12 +5,12 @@ import { esignApi } from '../api/esign.api';
 
 /* ─── Constants ───────────────────────────────────────────────── */
 const STATUS_META = {
-  draft:            { label: 'Draft',            bg: '#F3F4F6', text: '#6B7280', border: '#E5E7EB' },
-  pending:          { label: 'Pending',           bg: '#FFF7ED', text: '#D97706', border: '#FED7AA' },
-  partially_signed: { label: 'Partially Signed',  bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
-  completed:        { label: 'Completed',         bg: '#ECFDF5', text: '#059669', border: '#6EE7B7' },
-  expired:          { label: 'Expired',           bg: '#FFF1F2', text: '#BE123C', border: '#FECDD3' },
-  void:             { label: 'Void',              bg: '#F3F4F6', text: '#9CA3AF', border: '#E5E7EB' },
+  draft:            { label: 'Draft',            bg: 'rgba(240,238,255,0.08)', text: 'rgba(240,238,255,0.45)', border: 'rgba(240,238,255,0.1)' },
+  pending:          { label: 'Pending',           bg: 'rgba(245,158,11,0.15)',  text: '#f59e0b',               border: 'rgba(245,158,11,0.3)'  },
+  partially_signed: { label: 'Partially Signed',  bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa',               border: 'rgba(59,130,246,0.3)'  },
+  completed:        { label: 'Completed',         bg: 'rgba(34,197,94,0.15)',   text: '#22c55e',               border: 'rgba(34,197,94,0.3)'   },
+  expired:          { label: 'Expired',           bg: 'rgba(239,68,68,0.15)',   text: '#f87171',               border: 'rgba(239,68,68,0.3)'   },
+  void:             { label: 'Void',              bg: 'rgba(240,238,255,0.05)', text: 'rgba(240,238,255,0.3)', border: 'rgba(240,238,255,0.1)' },
 };
 
 const ROLES = [
@@ -39,10 +39,10 @@ function fmtDateTime(d) {
 }
 
 /* ─── Shared styles ───────────────────────────────────────────── */
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
-const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
-const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
-const btnGhost  = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' };
+const btnGhost  = { padding: '9px 18px', borderRadius: 9, background: 'rgba(255,255,255,0.07)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
 
 /* ─── NewRequestModal ─────────────────────────────────────────── */
 function NewRequestModal({ onClose, onSave }) {

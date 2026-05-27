@@ -21,22 +21,22 @@ function downloadCSV(rows, filename) {
 }
 
 /* ─── Shared primitives ─────────────────────────────────────────── */
-const COLORS = ['#7C3AED','#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#EC4899'];
+const COLORS = ['#7c3aed','#3b82f6','#22c55e','#f59e0b','#ef4444','#c4b5fd','#06b6d4','#f472b6'];
 
-function StatCard({ label, value, sub, color = '#7C3AED', icon: Ic }) {
+function StatCard({ label, value, sub, color = '#7c3aed', icon: Ic }) {
   return (
-    <div style={{ background:'#fff', borderRadius:14, padding:'18px 20px', border:'1.5px solid #E5E7EB', boxShadow:'0 2px 8px rgba(0,0,0,0.05)' }}>
+    <div style={{ background:'rgba(255,255,255,0.05)', borderRadius:14, padding:'18px 20px', border:'1px solid rgba(124,58,237,0.18)', boxShadow:'0 4px 24px rgba(0,0,0,0.4)', backdropFilter:'blur(12px)' }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-        {Ic && <div style={{ width:32,height:32,borderRadius:8, background:`${color}18`, display:'flex',alignItems:'center',justifyContent:'center' }}><Ic size={16} style={{color}} /></div>}
-        <span style={{ fontSize:12,fontWeight:700,color:'#6B7280',textTransform:'uppercase',letterSpacing:'0.06em' }}>{label}</span>
+        {Ic && <div style={{ width:32,height:32,borderRadius:8, background:`${color}22`, display:'flex',alignItems:'center',justifyContent:'center' }}><Ic size={16} style={{color}} /></div>}
+        <span style={{ fontSize:12,fontWeight:700,color:'rgba(240,238,255,0.45)',textTransform:'uppercase',letterSpacing:'0.06em' }}>{label}</span>
       </div>
-      <div style={{ fontSize:24,fontWeight:900,color:'#111827' }}>{value}</div>
-      {sub && <div style={{ fontSize:11,color:'#9CA3AF',marginTop:2 }}>{sub}</div>}
+      <div style={{ fontSize:24,fontWeight:900,color:'#f0eeff' }}>{value}</div>
+      {sub && <div style={{ fontSize:11,color:'rgba(240,238,255,0.35)',marginTop:2 }}>{sub}</div>}
     </div>
   );
 }
 
-function BarChart({ data, color = '#7C3AED', unit = '' }) {
+function BarChart({ data, color = '#7c3aed', unit = '' }) {
   if (!data?.length) return <Empty />;
   const max = Math.max(...data.map(d => d.value||d.total||d.hours||0), 1);
   return (
@@ -45,16 +45,16 @@ function BarChart({ data, color = '#7C3AED', unit = '' }) {
         const val = d.value||d.total||d.hours||0;
         return (
           <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, minWidth:0 }}>
-            <div style={{ fontSize:9,color:'#9CA3AF',fontWeight:700,textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',width:'100%' }}>
+            <div style={{ fontSize:9,color:'rgba(240,238,255,0.4)',fontWeight:700,textAlign:'center',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',width:'100%' }}>
               {unit}{val>=1000?`${(val/1000).toFixed(1)}k`:fmtN(val)}
             </div>
             <motion.div
               initial={{ height:0 }}
               animate={{ height:`${Math.max((val/max)*90,val>0?4:0)}px` }}
               transition={{ delay:i*0.04, type:'spring', stiffness:180, damping:18 }}
-              style={{ width:'100%', background:color, borderRadius:'4px 4px 0 0' }}
+              style={{ width:'100%', background:color, borderRadius:'4px 4px 0 0', opacity:0.85 }}
             />
-            <div style={{ fontSize:8,color:'#9CA3AF',fontWeight:700,textAlign:'center',letterSpacing:'0.04em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',width:'100%' }}>
+            <div style={{ fontSize:8,color:'rgba(240,238,255,0.35)',fontWeight:700,textAlign:'center',letterSpacing:'0.04em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',width:'100%' }}>
               {d.label||d.period||d.area||d.stage||d.source||d.type||''}
             </div>
           </div>
@@ -76,16 +76,16 @@ function PieRing({ data, valueKey='count' }) {
   return (
     <div style={{ display:'flex',alignItems:'center',gap:20 }}>
       <div style={{ width:90,height:90,borderRadius:'50%',background:`conic-gradient(${parts.join(',')})`,position:'relative',flexShrink:0 }}>
-        <div style={{ position:'absolute',inset:'24%',borderRadius:'50%',background:'#fff' }} />
+        <div style={{ position:'absolute',inset:'24%',borderRadius:'50%',background:'#0c0a1e' }} />
       </div>
       <div style={{ display:'flex',flexDirection:'column',gap:5,flex:1,minWidth:0 }}>
         {data.slice(0,6).map((d,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:6 }}>
             <div style={{ width:8,height:8,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0 }} />
-            <span style={{ fontSize:11,color:'#374151',flex:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>
+            <span style={{ fontSize:11,color:'rgba(240,238,255,0.6)',flex:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>
               {d.label||d.area||d.stage||d.source||d.type||Object.values(d)[0]}
             </span>
-            <span style={{ fontSize:11,fontWeight:800,color:'#111827' }}>
+            <span style={{ fontSize:11,fontWeight:800,color:'#f0eeff' }}>
               {Math.round((d[valueKey]||0)/total*100)}%
             </span>
           </div>
@@ -103,7 +103,7 @@ function DataTable({ columns, rows, emptyMsg='No data' }) {
         <thead>
           <tr>
             {columns.map(c => (
-              <th key={c.key} style={{ padding:'8px 12px',textAlign:'left',fontSize:10,fontWeight:800,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:'0.06em',borderBottom:'2px solid #E5E7EB',whiteSpace:'nowrap' }}>
+              <th key={c.key} style={{ padding:'8px 12px',textAlign:'left',fontSize:10,fontWeight:800,color:'rgba(240,238,255,0.4)',textTransform:'uppercase',letterSpacing:'0.06em',borderBottom:'2px solid rgba(124,58,237,0.2)',whiteSpace:'nowrap' }}>
                 {c.label}
               </th>
             ))}
@@ -111,9 +111,9 @@ function DataTable({ columns, rows, emptyMsg='No data' }) {
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} style={{ background: i%2===0?'#fff':'#F9FAFB' }}>
+            <tr key={i} style={{ background: i%2===0?'transparent':'rgba(255,255,255,0.02)' }}>
               {columns.map(c => (
-                <td key={c.key} style={{ padding:'9px 12px',color:'#374151',borderBottom:'1px solid #F3F4F6',whiteSpace:'nowrap' }}>
+                <td key={c.key} style={{ padding:'9px 12px',color:'rgba(240,238,255,0.75)',borderBottom:'1px solid rgba(124,58,237,0.1)',whiteSpace:'nowrap' }}>
                   {c.render ? c.render(row[c.key], row) : (row[c.key]??'—')}
                 </td>
               ))}

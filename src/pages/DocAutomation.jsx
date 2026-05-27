@@ -34,10 +34,10 @@ const CAT_COLOR = {
 };
 
 /* ─── Shared styles ───────────────────────────────────────────── */
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
-const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
-const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
-const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' };
+const btnGhost = { padding: '9px 18px', borderRadius: 9, background: 'rgba(255,255,255,0.07)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
 
 /* ─── TemplateCard ────────────────────────────────────────────── */
 function TemplateCard({ t, onUse, onEdit, onDelete, onFavorite, onVersions }) {
@@ -49,15 +49,15 @@ function TemplateCard({ t, onUse, onEdit, onDelete, onFavorite, onVersions }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.10)' }}
-      style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #E5E7EB', padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+      whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(124,58,237,0.25)' }}
+      style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, border: '1px solid rgba(124,58,237,0.18)', padding: '20px 20px 16px', display: 'flex', flexDirection: 'column', gap: 12, backdropFilter: 'blur(12px)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ width: 42, height: 42, borderRadius: 11, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <I.Layers size={20} style={{ color }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#f0eeff', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
           <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.5 }}>{t.description}</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>

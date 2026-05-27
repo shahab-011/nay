@@ -5,22 +5,22 @@ import { leadsApi } from '../api/leads.api';
 
 const STAGES = ['New Lead','Contacted','Consultation Scheduled','Proposal Sent','Hired','Not Hired'];
 const STAGE_COLOR = {
-  'New Lead':               { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
-  'Contacted':              { bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0' },
-  'Consultation Scheduled': { bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA' },
-  'Proposal Sent':          { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
-  'Hired':                  { bg: '#ECFDF5', text: '#059669', border: '#6EE7B7' },
-  'Not Hired':              { bg: '#FFF1F2', text: '#BE123C', border: '#FECDD3' },
+  'New Lead':               { bg: 'rgba(59,130,246,0.15)',   text: '#60a5fa', border: 'rgba(59,130,246,0.3)'  },
+  'Contacted':              { bg: 'rgba(34,197,94,0.15)',    text: '#4ade80', border: 'rgba(34,197,94,0.3)'   },
+  'Consultation Scheduled': { bg: 'rgba(249,115,22,0.15)',   text: '#fb923c', border: 'rgba(249,115,22,0.3)'  },
+  'Proposal Sent':          { bg: 'rgba(124,58,237,0.15)',   text: '#c4b5fd', border: 'rgba(124,58,237,0.3)'  },
+  'Hired':                  { bg: 'rgba(34,197,94,0.2)',     text: '#22c55e', border: 'rgba(34,197,94,0.4)'   },
+  'Not Hired':              { bg: 'rgba(239,68,68,0.15)',    text: '#f87171', border: 'rgba(239,68,68,0.3)'   },
 };
 const PRACTICE_AREAS = ['Family Law','Criminal','Contract','Property','Immigration','Employment','IP','Corporate','Tax','Personal Injury','Civil','Other'];
 const SOURCES = ['Website Form','Referral','Social Media','Paid Ad','Phone Call','Walk-in','Bar Referral','Other'];
 const FIELD_TYPES = ['text','email','phone','dropdown','checkbox','date','textarea','file','heading','paragraph'];
 
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 5 };
-const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E5E7EB', fontSize: 13, color: '#111827', background: '#fff', outline: 'none', boxSizing: 'border-box' };
-const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: '#7C3AED', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
-const btnGhost = { padding: '9px 18px', borderRadius: 9, background: '#F3F4F6', color: '#374151', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
-const btnGreen = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 9, background: '#059669', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' };
+const btnGhost = { padding: '9px 18px', borderRadius: 9, background: 'rgba(255,255,255,0.07)', color: '#f0eeff', border: '1px solid rgba(124,58,237,0.2)', cursor: 'pointer', fontSize: 13, fontWeight: 600 };
+const btnGreen = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 9, background: 'linear-gradient(135deg,#16a34a,#15803d)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 };
 
 function daysSince(d) { return Math.floor((Date.now() - new Date(d)) / 86400000); }
 
@@ -68,13 +68,13 @@ function Stats({ leads, stats: apiStats }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 28 }}>
       {items.map(s => (
-        <div key={s.label} style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #E5E7EB', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 11, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, border: '1px solid rgba(124,58,237,0.18)', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(12px)' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 11, background: s.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <s.icon size={18} style={{ color: s.color }} />
           </div>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#111827', lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: '#6B7280', marginTop: 3 }}>{s.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#f0eeff', lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.45)', marginTop: 3 }}>{s.label}</div>
           </div>
         </div>
       ))}
@@ -87,14 +87,14 @@ function LeadCard({ lead, onDragStart, onClick }) {
   const sc = STAGE_COLOR[lead.stage] || STAGE_COLOR['New Lead'];
   return (
     <motion.div layout draggable onDragStart={e => onDragStart(e, lead._id)} onClick={() => onClick(lead)}
-      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}
-      style={{ background: '#fff', borderRadius: 12, border: '1.5px solid #E5E7EB', padding: '14px 16px', cursor: 'grab', marginBottom: 8, boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+      whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(124,58,237,0.18)' }}
+      style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 12, border: '1px solid rgba(124,58,237,0.18)', padding: '14px 16px', cursor: 'grab', marginBottom: 8, backdropFilter: 'blur(8px)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', lineHeight: 1.3 }}>{lead.name}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#f0eeff', lineHeight: 1.3 }}>{lead.name}</div>
         <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{lead.practiceArea}</span>
       </div>
       {lead.email && (
-        <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+        <div style={{ fontSize: 11, color: 'rgba(240,238,255,0.5)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
           <I.Mail size={10} /> {lead.email}
         </div>
       )}
@@ -102,15 +102,15 @@ function LeadCard({ lead, onDragStart, onClick }) {
       {lead.tags?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 4 }}>
           {lead.tags.slice(0, 3).map(t => (
-            <span key={t} style={{ fontSize: 10, padding: '1px 7px', borderRadius: 10, background: '#EDE9FE', color: '#6D28D9', fontWeight: 600 }}>{t}</span>
+            <span key={t} style={{ fontSize: 10, padding: '1px 7px', borderRadius: 10, background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', fontWeight: 600 }}>{t}</span>
           ))}
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#059669' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#22c55e' }}>
           {lead.estimatedValue ? `PKR ${(lead.estimatedValue / 1000).toFixed(0)}k` : '—'}
         </span>
-        <span style={{ fontSize: 10, color: '#9CA3AF' }}>{daysSince(lead.createdAt)}d ago</span>
+        <span style={{ fontSize: 10, color: 'rgba(240,238,255,0.35)' }}>{daysSince(lead.createdAt)}d ago</span>
       </div>
     </motion.div>
   );
@@ -124,14 +124,14 @@ function Column({ stage, leads, stageValues, onDragStart, onDrop, onCardClick })
   return (
     <div onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
       onDrop={e => { e.preventDefault(); setOver(false); onDrop(e, stage); }}
-      style={{ minWidth: 240, flex: '0 0 240px', background: over ? '#F5F3FF' : '#F3F4F6', borderRadius: 14, padding: '12px 10px', border: over ? '2px dashed #7C3AED' : '2px solid transparent', transition: 'all 150ms', maxHeight: '68vh', overflowY: 'auto' }}>
+      style={{ minWidth: 240, flex: '0 0 240px', background: over ? 'rgba(124,58,237,0.1)' : 'rgba(255,255,255,0.03)', borderRadius: 14, padding: '12px 10px', border: over ? '2px dashed #7c3aed' : '1px solid rgba(124,58,237,0.12)', transition: 'all 150ms', maxHeight: '68vh', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <span style={{ width: 9, height: 9, borderRadius: '50%', background: sc.text, display: 'inline-block' }} />
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#374151' }}>{stage}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#f0eeff' }}>{stage}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          {totalVal > 0 && <span style={{ fontSize: 10, color: '#6B7280' }}>PKR {(totalVal/1000).toFixed(0)}k</span>}
+          {totalVal > 0 && <span style={{ fontSize: 10, color: 'rgba(240,238,255,0.45)' }}>PKR {(totalVal/1000).toFixed(0)}k</span>}
           <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: sc.bg, color: sc.text }}>{leads.length}</span>
         </div>
       </div>

@@ -20,11 +20,11 @@ const STATUSES = ['active','pending','on_hold','closed','archived'];
 const BILLING_TYPES = ['hourly','flat_fee','contingency','retainer','pro_bono'];
 
 const STATUS_META = {
-  active:   { label: 'Active',   bg: 'var(--green-bg)',  color: 'var(--green)'       },
-  pending:  { label: 'Pending',  bg: 'var(--amber-bg)', color: 'var(--amber)'       },
-  on_hold:  { label: 'On Hold',  bg: '#FEF3C7',         color: '#92400E'            },
-  closed:   { label: 'Closed',   bg: 'var(--active)',   color: 'var(--text-muted)'  },
-  archived: { label: 'Archived', bg: 'var(--active)',   color: 'var(--text-muted)'  },
+  active:   { label: 'Active',   bg: 'var(--green-bg)',  color: 'var(--green)'      },
+  pending:  { label: 'Pending',  bg: 'var(--amber-bg)', color: 'var(--amber)'      },
+  on_hold:  { label: 'On Hold',  bg: 'var(--blue-bg)',  color: 'var(--blue)'       },
+  closed:   { label: 'Closed',   bg: 'var(--active)',   color: 'var(--text-muted)' },
+  archived: { label: 'Archived', bg: 'var(--active)',   color: 'var(--text-muted)' },
 };
 
 const BILLING_LABEL = {

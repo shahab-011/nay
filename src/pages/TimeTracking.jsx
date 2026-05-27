@@ -82,7 +82,7 @@ function ModalWrap({ onClose, title, children }) {
     >
       <motion.div
         initial={{ scale: 0.96, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96 }}
-        style={{ background: 'var(--surface)', borderRadius: 18, width: '100%', maxWidth: 520, boxShadow: 'var(--shadow-float)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+        style={{ background: '#120d2e', borderRadius: 18, width: '100%', maxWidth: 520, boxShadow: '0 24px 64px rgba(0,0,0,0.6)', border: '1px solid rgba(124,58,237,0.28)', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
       >
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>{title}</h3>

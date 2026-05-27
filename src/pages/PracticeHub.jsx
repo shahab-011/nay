@@ -5,52 +5,95 @@ import { useAuth } from '../context/AuthContext';
 import { I } from '../components/Icons';
 import { reportsApi } from '../api/reports.api';
 
-/* ── Shared animation helpers ────────────────────────────────── */
-const fadeUp  = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } } };
-const stagger = (delay = 0) => ({ show: { transition: { staggerChildren: 0.08, delayChildren: delay } } });
+/* ── Design tokens ───────────────────────────────────────────── */
+const T = {
+  bg:     '#0c0a1e',
+  sur:    'rgba(255,255,255,0.05)',
+  sur2:   'rgba(255,255,255,0.09)',
+  bdr:    'rgba(124,58,237,0.18)',
+  purp:   '#7c3aed',
+  lav:    '#c4b5fd',
+  ink:    '#f0eeff',
+  muted:  'rgba(240,238,255,0.45)',
+  dim:    'rgba(240,238,255,0.25)',
+  shadow: '0 4px 24px rgba(0,0,0,0.4)',
+  glow:   '0 8px 32px rgba(124,58,237,0.25)',
+};
+
+/* ── Animation presets ───────────────────────────────────────── */
+const ease = [0.22, 1, 0.36, 1];
+const fadeUp = {
+  hidden: { opacity: 0, y: 22 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
+};
+const staggerGrid = (delay = 0) => ({
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.07, delayChildren: delay } },
+});
 
 /* ── KPI stat card ───────────────────────────────────────────── */
-function StatCard({ icon, label, value, sub, color, bg, delay = 0 }) {
+function StatCard({ icon, label, value, sub, color, glowColor }) {
   return (
     <motion.div
       variants={fadeUp}
-      transition={{ delay }}
-      whileHover={{ y: -4, boxShadow: `0 20px 48px rgba(0,0,0,0.18)` }}
+      whileHover={{ y: -5, boxShadow: `0 20px 48px rgba(0,0,0,0.5), 0 0 0 1px ${color}44` }}
+      transition={{ duration: 0.2 }}
       style={{
-        background: 'var(--surface)',
-        border: '1.5px solid var(--border)',
-        borderRadius: 18,
-        padding: '22px 24px',
+        background: T.sur,
+        border: `1px solid ${T.bdr}`,
+        borderRadius: 20,
+        padding: '24px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 14,
         cursor: 'default',
-        transition: 'border-color 200ms',
         position: 'relative',
         overflow: 'hidden',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        boxShadow: T.shadow,
+        transition: 'box-shadow 250ms, transform 250ms',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = color + '55'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
-      {/* Subtle background glow */}
-      <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${bg} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      {/* Corner glow */}
+      <div style={{
+        position: 'absolute', top: -30, right: -30,
+        width: 120, height: 120, borderRadius: '50%',
+        background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+        pointerEvents: 'none',
+      }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ width: 44, height: 44, borderRadius: 13, background: bg, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
+        <div style={{
+          width: 46, height: 46, borderRadius: 14,
+          background: `${color}18`,
+          border: `1px solid ${color}30`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color, boxShadow: `0 0 16px ${color}20`,
+        }}>
           {icon}
         </div>
         {sub && (
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: bg, color, letterSpacing: '0.04em' }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20,
+            background: `${color}18`, color, letterSpacing: '0.06em',
+            textTransform: 'uppercase', border: `1px solid ${color}28`,
+          }}>
             {sub}
           </span>
         )}
       </div>
 
-      <div>
-        <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em', fontFamily: 'var(--font-headline)' }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          fontSize: 30, fontWeight: 900, color: T.ink,
+          lineHeight: 1, letterSpacing: '-0.02em',
+        }}>
           {value ?? '—'}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 500 }}>{label}</div>
+        <div style={{ fontSize: 12, color: T.muted, marginTop: 6, fontWeight: 500 }}>
+          {label}
+        </div>
       </div>
     </motion.div>
   );
@@ -58,66 +101,91 @@ function StatCard({ icon, label, value, sub, color, bg, delay = 0 }) {
 
 /* ── Feature definitions ─────────────────────────────────────── */
 const FEATURES = [
-  { Ic: I.Briefcase,    label: 'Matters',            path: '/matters',        color: '#7C3AED', bg: 'rgba(124,58,237,0.08)',  desc: 'Active cases, stages, and client workflows' },
-  { Ic: I.Users,        label: 'Contacts',           path: '/contacts',       color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  desc: 'Clients, counsel, courts, and witnesses' },
-  { Ic: I.CheckSquare,  label: 'Tasks',              path: '/tasks',          color: '#10B981', bg: 'rgba(16,185,129,0.08)',  desc: 'Kanban, priorities, due dates, subtasks' },
-  { Ic: I.Calendar,     label: 'Calendar',           path: '/cal',            color: '#F59E0B', bg: 'rgba(245,158,11,0.08)',  desc: 'Court dates, hearings, and deadlines' },
-  { Ic: I.Timer,        label: 'Time Tracking',      path: '/time',           color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', desc: 'Live timer, manual entries, matter linking' },
-  { Ic: I.DollarSign,   label: 'Billing',            path: '/billing',        color: '#EF4444', bg: 'rgba(239,68,68,0.08)',   desc: 'Invoices, payments, and trust accounting' },
-  { Ic: I.Chart,        label: 'Reports',            path: '/reports',        color: '#F97316', bg: 'rgba(249,115,22,0.08)',  desc: 'Revenue, utilization, and firm analytics' },
-  { Ic: I.Target,       label: 'Lead Pipeline',      path: '/leads',          color: '#10B981', bg: 'rgba(16,185,129,0.08)', desc: 'Prospects, conversion funnel, win rates' },
-  { Ic: I.Shield,       label: 'Conflict Check',     path: '/conflicts',      color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  desc: 'Detect conflicts before taking new clients' },
-  { Ic: I.Layers,       label: 'Doc Automation',     path: '/doc-automation', color: '#06B6D4', bg: 'rgba(6,182,212,0.08)',  desc: 'Smart templates, auto-fill, and download' },
-  { Ic: I.PenTool,      label: 'E-Signatures',       path: '/esign',          color: '#6366F1', bg: 'rgba(99,102,241,0.08)', desc: 'Send, sign, and track with audit trail' },
-  { Ic: I.MessageSquare,label: 'Communications',     path: '/communications', color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', desc: 'Call logs, emails, matter-linked records' },
-  { Ic: I.Settings,     label: 'Firm Settings',      path: '/firm-settings',  color: '#6B7280', bg: 'rgba(107,114,128,0.08)',desc: 'Team, billing defaults, notifications' },
+  { Ic: I.Briefcase,     label: 'Matters',         path: '/matters',        color: '#7c3aed', desc: 'Active cases, stages, and client workflows' },
+  { Ic: I.Users,         label: 'Contacts',         path: '/contacts',       color: '#3b82f6', desc: 'Clients, counsel, courts, and witnesses' },
+  { Ic: I.CheckSquare,   label: 'Tasks',            path: '/tasks',          color: '#22c55e', desc: 'Kanban, priorities, due dates, subtasks' },
+  { Ic: I.Calendar,      label: 'Calendar',         path: '/cal',            color: '#f59e0b', desc: 'Court dates, hearings, and deadlines' },
+  { Ic: I.Timer,         label: 'Time Tracking',    path: '/time',           color: '#a78bfa', desc: 'Live timer, manual entries, matter linking' },
+  { Ic: I.DollarSign,    label: 'Billing',          path: '/billing',        color: '#ef4444', desc: 'Invoices, payments, and trust accounting' },
+  { Ic: I.Chart,         label: 'Reports',          path: '/reports',        color: '#f97316', desc: 'Revenue, utilization, and firm analytics' },
+  { Ic: I.Target,        label: 'Lead Pipeline',    path: '/leads',          color: '#10b981', desc: 'Prospects, conversion funnel, win rates' },
+  { Ic: I.Shield,        label: 'Conflict Check',   path: '/conflicts',      color: '#ef4444', desc: 'Detect conflicts before taking new clients' },
+  { Ic: I.Layers,        label: 'Doc Automation',   path: '/doc-automation', color: '#06b6d4', desc: 'Smart templates, auto-fill, and download' },
+  { Ic: I.PenTool,       label: 'E-Signatures',     path: '/esign',          color: '#6366f1', desc: 'Send, sign, and track with audit trail' },
+  { Ic: I.MessageSquare, label: 'Communications',   path: '/communications', color: '#3b82f6', desc: 'Call logs, emails, matter-linked records' },
+  { Ic: I.Settings,      label: 'Firm Settings',    path: '/firm-settings',  color: '#94a3b8', desc: 'Team, billing defaults, notifications' },
 ];
 
 const QUICK_ACTIONS = [
-  { label: 'New Matter',   path: '/matters',   Ic: I.Briefcase, color: '#7C3AED' },
-  { label: 'Add Contact',  path: '/contacts',  Ic: I.UserPlus,  color: '#3B82F6' },
-  { label: 'Log Time',     path: '/time',      Ic: I.Timer,     color: '#8B5CF6' },
-  { label: 'New Invoice',  path: '/billing',   Ic: I.Receipt,   color: '#10B981' },
+  { label: 'New Matter',   path: '/matters',  Ic: I.Briefcase, color: '#7c3aed' },
+  { label: 'Add Contact',  path: '/contacts', Ic: I.UserPlus,  color: '#3b82f6' },
+  { label: 'Log Time',     path: '/time',     Ic: I.Timer,     color: '#a78bfa' },
+  { label: 'New Invoice',  path: '/billing',  Ic: I.Receipt,   color: '#22c55e' },
 ];
 
 /* ── Feature card ────────────────────────────────────────────── */
 function FeatureCard({ f, onClick }) {
+  const [hov, setHov] = useState(false);
   return (
     <motion.div
       variants={fadeUp}
-      whileHover={{ y: -5, boxShadow: `0 24px 56px rgba(0,0,0,0.14)` }}
+      whileHover={{ y: -6 }}
+      onHoverStart={() => setHov(true)}
+      onHoverEnd={() => setHov(false)}
       onClick={onClick}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = f.color + '55'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
       style={{
-        background: 'var(--surface)',
+        background: hov ? `${f.color}0f` : T.sur,
         borderRadius: 18,
-        border: '1.5px solid var(--border)',
+        border: `1px solid ${hov ? f.color + '45' : T.bdr}`,
         padding: '22px',
         display: 'flex',
         flexDirection: 'column',
         gap: 14,
         cursor: 'pointer',
-        transition: 'border-color 200ms',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        boxShadow: hov ? `0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px ${f.color}30` : T.shadow,
         position: 'relative',
         overflow: 'hidden',
+        transition: 'background 200ms, border-color 200ms, box-shadow 200ms',
       }}
     >
-      {/* Corner glow */}
-      <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${f.bg} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      {/* Ambient glow spot */}
+      <div style={{
+        position: 'absolute', top: -10, right: -10,
+        width: 80, height: 80, borderRadius: '50%',
+        background: `radial-gradient(circle, ${f.color}18 0%, transparent 70%)`,
+        opacity: hov ? 1 : 0.5,
+        transition: 'opacity 300ms',
+        pointerEvents: 'none',
+      }} />
 
-      <div style={{ width: 48, height: 48, borderRadius: 14, background: f.bg, border: `1px solid ${f.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, flexShrink: 0 }}>
-        <f.Ic size={22} />
+      <motion.div
+        animate={{ rotate: hov ? 6 : 0, scale: hov ? 1.05 : 1 }}
+        transition={{ duration: 0.3, ease }}
+        style={{
+          width: 46, height: 46, borderRadius: 14,
+          background: `${f.color}18`,
+          border: `1px solid ${f.color}28`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: f.color,
+          boxShadow: hov ? `0 0 20px ${f.color}30` : 'none',
+        }}
+      >
+        <f.Ic size={21} />
+      </motion.div>
+
+      <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 5, letterSpacing: '-0.01em' }}>{f.label}</div>
+        <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.65 }}>{f.desc}</div>
       </div>
 
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', marginBottom: 5, letterSpacing: '-0.01em' }}>{f.label}</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{f.desc}</div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: f.color }}>
+      <motion.div
+        animate={{ x: hov ? 3 : 0, opacity: hov ? 1 : 0.6 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: f.color }}
+      >
         Open <I.ArrowRight size={13} />
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -128,45 +196,61 @@ export default function PracticeHub() {
   const { user }        = useAuth();
   const [stats, setStats] = useState(null);
 
-  const hour   = new Date().getHours();
-  const greet  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const today  = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+  const hour  = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   useEffect(() => {
     reportsApi.dashboard().then(r => setStats(r.data?.data)).catch(() => {});
   }, []);
 
   return (
-    <div style={{ paddingTop: 80, minHeight: '100vh', background: 'var(--bg)' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 32px 72px' }}>
+    <div style={{ minHeight: '100vh', background: T.bg, color: T.ink, position: 'relative' }}>
+
+      {/* ── Ambient background decoration ─────────────────────── */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{ position: 'absolute', top: -150, right: -100, width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: -200, left: -150, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)' }} />
+      </div>
+
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: '36px 32px 80px' }}>
 
         {/* ── Page header ──────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: -18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginBottom: 36 }}
+          transition={{ duration: 0.5, ease }}
+          style={{ marginBottom: 40 }}
         >
           {/* Breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18, fontSize: 12, color: 'var(--text-muted)' }}>
-            <I.Home size={12} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 20, fontSize: 12, color: T.dim }}>
+            <I.Home size={12} style={{ color: T.muted }} />
             <span>NyayaAI</span>
-            <I.ChevronRight size={12} />
-            <span style={{ color: 'var(--purple)', fontWeight: 600 }}>Practice Management</span>
+            <I.ChevronRight size={11} />
+            <span style={{ color: T.lav, fontWeight: 600 }}>Practice Management</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
             <div>
-              <motion.p
+              <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-                style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 10 }}
               >
-                {greet}, {user?.name?.split(' ')[0] || 'Counselor'} · {today}
-              </motion.p>
-              <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900, color: 'var(--ink)', letterSpacing: '-0.03em', fontFamily: 'var(--font-headline)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e88', display: 'inline-block' }} />
+                <span style={{ fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                  {greet}, {user?.name?.split(' ')[0] || 'Counselor'} · {today}
+                </span>
+              </motion.div>
+
+              <h1 style={{
+                margin: 0, fontSize: 32, fontWeight: 900, letterSpacing: '-0.03em',
+                background: 'linear-gradient(135deg, #f0eeff 0%, #c4b5fd 50%, #f0eeff 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
                 Practice Hub
               </h1>
-              <p style={{ margin: '6px 0 0', fontSize: 14, color: 'var(--text-muted)', maxWidth: 500 }}>
+              <p style={{ margin: '8px 0 0', fontSize: 14, color: T.muted, maxWidth: 480, lineHeight: 1.6 }}>
                 Your complete legal practice — matters, billing, calendar, and team, all in one place.
               </p>
             </div>
@@ -179,9 +263,18 @@ export default function PracticeHub() {
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(qa.path)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 11, border: '1.5px solid var(--border)', background: 'var(--surface)', color: qa.color, cursor: 'pointer', fontSize: 13, fontWeight: 600, boxShadow: 'var(--shadow-card)', transition: 'border-color 200ms' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = qa.color + '44'; e.currentTarget.style.background = qa.color + '08'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface)'; }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    padding: '9px 16px', borderRadius: 11,
+                    border: `1px solid ${qa.color}35`,
+                    background: `${qa.color}10`,
+                    color: qa.color,
+                    cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 200ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = `${qa.color}1e`; e.currentTarget.style.borderColor = `${qa.color}55`; e.currentTarget.style.boxShadow = `0 0 16px ${qa.color}25`; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${qa.color}10`; e.currentTarget.style.borderColor = `${qa.color}35`; e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <qa.Ic size={14} />
                   {qa.label}
@@ -193,60 +286,66 @@ export default function PracticeHub() {
 
         {/* ── KPI Stats row ─────────────────────────────────────── */}
         <motion.div
-          variants={stagger(0.1)}
+          variants={staggerGrid(0.1)}
           initial="hidden"
           animate="show"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 44 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 48 }}
         >
           <StatCard
             icon={<I.Briefcase size={20} />}
             label="Active Matters"
             value={stats?.activeMatters ?? stats?.matters?.open ?? '—'}
             sub="This month"
-            color="#7C3AED"
-            bg="rgba(124,58,237,0.1)"
+            color="#7c3aed"
+            glowColor="rgba(124,58,237,0.22)"
           />
           <StatCard
             icon={<I.CheckSquare size={20} />}
             label="Tasks Due Today"
             value={stats?.tasksDueToday ?? '—'}
             sub="Pending"
-            color="#10B981"
-            bg="rgba(16,185,129,0.1)"
+            color="#22c55e"
+            glowColor="rgba(34,197,94,0.18)"
           />
           <StatCard
             icon={<I.Timer size={20} />}
             label="Hours This Week"
             value={stats?.hoursThisWeek ?? stats?.totalHours ?? '—'}
             sub="Billable"
-            color="#8B5CF6"
-            bg="rgba(139,92,246,0.1)"
+            color="#a78bfa"
+            glowColor="rgba(167,139,250,0.18)"
           />
           <StatCard
             icon={<I.DollarSign size={20} />}
             label="Outstanding"
             value={stats?.outstandingRevenue != null ? `₹${Number(stats.outstandingRevenue).toLocaleString('en-IN')}` : '—'}
             sub="Invoices"
-            color="#EF4444"
-            bg="rgba(239,68,68,0.1)"
+            color="#ef4444"
+            glowColor="rgba(239,68,68,0.18)"
           />
         </motion.div>
 
         {/* ── Section divider ───────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-          <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
-          <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+          <div style={{ height: 1, flex: 1, background: T.bdr }} />
+          <span style={{
+            fontSize: 10, fontWeight: 800, color: T.dim,
+            textTransform: 'uppercase', letterSpacing: '0.14em', whiteSpace: 'nowrap',
+            padding: '4px 12px', borderRadius: 20,
+            border: `1px solid ${T.bdr}`,
+            background: 'rgba(124,58,237,0.06)',
+          }}>
             All Modules
           </span>
-          <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
+          <div style={{ height: 1, flex: 1, background: T.bdr }} />
         </div>
 
         {/* ── Feature grid ─────────────────────────────────────── */}
         <motion.div
-          variants={stagger(0.15)}
+          variants={staggerGrid(0.15)}
           initial="hidden"
           animate="show"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18, marginBottom: 48 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18, marginBottom: 52 }}
         >
           {FEATURES.map(f => (
             <FeatureCard key={f.label} f={f} onClick={() => navigate(f.path)} />
@@ -258,25 +357,37 @@ export default function PracticeHub() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}
         >
           {[
-            { Ic: I.Zap,    color: '#7C3AED', title: 'AI-Powered',         desc: 'Every module is enhanced with Gemini and Claude AI for smart automation.' },
-            { Ic: I.Shield, color: '#10B981', title: 'Encrypted & Secure',  desc: 'All data is end-to-end encrypted and SOC 2 compliant.' },
-            { Ic: I.Globe,  color: '#3B82F6', title: 'Indian Law Ready',    desc: 'Built for Indian advocates with Indian court workflows and INR billing.' },
+            { Ic: I.Zap,    color: '#7c3aed', title: 'AI-Powered',        desc: 'Every module enhanced with Gemini and Claude AI for smart automation.' },
+            { Ic: I.Shield, color: '#22c55e', title: 'Encrypted & Secure', desc: 'All data is end-to-end encrypted and SOC 2 compliant.' },
+            { Ic: I.Globe,  color: '#3b82f6', title: 'Indian Law Ready',   desc: 'Built for Indian advocates with Indian court workflows and INR billing.' },
           ].map(({ Ic, color, title, desc }) => (
-            <div key={title} style={{ padding: '18px 20px', background: 'var(--surface)', border: '1.5px solid var(--border)', borderRadius: 16, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '12', display: 'flex', alignItems: 'center', justifyContent: 'center', color, flexShrink: 0 }}>
+            <div key={title} style={{
+              padding: '18px 20px',
+              background: T.sur,
+              border: `1px solid ${T.bdr}`,
+              borderRadius: 16,
+              display: 'flex', gap: 14, alignItems: 'flex-start',
+              backdropFilter: 'blur(12px)',
+            }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: `${color}18`,
+                border: `1px solid ${color}28`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color,
+              }}>
                 <Ic size={17} />
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>{title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>{title}</div>
+                <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.65 }}>{desc}</div>
               </div>
             </div>
           ))}
         </motion.div>
-
       </div>
     </div>
   );

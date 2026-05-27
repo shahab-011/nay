@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import { compareDocuments, getComparisons } from '../api/comparisons.api';
 import { getDocuments, getTextPreview, uploadTextOnly } from '../api/documents.api';
 import ConsentPanel from '../components/ConsentPanel';
@@ -355,8 +354,14 @@ export default function CompareDocuments() {
   const badge = riskChangeMeta(result?.riskChange);
 
   return (
-    <>
-      <Header title="Compare Documents" />
+    <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh' }}>
+      <header style={{ position:'sticky', top:0, zIndex:40, background:'rgba(7,9,31,0.92)', backdropFilter:'blur(18px)', borderBottom:'1px solid rgba(99,102,241,0.18)', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:12 }}>
+        <button onClick={() => navigate('/studio')} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', background:'none', border:'none', color:'rgba(240,240,255,0.5)', cursor:'pointer' }}>
+          <span className="material-symbols-outlined" style={{ fontSize:16 }}>arrow_back</span>
+        </button>
+        <span className="material-symbols-outlined" style={{ color:'#6366f1', fontSize:20, fontVariationSettings:"'FILL' 1" }}>compare_arrows</span>
+        <p style={{ flex:1, color:'#f0f0ff', fontWeight:700, fontSize:15 }}>Compare Documents</p>
+      </header>
 
       <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
 
@@ -852,6 +857,6 @@ export default function CompareDocuments() {
           'Results saved to your comparison history',
         ]}
       />
-    </>
+    </div>
   );
 }

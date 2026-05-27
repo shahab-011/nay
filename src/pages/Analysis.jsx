@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import { analyzeDocument, getAnalysis } from '../api/analysis.api';
 import { getDocument, getTextPreview, getAnnotations, createAnnotation, deleteAnnotation, resolveAnnotation } from '../api/documents.api';
 import CollaborationPanel from '../components/collaboration/CollaborationPanel';
@@ -274,9 +273,7 @@ export default function Analysis() {
   /* ── loading screen ───────────────────────────────────────────── */
   if (phase === 'loading' || phase === 'analyzing') {
     return (
-      <>
-        <Header title={phase === 'analyzing' ? 'Analyzing…' : 'Loading…'} />
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)]">
+      <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <motion.div initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.5, ease:[0.22,1,0.36,1] }}
             className="w-28 h-28 mb-8 relative flex items-center justify-center">
             <motion.div animate={{ scale:[1,1.4,1], opacity:[0.3,0,0.3] }} transition={{ duration:2, repeat:Infinity }}
@@ -304,17 +301,14 @@ export default function Analysis() {
               <p className="text-primary/60">This takes 10–30 seconds depending on document size.</p>
             </motion.div>
           )}
-        </div>
-      </>
+      </div>
     );
   }
 
   /* ── error screen ─────────────────────────────────────────────── */
   if (phase === 'error') {
     return (
-      <>
-        <Header title="Analysis Error" />
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] gap-6">
+      <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
           <motion.span initial={{ scale:0, rotate:-20 }} animate={{ scale:1, rotate:0 }} transition={{ type:'spring', stiffness:300, damping:20 }}
             className="material-symbols-outlined text-6xl text-error">error</motion.span>
           <motion.h2 initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}
@@ -330,8 +324,7 @@ export default function Analysis() {
               onClick={() => navigate('/documents')}
               className="px-6 py-3 bg-surface-container-high text-on-surface font-bold rounded-xl text-sm hover:opacity-90 transition-opacity">Back to Documents</motion.button>
           </motion.div>
-        </div>
-      </>
+      </div>
     );
   }
 
@@ -342,78 +335,47 @@ export default function Analysis() {
   const risks         = analysis?.risks     || [];
 
   /* ── main render ──────────────────────────────────────────────── */
-  return (
-    <>
-      <Header title={doc?.originalName || 'Document Analysis'}>
-        <div className="flex items-center gap-3">
-          {/* Collaborate button */}
-          <button
-            onClick={() => setShowCollab((v) => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-bold transition-all ${
-              showCollab
-                ? 'bg-primary/20 border-primary/40 text-primary'
-                : 'border-outline-variant/30 text-on-surface-variant hover:bg-white/5'
-            }`}
-          >
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
-            <span className="hidden md:inline">Collaborate</span>
-            {onlineUsers.length > 0 && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
-          </button>
+  const HDR = { position:'sticky', top:0, zIndex:40, background:'rgba(7,9,31,0.92)', backdropFilter:'blur(18px)', borderBottom:'1px solid rgba(99,102,241,0.18)', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:12 };
+  const BTN = { display:'flex', alignItems:'center', gap:6, padding:'5px 13px', borderRadius:24, border:'1px solid rgba(255,255,255,0.12)', background:'transparent', color:'rgba(240,240,255,0.55)', fontSize:12, fontWeight:700, cursor:'pointer' };
 
-          {/* Online presence avatars */}
+  return (
+    <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh' }}>
+      <header style={HDR}>
+        <button onClick={() => navigate('/documents')} style={{ ...BTN, border:'none', padding:'5px 8px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize:16 }}>arrow_back</span>
+        </button>
+        <p style={{ flex:1, color:'#f0f0ff', fontWeight:700, fontSize:14, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          {doc?.originalName || 'Document Analysis'}
+        </p>
+        <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+          <button onClick={() => setShowCollab((v) => !v)} style={{ ...BTN, border:`1px solid ${showCollab ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.12)'}`, background: showCollab ? 'rgba(99,102,241,0.15)' : 'transparent', color: showCollab ? '#6366f1' : 'rgba(240,240,255,0.55)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize:14, fontVariationSettings:"'FILL' 1" }}>group</span>
+            <span className="hidden md:inline">Collaborate</span>
+            {onlineUsers.length > 0 && <span style={{ width:6, height:6, borderRadius:'50%', background:'#6366f1', display:'inline-block' }} />}
+          </button>
           {onlineUsers.length > 0 && (
-            <div className="flex items-center gap-1.5" title={onlineUsers.map((u) => u.name).join(', ')}>
-              {onlineUsers.slice(0, 4).map((u, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center -ml-1 first:ml-0"
-                  title={u.name}
-                >
-                  <span className="text-[10px] font-bold text-primary">
-                    {u.name.charAt(0).toUpperCase()}
-                  </span>
+            <div style={{ display:'flex', alignItems:'center' }}>
+              {onlineUsers.slice(0, 3).map((u, i) => (
+                <div key={i} title={u.name} style={{ width:24, height:24, borderRadius:'50%', background:'rgba(99,102,241,0.2)', border:'2px solid rgba(99,102,241,0.4)', display:'flex', alignItems:'center', justifyContent:'center', marginLeft: i > 0 ? -6 : 0 }}>
+                  <span style={{ fontSize:9, fontWeight:700, color:'#6366f1' }}>{u.name.charAt(0).toUpperCase()}</span>
                 </div>
               ))}
-              {onlineUsers.length > 4 && (
-                <span className="text-xs text-on-surface-variant ml-1">+{onlineUsers.length - 4}</span>
-              )}
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse ml-1" title="Live" />
             </div>
           )}
-
-          <button
-            onClick={async () => {
-              setDownloading(true);
-              try { generateAnalysisReport(doc, analysis); }
-              finally { setDownloading(false); }
-            }}
-            disabled={downloading}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-outline-variant/30 text-sm font-bold hover:bg-white/5 transition-colors text-on-surface-variant disabled:opacity-50"
-          >
-            <span className={`material-symbols-outlined text-sm ${downloading ? 'animate-pulse' : ''}`}>
-              download
-            </span>
-            {downloading ? 'Preparing…' : 'Download PDF'}
+          <button onClick={async () => { setDownloading(true); try { generateAnalysisReport(doc, analysis); } finally { setDownloading(false); } }} disabled={downloading} style={{ ...BTN, opacity: downloading ? 0.5 : 1 }}>
+            <span className={`material-symbols-outlined ${downloading ? 'animate-pulse' : ''}`} style={{ fontSize:14 }}>download</span>
+            <span className="hidden md:inline">{downloading ? 'Preparing…' : 'PDF'}</span>
           </button>
-          <button
-            onClick={() => openConsent(true)}
-            disabled={rerunning}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-outline-variant/30 text-sm font-bold hover:bg-white/5 transition-colors text-on-surface-variant disabled:opacity-50"
-          >
-            <span className={`material-symbols-outlined text-sm ${rerunning ? 'animate-spin' : ''}`}>
-              refresh
-            </span>
-            {rerunning ? 'Re-analyzing…' : 'Re-analyze'}
+          <button onClick={() => openConsent(true)} disabled={rerunning} style={{ ...BTN, opacity: rerunning ? 0.5 : 1 }}>
+            <span className={`material-symbols-outlined ${rerunning ? 'animate-spin' : ''}`} style={{ fontSize:14 }}>refresh</span>
+            <span className="hidden md:inline">{rerunning ? 'Re-analyzing…' : 'Re-analyze'}</span>
           </button>
-          <button
-            onClick={() => navigate(`/ask?docId=${docId}`)}
-            className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full border border-primary/20 text-primary text-sm font-bold hover:bg-primary/20 transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+          <button onClick={() => navigate(`/ask?docId=${docId}`)} style={{ ...BTN, border:'1px solid rgba(99,102,241,0.3)', background:'rgba(99,102,241,0.12)', color:'#6366f1' }}>
+            <span className="material-symbols-outlined" style={{ fontSize:14, fontVariationSettings:"'FILL' 1" }}>psychology</span>
             Ask AI
           </button>
         </div>
-      </Header>
+      </header>
 
       {/* Presence banner — shown when someone else is viewing */}
       {onlineUsers.length > 0 && (
@@ -441,7 +403,7 @@ export default function Analysis() {
         </div>
       )}
 
-      <div className="p-4 md:p-8 min-h-[calc(100vh-60px)] pb-24">
+      <div className="p-4 md:p-8 min-h-screen pb-24">
         {/* Breadcrumb */}
         <nav className="flex gap-2 text-[10px] font-label text-on-surface-variant mb-4 tracking-widest uppercase">
           <Link to="/documents" className="hover:text-primary transition-colors">Repository</Link>
@@ -1182,6 +1144,6 @@ export default function Analysis() {
           'No personal or account data included',
         ]}
       />
-    </>
+    </div>
   );
 }

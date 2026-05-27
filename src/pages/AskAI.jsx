@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Header from '../components/Header';
 import { askAI, getChatHistory, clearChatHistory, analyzeDocument } from '../api/analysis.api';
 import { getDocuments, getDocument, getTextPreview, uploadTextOnly } from '../api/documents.api';
 import { useAuth } from '../context/AuthContext';
@@ -319,55 +318,41 @@ export default function AskAI() {
   const copyMsg = (text) => navigator.clipboard.writeText(text).catch(() => {});
 
   /* ── render ───────────────────────────────────────────────────── */
-  return (
-    <>
-      <Header title="Ask AI">
-        <div className="flex items-center gap-3">
-          {/* Doc selector chip */}
-          <div className="relative">
-            <select
-              value={docId}
-              onChange={(e) => {
-                setDocId(e.target.value);
-                navigate(`/ask?docId=${e.target.value}`, { replace: true });
-              }}
-              className="appearance-none pl-8 pr-8 py-1.5 bg-surface-container-low rounded-full border border-outline-variant/20 text-sm text-on-surface font-label outline-none cursor-pointer max-w-[220px] truncate"
-            >
-              <option value="">— Select a document —</option>
-              {docs.map((d) => (
-                <option key={d._id} value={d._id}>{d.originalName}</option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-primary text-[16px] pointer-events-none">description</span>
-            <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[14px] pointer-events-none">expand_more</span>
-          </div>
+  const HDR = { position:'sticky', top:0, zIndex:40, background:'rgba(7,9,31,0.92)', backdropFilter:'blur(18px)', borderBottom:'1px solid rgba(99,102,241,0.18)', padding:'0 20px', height:60, display:'flex', alignItems:'center', gap:12 };
+  const BTN = { display:'flex', alignItems:'center', gap:6, padding:'5px 13px', borderRadius:24, border:'1px solid rgba(255,255,255,0.12)', background:'transparent', color:'rgba(240,240,255,0.55)', fontSize:12, fontWeight:700, cursor:'pointer' };
 
-          {/* Clear history */}
+  return (
+    <div className="dark-studio" style={{ background: '#07091f', minHeight: '100vh', display:'flex', flexDirection:'column' }}>
+      <header style={HDR}>
+        <button onClick={() => navigate('/studio')} style={{ ...BTN, border:'none', padding:'5px 8px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize:16 }}>arrow_back</span>
+        </button>
+        <p style={{ flex:1, color:'#f0f0ff', fontWeight:700, fontSize:15 }}>Ask AI</p>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ position:'relative' }}>
+            <span className="material-symbols-outlined" style={{ position:'absolute', left:8, top:'50%', transform:'translateY(-50%)', fontSize:15, color:'#6366f1', pointerEvents:'none' }}>description</span>
+            <select value={docId} onChange={(e) => { setDocId(e.target.value); navigate(`/ask?docId=${e.target.value}`, { replace: true }); }}
+              style={{ appearance:'none', paddingLeft:28, paddingRight:24, paddingTop:6, paddingBottom:6, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:24, color:'#f0f0ff', fontSize:12, outline:'none', cursor:'pointer', maxWidth:200 }}>
+              <option value="">— Select a document —</option>
+              {docs.map((d) => <option key={d._id} value={d._id}>{d.originalName}</option>)}
+            </select>
+          </div>
           {messages.length > 0 && (
-            <button
-              onClick={handleClear}
-              disabled={clearing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/20 text-xs font-bold text-on-surface-variant hover:text-error hover:border-error/30 transition-colors"
-            >
-              <span className="material-symbols-outlined text-sm">delete_sweep</span>
-              {clearing ? 'Clearing…' : 'Clear Chat'}
+            <button onClick={handleClear} disabled={clearing} style={{ ...BTN }}>
+              <span className="material-symbols-outlined" style={{ fontSize:14 }}>delete_sweep</span>
+              <span className="hidden md:inline">{clearing ? 'Clearing…' : 'Clear'}</span>
             </button>
           )}
-
-          {/* View analysis link */}
           {docId && (
-            <Link
-              to={`/analysis/${docId}`}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-outline-variant/20 text-xs font-bold text-on-surface-variant hover:text-primary hover:border-primary/30 transition-colors"
-            >
-              <span className="material-symbols-outlined text-sm">analytics</span>
-              Analysis
+            <Link to={`/analysis/${docId}`} style={{ ...BTN, textDecoration:'none' }}>
+              <span className="material-symbols-outlined" style={{ fontSize:14 }}>analytics</span>
+              <span className="hidden md:inline">Analysis</span>
             </Link>
           )}
         </div>
-      </Header>
+      </header>
 
-      <div className="flex flex-col h-[calc(100vh-60px)]">
+      <div className="flex flex-col" style={{ flex:1, height:'calc(100vh - 60px)' }}>
 
         {/* ── Document Picker ────────────────────────────────────── */}
         {!docId && (
@@ -840,6 +825,6 @@ export default function AskAI() {
           'No personal or account data included',
         ]}
       />
-    </>
+    </div>
   );
 }

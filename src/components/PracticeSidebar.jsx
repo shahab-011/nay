@@ -4,18 +4,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { I } from './Icons';
 import NotificationBell from './NotificationBell';
-import GlobalSearch from './GlobalSearch';
 
-/* ─── Nav structure ───────────────────────────────────────────── */
+/* ── Design tokens ────────────────────────────────────────────── */
+const SBG   = '#0c0a1e';          // sidebar background
+const SBDR  = 'rgba(124,58,237,0.14)'; // border right
+const T     = '#f0eeff';          // text primary
+const TM    = 'rgba(240,238,255,0.45)'; // text muted
+const TS    = 'rgba(240,238,255,0.22)'; // section label
+const HBG   = 'rgba(255,255,255,0.04)'; // hover bg
+const ABG   = 'rgba(124,58,237,0.14)'; // active bg
+const PURP  = '#7c3aed';
+
+/* ── Nav structure ────────────────────────────────────────────── */
 const NAV = [
   {
-    sec: 'OVERVIEW',
+    sec: 'Overview',
     items: [
       { label: 'Practice Hub',  path: '/practice',  Ic: I.Home },
     ],
   },
   {
-    sec: 'MATTERS',
+    sec: 'Matters',
     items: [
       { label: 'All Matters',     path: '/matters',   Ic: I.Briefcase },
       { label: 'Contacts',        path: '/contacts',  Ic: I.Users },
@@ -24,7 +33,7 @@ const NAV = [
     ],
   },
   {
-    sec: 'WORK',
+    sec: 'Work',
     items: [
       { label: 'Tasks',           path: '/tasks',          Ic: I.CheckSquare },
       { label: 'Calendar',        path: '/cal',            Ic: I.Calendar },
@@ -32,161 +41,164 @@ const NAV = [
     ],
   },
   {
-    sec: 'BILLING',
+    sec: 'Billing',
     items: [
-      { label: 'Time Tracking', path: '/time',      Ic: I.Timer },
-      { label: 'Invoices',      path: '/billing',   Ic: I.DollarSign },
+      { label: 'Time Tracking', path: '/time',    Ic: I.Timer },
+      { label: 'Invoices',      path: '/billing', Ic: I.DollarSign },
+      { label: 'Accounting',    path: '/accounting', Ic: I.Receipt },
     ],
   },
   {
-    sec: 'DOCUMENTS',
+    sec: 'Documents',
     items: [
-      { label: 'Doc Automation',  path: '/doc-automation', Ic: I.Layers },
-      { label: 'E-Signatures',    path: '/esign',          Ic: I.PenTool },
+      { label: 'Doc Automation', path: '/doc-automation', Ic: I.Layers },
+      { label: 'E-Signatures',   path: '/esign',          Ic: I.PenTool },
     ],
   },
   {
-    sec: 'REPORTS',
+    sec: 'Analytics',
     items: [
-      { label: 'Reports & Analytics', path: '/reports', Ic: I.Chart },
-    ],
-  },
-  {
-    sec: 'AI',
-    items: [
+      { label: 'Reports', path: '/reports',   Ic: I.Chart },
       { label: 'AI Assistant', path: '/manage-ai', Ic: I.Zap },
-    ],
-  },
-  {
-    sec: 'ACCOUNTING',
-    items: [
-      { label: 'Accounting', path: '/accounting', Ic: I.DollarSign },
     ],
   },
 ];
 
 const LAWYER_SECTION = {
-  sec: 'FIRM',
+  sec: 'Firm',
   items: [
-    { label: 'Lawyer Dashboard', path: '/lawyer',         Ic: I.Scale },
-    { label: 'Client Links',     path: '/client-links',   Ic: I.Users },
-    { label: 'Firm Settings',    path: '/firm-settings',  Ic: I.Settings },
+    { label: 'Lawyer Dashboard', path: '/lawyer',        Ic: I.Scale },
+    { label: 'Client Links',     path: '/client-links',  Ic: I.Network },
+    { label: 'Firm Settings',    path: '/firm-settings', Ic: I.Settings },
   ],
 };
 
-/* ─── Link ────────────────────────────────────────────────────── */
+/* ── NavItem ──────────────────────────────────────────────────── */
 function PLink({ item, onClick }) {
   return (
-    <NavLink
-      to={item.path}
-      end={item.path === '/practice'}
-      onClick={onClick}
-      style={{ textDecoration: 'none', display: 'block' }}
-    >
+    <NavLink to={item.path} end={item.path === '/practice'} onClick={onClick}
+      style={{ textDecoration: 'none', display: 'block', margin: '1px 8px' }}>
       {({ isActive }) => (
         <motion.div
-          whileHover={{ x: 2 }}
+          whileHover={{ x: 3 }}
+          transition={{ duration: 0.15 }}
           style={{
             display: 'flex', alignItems: 'center', gap: 10,
-            padding: '8px 14px', borderRadius: 9, margin: '1px 8px',
-            background: isActive ? 'rgba(124,58,237,0.10)' : 'transparent',
-            color: isActive ? 'var(--purple)' : '#4B5563',
-            cursor: 'pointer', transition: 'background 140ms, color 140ms',
+            padding: '8px 12px', borderRadius: 10,
+            background: isActive ? ABG : 'transparent',
+            color: isActive ? '#c4b5fd' : TM,
+            cursor: 'pointer',
             position: 'relative',
+            transition: 'background 150ms, color 150ms',
           }}
+          onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = HBG; }}
+          onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
         >
+          {/* Active left bar */}
           {isActive && (
             <motion.div
-              layoutId="practice-active-pill"
+              layoutId="pm-active"
               style={{
-                position: 'absolute', left: 0, top: '20%', bottom: '20%',
-                width: 3, borderRadius: '0 3px 3px 0', background: 'var(--purple)',
+                position: 'absolute', left: 0, top: '18%', bottom: '18%',
+                width: 3, borderRadius: '0 3px 3px 0',
+                background: 'linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%)',
               }}
             />
           )}
-          <item.Ic size={15} style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500 }}>{item.label}</span>
+          <item.Ic size={15} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
+          <span style={{ fontSize: 13, fontWeight: isActive ? 600 : 400, letterSpacing: isActive ? '-0.01em' : 0 }}>
+            {item.label}
+          </span>
         </motion.div>
       )}
     </NavLink>
   );
 }
 
-/* ─── Section header ──────────────────────────────────────────── */
+/* ── Section label ────────────────────────────────────────────── */
 function SecLabel({ label }) {
   return (
     <div style={{
-      padding: '14px 22px 5px',
-      fontSize: 10, fontWeight: 800, letterSpacing: '0.12em',
-      color: '#9CA3AF', textTransform: 'uppercase',
+      padding: '16px 20px 5px',
+      fontSize: 9, fontWeight: 800,
+      letterSpacing: '0.13em', color: TS,
+      textTransform: 'uppercase',
     }}>{label}</div>
   );
 }
 
-/* ─── Content ─────────────────────────────────────────────────── */
-function PracticeSidebarContent({ onItemClick }) {
-  const navigate   = useNavigate();
-  const { user }   = useAuth();
-  const isLawyer   = ['lawyer', 'admin', 'owner'].includes(user?.role);
-  const initial    = user?.name ? user.name[0].toUpperCase() : '?';
-
-  const sections = isLawyer ? [...NAV, LAWYER_SECTION] : NAV;
+/* ── Sidebar content ──────────────────────────────────────────── */
+function SidebarContent({ onItemClick }) {
+  const navigate  = useNavigate();
+  const { user }  = useAuth();
+  const isLawyer  = ['lawyer', 'admin', 'owner', 'attorney'].includes(user?.role);
+  const initial   = user?.name ? user.name[0].toUpperCase() : '?';
+  const sections  = isLawyer ? [...NAV, LAWYER_SECTION] : NAV;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: SBG }}>
 
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────── */}
       <div style={{
-        padding: '18px 16px 14px',
-        background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+        padding: '20px 16px 16px',
+        background: 'linear-gradient(150deg, #180f38 0%, #0e0b24 100%)',
+        borderBottom: `1px solid ${SBDR}`,
         flexShrink: 0,
+        position: 'relative',
+        overflow: 'hidden',
       }}>
+        {/* Orb decoration */}
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* Brand row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <I.Scale size={17} style={{ color: '#fff' }} />
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <I.Scale size={17} style={{ color: '#c4b5fd' }} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Practice</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Management</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: T, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Practice</div>
+            <div style={{ fontSize: 9, color: 'rgba(240,238,255,0.45)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 1 }}>Management</div>
           </div>
           <NotificationBell light />
         </div>
 
         {/* User pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', background: 'rgba(255,255,255,0.12)', borderRadius: 10 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.3)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
-            {initial}
-          </div>
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', background: 'rgba(255,255,255,0.07)', borderRadius: 11, border: '1px solid rgba(255,255,255,0.08)', cursor: 'default' }}>
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="" style={{ width: 28, height: 28, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 28, height: 28, borderRadius: 14, background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
+              {initial}
+            </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name || 'User'}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)' }}>{user?.role || 'user'}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: T, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name || 'User'}</div>
+            <div style={{ fontSize: 10, color: TM, textTransform: 'capitalize', marginTop: 1 }}>{user?.role || 'owner'}</div>
           </div>
-        </div>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+        </motion.div>
       </div>
 
-      {/* Global Search */}
-      <div style={{ padding: '10px 10px 0' }}>
-        <GlobalSearch placeholder="Search…" />
+      {/* ── Back to portal ──────────────────────────────────────── */}
+      <div style={{ padding: '10px 8px 0', flexShrink: 0 }}>
+        <motion.button
+          whileHover={{ x: -2 }}
+          onClick={() => { navigate('/'); onItemClick?.(); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${SBDR}`, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: TM, transition: 'color 150ms' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = TM; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+        >
+          <I.ArrowLeft size={13} />
+          Back to Portal
+        </motion.button>
       </div>
 
-      {/* Back to portal */}
-      <button
-        onClick={() => { navigate('/'); onItemClick?.(); }}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          margin: '10px 10px 4px', padding: '8px 12px', borderRadius: 9,
-          background: 'none', border: '1.5px solid #E5E7EB', cursor: 'pointer',
-          fontSize: 12, fontWeight: 600, color: '#6B7280', width: 'calc(100% - 20px)',
-          transition: 'all 150ms',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--purple)'; e.currentTarget.style.color = 'var(--purple)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.color = '#6B7280'; }}
-      >
-        <I.ArrowLeft size={13} />
-        Back to Portal
-      </button>
+      {/* ── Divider ─────────────────────────────────────────────── */}
+      <div style={{ margin: '10px 8px 0', height: 1, background: SBDR }} />
 
-      {/* Nav */}
+      {/* ── Nav ─────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
         {sections.map(sec => (
           <div key={sec.sec}>
@@ -198,29 +210,27 @@ function PracticeSidebarContent({ onItemClick }) {
         ))}
       </div>
 
-      {/* Bottom */}
-      <div style={{ borderTop: '1px solid #F3F4F6', padding: '10px 10px 14px', flexShrink: 0 }}>
-        <button
+      {/* ── Bottom actions ──────────────────────────────────────── */}
+      <div style={{ borderTop: `1px solid ${SBDR}`, padding: '12px 8px 16px', flexShrink: 0, background: 'rgba(0,0,0,0.15)' }}>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => { navigate('/matters'); onItemClick?.(); }}
-          style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '9px', borderRadius: 10, background: 'var(--purple)', color: '#fff',
-            border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700,
-            marginBottom: 8,
-          }}
-        >
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px', borderRadius: 11, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, marginBottom: 8, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' }}>
           <I.Plus size={14} /> New Matter
-        </button>
+        </motion.button>
 
         <NavLink to="/profile" style={{ textDecoration: 'none', display: 'block' }}>
           {({ isActive }) => (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8,
-              background: isActive ? 'rgba(124,58,237,0.07)' : 'transparent',
-              color: isActive ? 'var(--purple)' : '#6B7280', fontSize: 12, fontWeight: 500, cursor: 'pointer',
-            }}>
-              <I.Settings size={14} /> Settings & Profile
-            </div>
+            <motion.div
+              whileHover={{ x: 2 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: isActive ? ABG : 'transparent', color: isActive ? '#c4b5fd' : TM, fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'background 150ms' }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = HBG; }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <I.Settings size={14} />
+              Settings & Profile
+            </motion.div>
           )}
         </NavLink>
       </div>
@@ -228,8 +238,8 @@ function PracticeSidebarContent({ onItemClick }) {
   );
 }
 
-/* ─── Mobile overlay sidebar for practice ─────────────────────── */
-function PracticeMobileDrawer({ isOpen, onClose }) {
+/* ── Mobile drawer ────────────────────────────────────────────── */
+function MobileDrawer({ isOpen, onClose }) {
   return (
     <>
       <AnimatePresence>
@@ -237,22 +247,18 @@ function PracticeMobileDrawer({ isOpen, onClose }) {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(11,11,20,0.5)', backdropFilter: 'blur(4px)' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
           />
         )}
       </AnimatePresence>
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+            initial={{ x: -264 }} animate={{ x: 0 }} exit={{ x: -264 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: 'fixed', top: 0, left: 0, height: '100vh', width: 256,
-              zIndex: 70, background: '#fff', borderRight: '1px solid #E5E7EB',
-              boxShadow: '4px 0 24px rgba(0,0,0,0.1)',
-            }}
+            style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: 256, zIndex: 70, borderRight: `1px solid ${SBDR}`, boxShadow: '4px 0 32px rgba(0,0,0,0.5)' }}
           >
-            <PracticeSidebarContent onItemClick={onClose} />
+            <SidebarContent onItemClick={onClose} />
           </motion.aside>
         )}
       </AnimatePresence>
@@ -260,36 +266,37 @@ function PracticeMobileDrawer({ isOpen, onClose }) {
   );
 }
 
-/* ─── Mobile top bar (hamburger + section label) ──────────────── */
-function PracticeMobileBar({ onOpen }) {
+/* ── Mobile top bar ───────────────────────────────────────────── */
+function MobileBar({ onOpen }) {
   const location = useLocation();
   const labels = {
     '/practice': 'Practice Hub', '/matters': 'Matters', '/contacts': 'Contacts',
     '/tasks': 'Tasks', '/cal': 'Calendar', '/time': 'Time Tracking', '/billing': 'Invoices',
-    '/lawyer': 'Lawyer Dashboard', '/reports': 'Reports & Analytics',
-    '/doc-automation': 'Doc Automation', '/leads': 'Lead Pipeline', '/conflicts': 'Conflict Check',
-    '/firm-settings': 'Firm Settings', '/esign': 'E-Signatures', '/communications': 'Communications',
-    '/manage-ai': 'AI Assistant',
-    '/notifications': 'Notifications',
-    '/accounting': 'Accounting',
+    '/lawyer': 'Lawyer Dashboard', '/reports': 'Reports', '/doc-automation': 'Doc Automation',
+    '/leads': 'Lead Pipeline', '/conflicts': 'Conflict Check', '/firm-settings': 'Firm Settings',
+    '/esign': 'E-Signatures', '/communications': 'Communications', '/manage-ai': 'AI Assistant',
+    '/notifications': 'Notifications', '/accounting': 'Accounting',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 50,
       display: 'flex', alignItems: 'center', padding: '0 16px', gap: 14,
-      background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-      boxShadow: '0 2px 12px rgba(124,58,237,0.25)',
+      background: 'linear-gradient(135deg, #1a0f38 0%, #0d0b1e 100%)',
+      borderBottom: `1px solid ${SBDR}`, boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
     }}>
-      <button onClick={onOpen} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', padding: 4, display: 'flex' }}>
-        <I.Menu size={20} />
-      </button>
-      <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{label}</span>
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={onOpen}
+        style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, cursor: 'pointer', color: '#c4b5fd', padding: '6px', display: 'flex' }}>
+        <I.Menu size={18} />
+      </motion.button>
+      <span style={{ fontSize: 15, fontWeight: 700, color: T, letterSpacing: '-0.01em' }}>{label}</span>
     </div>
   );
 }
 
-/* ─── Exported sidebar (desktop fixed + mobile) ───────────────── */
+/* ── Export ───────────────────────────────────────────────────── */
 export default function PracticeSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -297,19 +304,18 @@ export default function PracticeSidebar() {
     <>
       {/* Desktop */}
       <aside style={{
-        position: 'fixed', left: 0, top: 0, height: '100vh', width: 236,
-        background: '#fff', borderRight: '1px solid #E5E7EB',
-        boxShadow: '4px 0 16px rgba(0,0,0,0.04)',
-        display: 'flex', flexDirection: 'column',
-        zIndex: 50,
+        position: 'fixed', left: 0, top: 0, height: '100vh', width: 240,
+        borderRight: `1px solid ${SBDR}`,
+        boxShadow: '4px 0 24px rgba(0,0,0,0.35)',
+        display: 'flex', flexDirection: 'column', zIndex: 50,
       }} className="hidden md:flex">
-        <PracticeSidebarContent />
+        <SidebarContent />
       </aside>
 
-      {/* Mobile top bar */}
+      {/* Mobile */}
       <div className="md:hidden">
-        <PracticeMobileBar onOpen={() => setMobileOpen(true)} />
-        <PracticeMobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
+        <MobileBar onOpen={() => setMobileOpen(true)} />
+        <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       </div>
     </>
   );

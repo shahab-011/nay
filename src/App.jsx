@@ -84,10 +84,17 @@ function PageLoader() {
   );
 }
 
+/* ── Role helpers ── */
+const FIRM_ROLES = ['lawyer', 'admin', 'owner', 'attorney', 'paralegal', 'staff'];
+function homeFor(user) {
+  if (!user) return '/landing';
+  return FIRM_ROLES.includes(user.role) ? '/practice' : '/studio';
+}
+
 /* ── Route guards ── */
 function GuestRoute({ children }) {
   const { user } = useAuth();
-  return user ? <Navigate to="/" replace /> : children;
+  return user ? <Navigate to={homeFor(user)} replace /> : children;
 }
 
 function PrivateRoute({ children }) {
@@ -97,13 +104,14 @@ function PrivateRoute({ children }) {
 
 function RootRoute() {
   const { user } = useAuth();
-  return user ? <PortalHome /> : <Landing />;
+  if (!user) return <Landing />;
+  return <Navigate to={homeFor(user)} replace />;
 }
 
 function RoleRoute({ children, roles }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/landing" replace />;
-  if (!roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (!roles.includes(user.role)) return <Navigate to={homeFor(user)} replace />;
   return children;
 }
 

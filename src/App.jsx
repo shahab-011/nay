@@ -73,7 +73,8 @@ const Communications  = lazy(() => import('./pages/Communications'));
 const ClientPortal    = lazy(() => import('./pages/ClientPortal'));
 const ManageAI        = lazy(() => import('./pages/ManageAI'));
 const Notifications   = lazy(() => import('./pages/Notifications'));
-const Accounting      = lazy(() => import('./pages/Accounting'));
+const Accounting        = lazy(() => import('./pages/Accounting'));
+const PracticeProfile   = lazy(() => import('./pages/PracticeProfile'));
 
 /* ── Loading spinner ── */
 function PageLoader() {
@@ -184,6 +185,7 @@ function App() {
                     <Route path="/accounting"      element={<RoleRoute roles={['owner','admin']}><Accounting /></RoleRoute>} />
                     <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
                     <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
+                    <Route path="/practice-profile" element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><PracticeProfile /></RoleRoute>} />
 
                     {/* ── Client Portal (public, token-based) ── */}
                     <Route path="/client-portal/:token" element={<ClientPortal />} />

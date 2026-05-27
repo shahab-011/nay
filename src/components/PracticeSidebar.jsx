@@ -220,7 +220,7 @@ function SidebarContent({ onItemClick }) {
           <I.Plus size={14} /> New Matter
         </motion.button>
 
-        <NavLink to="/profile" style={{ textDecoration: 'none', display: 'block' }}>
+        <NavLink to="/practice-profile" style={{ textDecoration: 'none', display: 'block' }}>
           {({ isActive }) => (
             <motion.div
               whileHover={{ x: 2 }}
@@ -228,8 +228,8 @@ function SidebarContent({ onItemClick }) {
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = HBG; }}
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
             >
-              <I.Settings size={14} />
-              Settings & Profile
+              <I.User size={14} />
+              My Profile
             </motion.div>
           )}
         </NavLink>
@@ -276,6 +276,7 @@ function MobileBar({ onOpen }) {
     '/leads': 'Lead Pipeline', '/conflicts': 'Conflict Check', '/firm-settings': 'Firm Settings',
     '/esign': 'E-Signatures', '/communications': 'Communications', '/manage-ai': 'AI Assistant',
     '/notifications': 'Notifications', '/accounting': 'Accounting',
+    '/practice-profile': 'My Profile',
   };
   const label = Object.entries(labels).find(([p]) => location.pathname.startsWith(p))?.[1] || 'Practice';
   return (

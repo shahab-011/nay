@@ -7,17 +7,17 @@ import { reportsApi } from '../api/reports.api';
 
 /* ── Design tokens ───────────────────────────────────────────── */
 const T = {
-  bg:     '#0c0a1e',
-  sur:    'rgba(255,255,255,0.05)',
-  sur2:   'rgba(255,255,255,0.09)',
-  bdr:    'rgba(124,58,237,0.18)',
-  purp:   '#7c3aed',
-  lav:    '#c4b5fd',
-  ink:    '#f0eeff',
-  muted:  'rgba(240,238,255,0.45)',
-  dim:    'rgba(240,238,255,0.25)',
-  shadow: '0 4px 24px rgba(0,0,0,0.4)',
-  glow:   '0 8px 32px rgba(124,58,237,0.25)',
+  bg:     'var(--bg)',
+  sur:    'var(--surface)',
+  sur2:   'var(--elevated)',
+  bdr:    'var(--border)',
+  purp:   'var(--purple)',
+  lav:    'var(--purple-hover)',
+  ink:    'var(--ink)',
+  muted:  'var(--text-secondary)',
+  dim:    'var(--text-muted)',
+  shadow: 'var(--shadow-card)',
+  glow:   'var(--purple-glow)',
 };
 
 /* ── Animation presets ───────────────────────────────────────── */
@@ -244,7 +244,7 @@ export default function PracticeHub() {
 
               <h1 style={{
                 margin: 0, fontSize: 32, fontWeight: 900, letterSpacing: '-0.03em',
-                background: 'linear-gradient(135deg, #f0eeff 0%, #c4b5fd 50%, #f0eeff 100%)',
+                background: 'linear-gradient(135deg, var(--ink) 0%, var(--purple) 100%)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}>

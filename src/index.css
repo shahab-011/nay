@@ -586,6 +586,52 @@ main [style*="background:linear-gradient"] .text-white { color: #fff; }
 /* ── hr dividers in PM ──────────────────────────── */
 .pm-main hr { border-color: var(--border) !important; }
 
+/* ── Inline dark-theme style overrides for light mode ── */
+/* 1. Page & Card Backgrounds */
+.pm-main [style*="#0c0a1e"],
+.pm-main [style*="rgb(12, 10, 30)"],
+.pm-main [style*="rgb(12,10,30)"] {
+  background: var(--bg) !important;
+}
+
+.pm-main [style*="rgba(255, 255, 255, 0.0"],
+.pm-main [style*="rgba(255,255,255,0.0"],
+.pm-main [style*="rgba(255, 255, 255, 0.1"],
+.pm-main [style*="rgba(255,255,255,0.1"] {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+/* 2. Text Colors */
+.pm-main [style*="color: #f0eeff"],
+.pm-main [style*="color:#f0eeff"],
+.pm-main [style*="color: rgb(240, 238, 255)"],
+.pm-main [style*="color:rgb(240,238,255)"] {
+  color: var(--ink) !important;
+}
+
+.pm-main [style*="color: rgba(240, 238, 255, 0.4"],
+.pm-main [style*="color:rgba(240,238,255,0.4"],
+.pm-main [style*="color: rgba(240, 238, 255, 0.5"],
+.pm-main [style*="color:rgba(240,238,255,0.5"] {
+  color: var(--text-secondary) !important;
+}
+
+.pm-main [style*="color: rgba(240, 238, 255, 0.2"],
+.pm-main [style*="color:rgba(240,238,255,0.2"],
+.pm-main [style*="color: rgba(240, 238, 255, 0.3"],
+.pm-main [style*="color:rgba(240,238,255,0.3"] {
+  color: var(--text-muted) !important;
+}
+
+/* Active states */
+.pm-main [style*="color: rgb(196, 181, 253)"],
+.pm-main [style*="color:rgb(196,181,253)"],
+.pm-main [style*="color: #c4b5fd"],
+.pm-main [style*="color:#c4b5fd"] {
+  color: var(--purple) !important;
+}
+
 /* ══════════════════════════════════════════════════════
    Dark Studio — Document Studio dark theme overlay
    Apply className="dark-studio" to the outermost wrapper

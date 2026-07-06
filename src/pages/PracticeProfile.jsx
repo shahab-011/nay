@@ -5,10 +5,10 @@ import { I } from '../components/Icons';
 import { updateProfile } from '../api/auth.api';
 
 /* ── Style constants ── */
-const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.5)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
-const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(124,58,237,0.22)', fontSize: 13, color: '#f0eeff', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' };
+const lbl = { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' };
+const inp = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid var(--border)', fontSize: 13, color: 'var(--ink)', background: 'var(--surface)', outline: 'none', boxSizing: 'border-box' };
 const btnPurple = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 9, background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(124,58,237,0.35)' };
-const card = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(124,58,237,0.18)', borderRadius: 16, padding: '24px', backdropFilter: 'blur(12px)', marginBottom: 20 };
+const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px', backdropFilter: 'blur(12px)', marginBottom: 20 };
 
 const PRACTICE_AREAS = [
   'Family Law', 'Criminal', 'Contract', 'Property',
@@ -172,7 +172,7 @@ export default function PracticeProfile() {
   const initial = user?.name ? user.name[0].toUpperCase() : '?';
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', padding: '32px 28px', color: '#f0eeff' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', padding: '32px 28px', color: 'var(--ink)' }}>
 
       {/* Ambient blobs */}
       <div style={{ position: 'fixed', top: 80, left: '35%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
@@ -182,8 +182,8 @@ export default function PracticeProfile() {
 
         {/* ── Page heading ── */}
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#f0eeff', letterSpacing: '-0.02em', margin: 0 }}>My Profile</h1>
-          <p style={{ fontSize: 13, color: 'rgba(240,238,255,0.45)', marginTop: 4 }}>Manage your professional details, billing preferences, and notification settings.</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.02em', margin: 0 }}>My Profile</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Manage your professional details, billing preferences, and notification settings.</p>
         </div>
 
         {/* ── Profile header card ── */}

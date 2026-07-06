@@ -294,7 +294,7 @@ export default function PracticeHub() {
           <StatCard
             icon={<I.Briefcase size={20} />}
             label="Active Matters"
-            value={stats?.activeMatters ?? stats?.matters?.open ?? '—'}
+            value={stats?.activeMatters ?? stats?.matters?.open ?? stats?.month?.newMatters ?? '—'}
             sub="This month"
             color="#7c3aed"
             glowColor="rgba(124,58,237,0.22)"
@@ -302,7 +302,7 @@ export default function PracticeHub() {
           <StatCard
             icon={<I.CheckSquare size={20} />}
             label="Tasks Due Today"
-            value={stats?.tasksDueToday ?? '—'}
+            value={stats?.tasksDueToday ?? stats?.today?.tasksDueToday ?? '—'}
             sub="Pending"
             color="#22c55e"
             glowColor="rgba(34,197,94,0.18)"
@@ -310,7 +310,7 @@ export default function PracticeHub() {
           <StatCard
             icon={<I.Timer size={20} />}
             label="Hours This Week"
-            value={stats?.hoursThisWeek ?? stats?.totalHours ?? '—'}
+            value={stats?.hoursThisWeek ?? stats?.totalHours ?? stats?.today?.hoursLogged ?? '—'}
             sub="Billable"
             color="#a78bfa"
             glowColor="rgba(167,139,250,0.18)"
@@ -318,7 +318,7 @@ export default function PracticeHub() {
           <StatCard
             icon={<I.DollarSign size={20} />}
             label="Outstanding"
-            value={stats?.outstandingRevenue != null ? `₹${Number(stats.outstandingRevenue).toLocaleString('en-IN')}` : '—'}
+            value={stats?.outstandingRevenue != null ? `₹${Number(stats.outstandingRevenue).toLocaleString('en-IN')}` : (stats?.month?.outstanding != null ? `₹${Number(stats.month.outstanding).toLocaleString('en-IN')}` : '—')}
             sub="Invoices"
             color="#ef4444"
             glowColor="rgba(239,68,68,0.18)"

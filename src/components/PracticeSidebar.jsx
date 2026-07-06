@@ -6,13 +6,13 @@ import { I } from './Icons';
 import NotificationBell from './NotificationBell';
 
 /* ── Design tokens ────────────────────────────────────────────── */
-const SBG   = '#0c0a1e';          // sidebar background
-const SBDR  = 'rgba(124,58,237,0.14)'; // border right
-const T     = '#f0eeff';          // text primary
-const TM    = 'rgba(240,238,255,0.45)'; // text muted
-const TS    = 'rgba(240,238,255,0.22)'; // section label
-const HBG   = 'rgba(255,255,255,0.04)'; // hover bg
-const ABG   = 'rgba(124,58,237,0.14)'; // active bg
+const SBG   = '#ffffff';          // sidebar background
+const SBDR  = '#E8E4EE';          // border right
+const T     = '#0B0B14';          // text primary
+const TM    = '#5A5A6E';          // text secondary
+const TS    = '#8A8A9E';          // section label
+const HBG   = '#F1ECF7';          // hover bg
+const ABG   = '#F0EAFC';          // active bg
 const PURP  = '#7c3aed';
 
 /* ── Nav structure ────────────────────────────────────────────── */
@@ -86,7 +86,7 @@ function PLink({ item, onClick }) {
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '8px 12px', borderRadius: 10,
             background: isActive ? ABG : 'transparent',
-            color: isActive ? '#c4b5fd' : TM,
+            color: isActive ? PURP : TM,
             cursor: 'pointer',
             position: 'relative',
             transition: 'background 150ms, color 150ms',
@@ -141,31 +141,31 @@ function SidebarContent({ onItemClick }) {
       {/* ── Header ─────────────────────────────────────────────── */}
       <div style={{
         padding: '20px 16px 16px',
-        background: 'linear-gradient(150deg, #180f38 0%, #0e0b24 100%)',
+        background: 'linear-gradient(150deg, var(--purple-soft) 0%, var(--surface) 100%)',
         borderBottom: `1px solid ${SBDR}`,
         flexShrink: 0,
         position: 'relative',
         overflow: 'hidden',
       }}>
         {/* Orb decoration */}
-        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Brand row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(124,58,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <I.Scale size={17} style={{ color: '#c4b5fd' }} />
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--purple-soft)', border: '1px solid var(--purple-mist)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <I.Scale size={17} style={{ color: PURP }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: T, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Practice</div>
-            <div style={{ fontSize: 9, color: 'rgba(240,238,255,0.45)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 1 }}>Management</div>
+            <div style={{ fontSize: 9, color: TS, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 1 }}>Management</div>
           </div>
-          <NotificationBell light />
+          <NotificationBell />
         </div>
 
         {/* User pill */}
         <motion.div
           whileHover={{ scale: 1.01 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', background: 'rgba(255,255,255,0.07)', borderRadius: 11, border: '1px solid rgba(255,255,255,0.08)', cursor: 'default' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', background: 'var(--bg)', borderRadius: 11, border: '1px solid var(--border)', cursor: 'default' }}>
           {user?.avatarUrl ? (
             <img src={user.avatarUrl} alt="" style={{ width: 28, height: 28, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
@@ -186,9 +186,9 @@ function SidebarContent({ onItemClick }) {
         <motion.button
           whileHover={{ x: -2 }}
           onClick={() => { navigate('/services'); onItemClick?.(); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: `1px solid ${SBDR}`, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: TM, transition: 'color 150ms' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.background = 'rgba(124,58,237,0.08)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = TM; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 10, background: 'var(--bg)', border: `1px solid ${SBDR}`, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: TM, transition: 'all 150ms' }}
+          onMouseEnter={e => { e.currentTarget.style.color = PURP; e.currentTarget.style.background = HBG; }}
+          onMouseLeave={e => { e.currentTarget.style.color = TM; e.currentTarget.style.background = 'var(--bg)'; }}
         >
           <I.ArrowLeft size={13} />
           Back to Portal
@@ -211,7 +211,7 @@ function SidebarContent({ onItemClick }) {
       </div>
 
       {/* ── Bottom actions ──────────────────────────────────────── */}
-      <div style={{ borderTop: `1px solid ${SBDR}`, padding: '12px 8px 16px', flexShrink: 0, background: 'rgba(0,0,0,0.15)' }}>
+      <div style={{ borderTop: `1px solid ${SBDR}`, padding: '12px 8px 16px', flexShrink: 0, background: 'var(--bg)' }}>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -256,7 +256,7 @@ function MobileDrawer({ isOpen, onClose }) {
           <motion.aside
             initial={{ x: -264 }} animate={{ x: 0 }} exit={{ x: -264 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: 256, zIndex: 70, borderRight: `1px solid ${SBDR}`, boxShadow: '4px 0 32px rgba(0,0,0,0.5)' }}
+            style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: 256, zIndex: 70, borderRight: `1px solid ${SBDR}`, boxShadow: '4px 0 32px rgba(11,11,20,0.06)' }}
           >
             <SidebarContent onItemClick={onClose} />
           </motion.aside>
@@ -284,13 +284,13 @@ function MobileBar({ onOpen }) {
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 50,
       display: 'flex', alignItems: 'center', padding: '0 16px', gap: 14,
-      background: 'linear-gradient(135deg, #1a0f38 0%, #0d0b1e 100%)',
-      borderBottom: `1px solid ${SBDR}`, boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
+      background: 'linear-gradient(135deg, var(--purple-soft) 0%, var(--surface) 100%)',
+      borderBottom: `1px solid ${SBDR}`, boxShadow: '0 2px 20px rgba(11,11,20,0.06)',
     }}>
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={onOpen}
-        style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, cursor: 'pointer', color: '#c4b5fd', padding: '6px', display: 'flex' }}>
+        style={{ background: 'var(--purple-soft)', border: '1px solid var(--purple-mist)', borderRadius: 8, cursor: 'pointer', color: PURP, padding: '6px', display: 'flex' }}>
         <I.Menu size={18} />
       </motion.button>
       <span style={{ fontSize: 15, fontWeight: 700, color: T, letterSpacing: '-0.01em' }}>{label}</span>
@@ -308,7 +308,7 @@ export default function PracticeSidebar() {
       <aside style={{
         position: 'fixed', left: 0, top: 0, height: '100vh', width: 240,
         borderRight: `1px solid ${SBDR}`,
-        boxShadow: '4px 0 24px rgba(0,0,0,0.35)',
+        boxShadow: '1px 0 0 rgba(0,0,0,0.05), 4px 0 24px rgba(0,0,0,0.03)',
         display: 'flex', flexDirection: 'column', zIndex: 50,
       }} className="hidden md:flex">
         <SidebarContent />

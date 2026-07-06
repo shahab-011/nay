@@ -71,7 +71,7 @@ function PrivacyBanner() {
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          style={{ overflow: 'hidden', position: 'sticky', top: 0, zIndex: 40 }}
+          style={{ overflow: 'hidden' }}
         >
           <div style={{
             display: 'flex', alignItems: 'center', gap: 16, padding: '9px 24px',
@@ -169,12 +169,12 @@ export default function Layout({ children }) {
   // 3. Practice Management — Clio-style PracticeSidebar, no main sidebar
   if (isPracticePath(path)) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0c0a1e' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         <PracticeSidebar />
         {/* desktop: offset by sidebar width; mobile: offset by top bar */}
         <main
           className="pm-main md:ml-[240px] pt-14 md:pt-0"
-          style={{ minHeight: '100vh', background: '#0c0a1e' }}
+          style={{ minHeight: '100vh', background: 'var(--bg)' }}
         >
           <PageContent>{children}</PageContent>
         </main>

@@ -121,7 +121,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       await register({ name, email, password, firmName });
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      navigate('/onboarding');
     } catch (err) {
       setError(err.response?.data?.message || 'Error creating account');
     } finally {

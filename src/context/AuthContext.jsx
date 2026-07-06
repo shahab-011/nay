@@ -88,7 +88,9 @@ export const AuthProvider = ({ children }) => {
   /* ─── register ───────────────────────────────────────────────── */
   const register = async (formData) => {
     const { data } = await registerUser(formData);
-    // Returns pendingEmail — no token yet, redirect to verify-email
+    if (data.data?.token) {
+      storeSession(data.data.token, data.data.user, data.data.refreshToken);
+    }
     return data;
   };
 

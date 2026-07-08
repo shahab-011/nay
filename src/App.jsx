@@ -161,6 +161,7 @@ function App() {
                     <Route path="/obligation-web"  element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
                     <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
                     <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
+                    <Route path="/client-links"    element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
 
                     {/* ── Section 2: Practice Management ── */}
                     <Route path="/practice"     element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><PracticeHub /></RoleRoute>} />
@@ -185,7 +186,6 @@ function App() {
                     <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
                     <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
                     <Route path="/practice-profile" element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><PracticeProfile /></RoleRoute>} />
-                    <Route path="/client-links"    element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ClientLinks /></RoleRoute>} />
 
                     {/* ── Client Portal (public, token-based) ── */}
                     <Route path="/client-portal/:token" element={<ClientPortal />} />

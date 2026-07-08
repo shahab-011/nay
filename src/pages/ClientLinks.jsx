@@ -142,7 +142,7 @@ export default function ClientLinks() {
   const isLawyer = ['lawyer', 'admin', 'owner', 'attorney'].includes(user?.role);
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', padding: '32px 28px', color: '#f0eeff' }}>
+    <div className="dark-studio" style={{ minHeight: '100vh', position: 'relative', padding: '32px 28px', color: '#f0eeff' }}>
       {/* Ambient blobs */}
       <div style={{ position: 'fixed', top: 100, left: '35%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: 120, right: '20%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />

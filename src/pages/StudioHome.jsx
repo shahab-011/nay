@@ -79,7 +79,7 @@ export default function StudioHome() {
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.35 }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/services')}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, background: 'none',
             border: 'none', cursor: 'pointer', color: TM, fontSize: 13,

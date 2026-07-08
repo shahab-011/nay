@@ -34,7 +34,7 @@ const STUDIO_NAV = [
 ];
 
 const MOBILE_TABS = [
-  { name: 'Home',   path: '/',          Ic: I.Home,          end: true },
+  { name: 'Studio', path: '/studio',    Ic: I.DocAI,         end: true },
   { name: 'Docs',   path: '/documents', Ic: I.Folder },
   { name: 'Ask AI', path: '/ask',       Ic: I.MessageCircle },
   { name: 'Alerts', path: '/alerts',    Ic: I.Bell, badge: true },
@@ -178,7 +178,7 @@ function SidebarContent({ onItemClick }) {
       <div style={{ padding: '10px 8px 0', flexShrink: 0 }}>
         <motion.button
           whileHover={{ x: -2 }}
-          onClick={() => { navigate('/'); onItemClick?.(); }}
+          onClick={() => { navigate('/services'); onItemClick?.(); }}
           style={{
             display: 'flex', alignItems: 'center', gap: 8, width: '100%',
             padding: '8px 12px', borderRadius: 10,
@@ -197,26 +197,6 @@ function SidebarContent({ onItemClick }) {
 
       {/* ── Nav ─────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
-        <NavLink to="/" end onClick={onItemClick} style={{ textDecoration: 'none', display: 'block', margin: '8px 8px 0' }}>
-          {({ isActive }) => (
-            <motion.div
-              whileHover={{ x: 3 }}
-              transition={{ duration: 0.15 }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 12px', borderRadius: 10,
-                background: isActive ? ABG : 'transparent',
-                color: isActive ? '#a5b4fc' : TM, cursor: 'pointer', position: 'relative',
-              }}
-              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = HBG; }}
-              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <I.Home size={15} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
-              <span style={{ fontSize: 13, fontWeight: isActive ? 600 : 400 }}>Home</span>
-            </motion.div>
-          )}
-        </NavLink>
-
         {STUDIO_NAV.map(item => (
           <NavItem key={item.sec || item.path} item={item} onClick={onItemClick} unread={unread} />
         ))}

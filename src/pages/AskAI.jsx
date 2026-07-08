@@ -34,14 +34,14 @@ async function extractDocxInBrowser(file, onProgress) {
 
 /* ── design tokens ─────────────────────────────────────────────────── */
 const T = {
-  bg:     '#f8f9fe',
-  sur:    '#ffffff',
-  bdr:    '#e5e7f5',
+  bg:     '#07091f',
+  sur:    '#0e1033',
+  bdr:    'rgba(255, 255, 255, 0.08)',
   indigo: '#6366f1',
-  ink:    '#1e1b4b',
-  muted:  '#6b7099',
-  subtle: '#f0f2ff',
-  ele:    '#eaecf8',
+  ink:    '#f0f0ff',
+  muted:  'rgba(240, 240, 255, 0.5)',
+  subtle: 'rgba(255, 255, 255, 0.05)',
+  ele:    'rgba(255, 255, 255, 0.08)',
 };
 
 const SUGGESTIONS = [
@@ -256,7 +256,7 @@ export default function AskAI() {
   const canSend = question.trim() && docId && !sending;
 
   return (
-    <div style={{ background: T.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'inherit' }}>
+    <div className="dark-studio" style={{ background: T.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'inherit' }}>
 
       {/* ── Header ────────────────────────────────────────────────── */}
       <header style={{ background: T.sur, borderBottom: `1px solid ${T.bdr}`, height: 60, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 12px rgba(99,102,241,0.07)' }}>
@@ -592,7 +592,7 @@ export default function AskAI() {
                 <AnimatePresence>
                 {error && (
                   <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: 12, fontSize: 13 }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', padding: '10px 14px', borderRadius: 12, fontSize: 13 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: 16, flexShrink: 0 }}>error</span>{error}
                   </motion.div>
                 )}

@@ -6,27 +6,27 @@ import { getContractStatus, daysUntilExpiry, CONTRACT_STATUS, ContractStatusBadg
 
 /* ── design tokens ─────────────────────────────────────────────────── */
 const T = {
-  bg:      '#f4f6fd',
-  sur:     '#ffffff',
-  bdr:     '#e5e7f5',
-  indigo:  '#6366f1',
-  indigoS: 'rgba(99,102,241,0.08)',
-  indigoBdr:'rgba(99,102,241,0.2)',
-  ink:     '#1e1b4b',
-  muted:   '#6b7099',
-  subtle:  '#f0f2ff',
-  ele:     '#eaecf8',
-  amber:   '#f59e0b',
-  amberS:  'rgba(245,158,11,0.08)',
-  amberBdr:'rgba(245,158,11,0.22)',
-  red:     '#ef4444',
-  redS:    'rgba(239,68,68,0.07)',
-  redBdr:  'rgba(239,68,68,0.22)',
-  green:   '#16a34a',
-  greenS:  'rgba(22,163,74,0.07)',
-  purple:  '#a855f7',
-  purpleS: 'rgba(168,85,247,0.08)',
-  purpleBdr:'rgba(168,85,247,0.22)',
+  bg:       '#07091f',
+  sur:      '#0e1033',
+  bdr:      'rgba(255, 255, 255, 0.08)',
+  indigo:   '#6366f1',
+  indigoS:  'rgba(99, 102, 241, 0.15)',
+  indigoBdr:'rgba(99, 102, 241, 0.3)',
+  ink:      '#f0f0ff',
+  muted:    'rgba(240, 240, 255, 0.5)',
+  subtle:   'rgba(255, 255, 255, 0.05)',
+  ele:      'rgba(255, 255, 255, 0.08)',
+  amber:    '#f59e0b',
+  amberS:   'rgba(245, 158, 11, 0.15)',
+  amberBdr: 'rgba(245, 158, 11, 0.3)',
+  red:      '#ef4444',
+  redS:     'rgba(239, 68, 68, 0.15)',
+  redBdr:   'rgba(239, 68, 68, 0.3)',
+  green:    '#10b981',
+  greenS:   'rgba(16, 185, 129, 0.15)',
+  purple:   '#a855f7',
+  purpleS:  'rgba(168, 85, 247, 0.15)',
+  purpleBdr:'rgba(168, 85, 247, 0.3)',
 };
 
 /* ── helpers ──────────────────────────────────────────────────────── */
@@ -253,11 +253,11 @@ export default function ContractLifecycle() {
   ];
 
   return (
-    <div style={{ background: T.bg, minHeight: '100vh' }}>
+    <div className="dark-studio" style={{ background: T.bg, minHeight: '100vh' }}>
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
-        background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(18px)',
+        background: 'rgba(14, 16, 51, 0.93)', backdropFilter: 'blur(18px)',
         borderBottom: `1px solid ${T.bdr}`, padding: '0 24px', height: 64,
         display: 'flex', alignItems: 'center', gap: 14,
         boxShadow: '0 1px 16px rgba(99,102,241,0.07)',

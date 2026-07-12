@@ -305,17 +305,12 @@ export default function PracticeSidebar() {
   return (
     <>
       {/* Desktop */}
-      <aside style={{
-        position: 'fixed', left: 0, top: 0, height: '100vh', width: 240,
-        borderRight: `1px solid ${SBDR}`,
-        boxShadow: '1px 0 0 rgba(0,0,0,0.05), 4px 0 24px rgba(0,0,0,0.03)',
-        display: 'flex', flexDirection: 'column', zIndex: 50,
-      }} className="hidden md:flex">
+      <aside className="practice-sidebar-desktop">
         <SidebarContent />
       </aside>
 
       {/* Mobile */}
-      <div className="md:hidden">
+      <div className="practice-sidebar-mobile">
         <MobileBar onOpen={() => setMobileOpen(true)} />
         <MobileDrawer isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       </div>

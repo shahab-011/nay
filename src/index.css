@@ -1084,5 +1084,40 @@ main [style*="background:linear-gradient"] .text-white { color: #fff; }
   }
 }
 
+/* Sidebar Responsive Display Rules */
+.practice-sidebar-desktop {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  height: 100vh !important;
+  width: 240px !important;
+  border-right: 1px solid #E8E4EE !important;
+  box-shadow: 1px 0 0 rgba(0,0,0,0.05), 4px 0 24px rgba(0,0,0,0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 50 !important;
+}
+.practice-sidebar-mobile {
+  display: none !important;
+}
+.practice-main-content {
+  margin-left: 240px !important;
+  padding-top: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .practice-sidebar-desktop {
+    display: none !important;
+  }
+  .practice-sidebar-mobile {
+    display: block !important;
+  }
+  .practice-main-content {
+    margin-left: 0 !important;
+    padding-top: 56px !important;
+  }
+}
+
+
 
 

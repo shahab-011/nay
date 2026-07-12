@@ -173,7 +173,7 @@ export default function Layout({ children }) {
         <PracticeSidebar />
         {/* desktop: offset by sidebar width; mobile: offset by top bar */}
         <main
-          className="pm-main md:ml-[240px] pt-14 md:pt-0"
+          className="practice-main-content"
           style={{ minHeight: '100vh', background: 'var(--bg)' }}
         >
           <PageContent>{children}</PageContent>

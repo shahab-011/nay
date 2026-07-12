@@ -446,7 +446,7 @@ function ServiceCard({ s, index, onCardClick }) {
 /* ─── Main ───────────────────────────────────────────────────── */
 export default function PortalHome() {
   const navigate  = useNavigate();
-  const { user }  = useAuth();
+  const { user, logout } = useAuth();
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.name?.split(' ')[0] || 'there';
@@ -616,6 +616,40 @@ export default function PortalHome() {
             ))}
           </div>
         </motion.div>
+
+        {/* ── Sign Out ── */}
+        {user && (
+          <motion.div
+            variants={fadeIn} initial="hidden" animate="show"
+            transition={{ ...stagger(1.0).transition }}
+            style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}
+          >
+            <motion.button
+              whileHover={{ scale: 1.03, background: 'rgba(239,68,68,0.08)' }}
+              whileTap={{ scale: 0.97 }}
+              onClick={async () => {
+                await logout();
+                navigate('/');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 24px',
+                borderRadius: 40,
+                border: '1.5px solid rgba(239,68,68,0.3)',
+                background: 'transparent',
+                color: '#EF4444',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 200ms',
+              }}
+            >
+              <I.LogOut size={14} /> Sign Out
+            </motion.button>
+          </motion.div>
+        )}
 
         {/* ── Footer note ── */}
         <motion.p

@@ -287,7 +287,7 @@ function MatterModal({ matter, onClose, onSave }) {
           <Field label="Client">
             <ClientSelector value={form.clientId} onChange={v => set('clientId', v)} />
           </Field>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div className="modal-grid-2" style={{ marginBottom: 16 }}>
             <Field label="Practice Area" half>
               <select className="input" value={form.practiceArea} onChange={e => set('practiceArea', e.target.value)} style={{ cursor: 'pointer' }}>
                 {PRACTICE_AREAS.map(p => <option key={p}>{p}</option>)}
@@ -323,7 +323,7 @@ function MatterModal({ matter, onClose, onSave }) {
           </Field>
           <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0 16px', paddingTop: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Court / Opposing Party</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 0 }}>
+            <div className="modal-grid-2">
               <Field label="Court Name" half>
                 <input className="input" value={form.courtName} onChange={e => set('courtName', e.target.value)} placeholder="Supreme Court of Pakistan" />
               </Field>
@@ -341,7 +341,7 @@ function MatterModal({ matter, onClose, onSave }) {
           {/* Budget */}
           <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0 16px', paddingTop: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Budget</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+            <div className="modal-grid-3">
               <Field label="Hour Budget" half>
                 <input className="input" type="number" min="0" step="0.5" value={form.budgetHours} onChange={e => set('budgetHours', e.target.value)} placeholder="0" />
               </Field>
@@ -357,7 +357,7 @@ function MatterModal({ matter, onClose, onSave }) {
           {/* SOL */}
           <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0 16px', paddingTop: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Statute of Limitations</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 16, marginBottom: 12 }}>
+            <div className="modal-grid-2" style={{ marginBottom: 12 }}>
               <Field label="SOL Date" half>
                 <input className="input" type="date" value={form.solDate} onChange={e => set('solDate', e.target.value)} />
               </Field>
@@ -609,7 +609,7 @@ function MatterDetail({ matter, onEdit, onBack, onMatterChange }) {
 
           {/* Overview */}
           {activeTab === 'Overview' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+            <div className="matter-overview-grid">
               <div className="card" style={{ padding: 28 }}>
                 <div className="h-title" style={{ fontSize: 16, marginBottom: 16 }}>Matter Details</div>
                 {matter.description && (
@@ -1024,7 +1024,7 @@ export default function Matters() {
   /* Detail view */
   if (selectedMatter) {
     return (
-      <div style={{ padding: '80px 28px 100px', maxWidth: 1200, margin: '0 auto' }}>
+      <div className="practice-padding-mobile" style={{ padding: '80px 28px 100px', maxWidth: 1200, margin: '0 auto' }}>
         <MatterDetail
           matter={selectedMatter}
           onBack={() => { setSelectedMatter(null); navigate('/matters'); }}
@@ -1052,14 +1052,14 @@ export default function Matters() {
 
   /* List view */
   return (
-    <div style={{ padding: '80px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
+    <div className="practice-padding-mobile" style={{ padding: '80px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-        <div>
+      <div className="page-header-responsive">
+        <div className="mobile-header-hide">
           <h1 className="h-title" style={{ fontSize: 30, marginBottom: 4 }}>Matters</h1>
           <p className="t-secondary" style={{ fontSize: 14 }}>Manage all your legal cases and client matters</p>
         </div>
-        <button className="btn btn-purple" onClick={() => { setEditingMatter(null); setShowModal(true); }}>
+        <button className="btn btn-purple mobile-action-button" onClick={() => { setEditingMatter(null); setShowModal(true); }}>
           <I.Upload size={16} style={{ transform: 'rotate(90deg)' }} /> New Matter
         </button>
       </div>

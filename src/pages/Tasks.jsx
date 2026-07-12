@@ -118,7 +118,7 @@ function LogTimeModal({ task, onClose, onSave, matters = [] }) {
         <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
           {err && <div style={{ background:'#FEE2E2', color:'#991B1B', borderRadius:8, padding:'9px 13px', fontSize:13 }}>{err}</div>}
 
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          <div className="modal-grid-2">
             <Field label="Hours *">
               <input className="input" type="number" min="0.1" step="0.25" value={form.hours} onChange={e => set('hours', e.target.value)} placeholder="1.5" autoFocus />
             </Field>
@@ -131,7 +131,7 @@ function LogTimeModal({ task, onClose, onSave, matters = [] }) {
             <input className="input" value={form.description} onChange={e => set('description', e.target.value)} placeholder="What did you work on?" />
           </Field>
 
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          <div className="modal-grid-2">
             <Field label="Activity Type">
               <select className="input" value={form.activityType} onChange={e => set('activityType', e.target.value)}>
                 {ACTIVITY_TYPES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
@@ -264,7 +264,7 @@ function TaskModal({ task, onClose, onSave, matters = [], allTasks = [] }) {
             <textarea className="input" rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder="What needs to be done…" style={{ resize:'vertical' }} />
           </Field>
 
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+          <div className="modal-grid-2">
             <Field label="Priority">
               <select className="input" value={form.priority} onChange={e => set('priority', e.target.value)}>
                 {PRIORITIES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -459,7 +459,7 @@ function TaskListModal({ list, onClose, onSave }) {
               <div style={{ fontSize:11, fontWeight:700, color:'var(--purple)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>
                 Auto-apply when matter stage changes to…
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+              <div className="modal-grid-2">
                 <Field label="Stage">
                   <select className="input" style={{ fontSize:13 }} value={form.triggerStage} onChange={e => set('triggerStage', e.target.value)}>
                     <option value="">— Any stage —</option>
@@ -619,30 +619,32 @@ function KanbanBoard({ tasks, onMove, onEdit, onLogTime }) {
   const [dragOver, setDragOver] = useState(null);
 
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, alignItems:'start' }}>
-      {STATUSES.map(col => (
-        <div key={col.value}
-          onDragOver={e => { e.preventDefault(); setDragOver(col.value); }}
-          onDragLeave={() => setDragOver(null)}
-          onDrop={() => { if (dragTask && dragTask.status !== col.value) onMove(dragTask, col.value); setDragTask(null); setDragOver(null); }}
-          style={{ background: dragOver === col.value ? col.bg : 'var(--bg)', borderRadius:14, padding:12, border:`2px dashed ${dragOver === col.value ? col.color : 'transparent'}`, transition:'all 0.15s', minHeight:180 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-            <span style={{ width:9, height:9, borderRadius:5, background: col.color }} />
-            <span style={{ fontWeight:700, fontSize:12 }}>{col.label}</span>
-            <span style={{ marginLeft:'auto', fontSize:11, fontWeight:700, color:'var(--text-muted)', background:'var(--surface)', padding:'1px 7px', borderRadius:7 }}>
-              {tasks.filter(t => t.status === col.value).length}
-            </span>
+    <div className="kanban-wrapper-responsive">
+      <div className="kanban-board-responsive">
+        {STATUSES.map(col => (
+          <div key={col.value}
+            onDragOver={e => { e.preventDefault(); setDragOver(col.value); }}
+            onDragLeave={() => setDragOver(null)}
+            onDrop={() => { if (dragTask && dragTask.status !== col.value) onMove(dragTask, col.value); setDragTask(null); setDragOver(null); }}
+            style={{ background: dragOver === col.value ? col.bg : 'var(--bg)', borderRadius:14, padding:12, border:`2px dashed ${dragOver === col.value ? col.color : 'transparent'}`, transition:'all 0.15s', minHeight:180 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <span style={{ width:9, height:9, borderRadius:5, background: col.color }} />
+              <span style={{ fontWeight:700, fontSize:12 }}>{col.label}</span>
+              <span style={{ marginLeft:'auto', fontSize:11, fontWeight:700, color:'var(--text-muted)', background:'var(--surface)', padding:'1px 7px', borderRadius:7 }}>
+                {tasks.filter(t => t.status === col.value).length}
+              </span>
+            </div>
+            <AnimatePresence>
+              {tasks.filter(t => t.status === col.value).map(t => (
+                <KanbanCard key={t._id} task={t} onEdit={onEdit} onDragStart={setDragTask} onLogTime={onLogTime} />
+              ))}
+            </AnimatePresence>
+            {tasks.filter(t => t.status === col.value).length === 0 && (
+              <div style={{ textAlign:'center', padding:'20px 0', color:'var(--text-muted)', fontSize:12 }}>Drop here</div>
+            )}
           </div>
-          <AnimatePresence>
-            {tasks.filter(t => t.status === col.value).map(t => (
-              <KanbanCard key={t._id} task={t} onEdit={onEdit} onDragStart={setDragTask} onLogTime={onLogTime} />
-            ))}
-          </AnimatePresence>
-          {tasks.filter(t => t.status === col.value).length === 0 && (
-            <div style={{ textAlign:'center', padding:'20px 0', color:'var(--text-muted)', fontSize:12 }}>Drop here</div>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -838,15 +840,15 @@ export default function Tasks() {
   const overdueCount = tasks.filter(isOverdue).length;
 
   return (
-    <div style={{ padding:'80px 28px 100px', maxWidth:1400, margin:'0 auto' }}>
+    <div className="practice-padding-mobile" style={{ padding:'80px 28px 100px', maxWidth:1400, margin:'0 auto' }}>
 
       {/* Header */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:14 }}>
-        <div>
+      <div className="page-header-responsive">
+        <div className="mobile-header-hide">
           <h1 style={{ margin:0, fontSize:28, fontWeight:800, color:'var(--ink)' }}>Tasks</h1>
           <p style={{ margin:'4px 0 0', fontSize:13, color:'var(--text-muted)' }}>Track and manage tasks across all matters</p>
         </div>
-        <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+        <div className="tasks-header-actions-responsive">
           {tab === 'Tasks' && (
             <>
               <div style={{ display:'flex', gap:3, background:'var(--elevated)', borderRadius:10, padding:3 }}>
@@ -885,7 +887,7 @@ export default function Tasks() {
       ) : (
         <>
           {/* Stats */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:10, marginBottom:20 }}>
+          <div className="tasks-stats-responsive" style={{ marginBottom:20 }}>
             {[
               { l:'Total',       v: tasks.length,              c:'var(--ink)' },
               { l:'To Do',       v: byStatus('to_do'),         c:'#6B7280' },

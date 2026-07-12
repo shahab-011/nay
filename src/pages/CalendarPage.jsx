@@ -165,7 +165,7 @@ function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
           </label>
 
           {/* Dates */}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <div className="modal-grid-2">
             <div>
               <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Start Date</label>
               <input type="date" value={form.startDate || ''} onChange={e => set('startDate', e.target.value)}
@@ -179,7 +179,7 @@ function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
           </div>
 
           {!form.allDay && (
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            <div className="modal-grid-2">
               <div>
                 <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Start Time</label>
                 <input type="time" value={form.startTime || '09:00'} onChange={e => set('startTime', e.target.value)}
@@ -259,7 +259,7 @@ function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
             </div>
 
             {form.recurrence && (
-              <div style={{ marginTop:14, display:'grid', gridTemplateColumns:'1fr 80px 1fr', gap:10 }}>
+              <div className="modal-grid-3">
                 <div>
                   <label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Frequency</label>
                   <select value={form.recurrence.frequency || 'weekly'}
@@ -313,10 +313,8 @@ function EventModal({ event, onClose, onSave, onDelete, matters = [] }) {
 function EventChip({ event, onClick }) {
   const c = typeColor(event.eventType);
   return (
-    <div onClick={e => { e.stopPropagation(); onClick(event); }} style={{
+    <div onClick={e => { e.stopPropagation(); onClick(event); }} className="event-chip-responsive" style={{
       background: c.bg, borderLeft: `3px solid ${c.border}`, color: c.text,
-      borderRadius:5, padding:'2px 7px', fontSize:11, fontWeight:600,
-      cursor:'pointer', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', marginBottom:2,
     }}>{event.title}</div>
   );
 }
@@ -690,22 +688,22 @@ export default function CalendarPage() {
   const deadlines  = events.filter(e => e.eventType === 'filing_deadline').length;
 
   return (
-    <div style={{ paddingTop:80, minHeight:'100vh', background:'var(--bg)', display:'flex', flexDirection:'column' }}>
+    <div className="practice-padding-mobile" style={{ paddingTop:80, minHeight:'100vh', background:'var(--bg)', display:'flex', flexDirection:'column' }}>
       <div style={{ maxWidth:1300, margin:'0 auto', width:'100%', padding:'0 24px', flex:1, display:'flex', flexDirection:'column', gap:20 }}>
 
         {/* Page header */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
-          <div>
+        <div className="page-header-responsive">
+          <div className="mobile-header-hide">
             <h1 style={{ margin:0, fontSize:24, fontWeight:800, color:'var(--ink)' }}>Calendar</h1>
             <p style={{ margin:'4px 0 0', fontSize:13, color:'var(--text-muted)' }}>Deadlines, court dates, and client meetings</p>
           </div>
-          <button onClick={() => openNew()} className="btn btn-purple" style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', fontSize:14, fontWeight:600, borderRadius:12 }}>
+          <button onClick={() => openNew()} className="btn btn-purple mobile-action-button" style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', fontSize:14, fontWeight:600, borderRadius:12 }}>
             <I.Plus size={16} /> New Event
           </button>
         </div>
 
         {/* Stats strip */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
+        <div className="kpi-grid-responsive">
           {[
             { label:'Today',       value: todayEvts,  sub:'events',     color:'var(--purple)' },
             { label:'This Week',   value: weekEvts,   sub:'events',     color:'#3B82F6' },

@@ -149,7 +149,7 @@ function ContactModal({ contact, onClose, onSave }) {
             </Fld>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+              <div className="modal-grid-2" style={{ marginBottom: 14 }}>
                 <Fld label="First Name *" half><input className="input" value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Jane" /></Fld>
                 <Fld label="Last Name" half><input className="input" value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Smith" /></Fld>
               </div>
@@ -159,21 +159,21 @@ function ContactModal({ contact, onClose, onSave }) {
             </>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: form.type === 'opposing_counsel' ? '1fr 1fr' : '1fr', gap: 14, marginBottom: 14 }}>
+          <div className={form.type === 'opposing_counsel' ? 'modal-grid-2' : ''} style={{ marginBottom: 14 }}>
             <Fld label="Job Title" half={form.type === 'opposing_counsel'}><input className="input" value={form.jobTitle} onChange={e => set('jobTitle', e.target.value)} placeholder="CEO, Partner…" /></Fld>
             {form.type === 'opposing_counsel' && (
               <Fld label="Bar Number" half><input className="input" value={form.barNumber} onChange={e => set('barNumber', e.target.value)} placeholder="e.g. D/1234/2019" /></Fld>
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div className="modal-grid-2" style={{ marginBottom: 14 }}>
             <Fld label="Email" half><input className="input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="jane@example.com" /></Fld>
             <Fld label="Alternate Email" half><input className="input" type="email" value={form.alternateEmail} onChange={e => set('alternateEmail', e.target.value)} placeholder="other@example.com" /></Fld>
             <Fld label="Phone" half><input className="input" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+92 300 000 0000" /></Fld>
             <Fld label="Mobile" half><input className="input" type="tel" value={form.mobile} onChange={e => set('mobile', e.target.value)} placeholder="+92 300 000 0000" /></Fld>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div className="modal-grid-2" style={{ marginBottom: 14 }}>
             <Fld label="Preferred Contact" half>
               <select className="input" value={form.preferredContactMethod} onChange={e => set('preferredContactMethod', e.target.value)} style={{ cursor: 'pointer' }}>
                 {['email','phone','text','any'].map(m => <option key={m}>{m}</option>)}
@@ -341,7 +341,7 @@ function ContactDetail({ contact, allContacts, onEdit, onBack, onDelete, onMerge
 
           {/* Overview */}
           {activeTab === 'Overview' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+            <div className="matter-overview-grid">
               <div className="card" style={{ padding: 28 }}>
                 <div className="h-title" style={{ fontSize: 16, marginBottom: 18 }}>Contact Information</div>
                 <div style={{ display: 'grid', gap: 12 }}>
@@ -662,7 +662,7 @@ export default function Contacts() {
   /* Detail view */
   if (selectedContact) {
     return (
-      <div style={{ padding: '80px 28px 100px', maxWidth: 1100, margin: '0 auto' }}>
+      <div className="practice-padding-mobile" style={{ padding: '80px 28px 100px', maxWidth: 1100, margin: '0 auto' }}>
         <ContactDetail
           contact={selectedContact}
           allContacts={contacts}
@@ -690,16 +690,16 @@ export default function Contacts() {
       {/* Ambient blobs */}
       <div style={{ position:'fixed', top:'8%', right:'4%', width:420, height:420, borderRadius:'50%', background:'radial-gradient(circle, rgba(124,58,237,0.09) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
       <div style={{ position:'fixed', bottom:'15%', left:'2%', width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle, rgba(196,181,253,0.06) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
-      <div style={{ position: 'relative', zIndex: 1, padding: '28px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
+      <div className="practice-padding-mobile" style={{ position: 'relative', zIndex: 1, padding: '28px 28px 100px', maxWidth: 1280, margin: '0 auto' }}>
       <input ref={importRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleImport} />
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-        <div>
+      <div className="page-header-responsive">
+        <div className="mobile-header-hide">
           <h1 className="h-title" style={{ fontSize: 30, marginBottom: 4 }}>Contacts</h1>
           <p className="t-secondary" style={{ fontSize: 14 }}>Clients, opposing counsel, witnesses, and all related parties</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="contacts-header-actions-responsive">
           <button className="btn btn-secondary" onClick={() => importRef.current?.click()}><I.Upload size={14} /> Import CSV</button>
           <button className="btn btn-secondary" onClick={handleExport}><I.Download size={14} /> Export CSV</button>
           <button className="btn btn-purple" onClick={() => { setEditingContact(null); setShowModal(true); }}><I.User size={14} /> New Contact</button>

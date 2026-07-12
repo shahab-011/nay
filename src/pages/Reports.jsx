@@ -143,7 +143,7 @@ function Card({ title, actions, children }) {
 
 function DateRange({ from, to, onChange }) {
   return (
-    <div style={{ display:'flex',gap:8,alignItems:'center' }}>
+    <div className="date-range-responsive">
       <input type="date" value={from} onChange={e=>onChange('from',e.target.value)} style={{ padding:'7px 10px',borderRadius:8,border:'1.5px solid #E5E7EB',fontSize:12,color:'#374151',outline:'none' }} />
       <span style={{ fontSize:12,color:'#9CA3AF' }}>to</span>
       <input type="date" value={to} onChange={e=>onChange('to',e.target.value)} style={{ padding:'7px 10px',borderRadius:8,border:'1.5px solid #E5E7EB',fontSize:12,color:'#374151',outline:'none' }} />
@@ -188,7 +188,7 @@ function DashboardTab() {
         <StatCard label="Invoices Sent"   value={month.invoicesSent||0}    icon={I.Doc}         color="#06B6D4" />
       </div>
 
-      <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20 }}>
+      <div className="reports-grid-2" style={{ marginBottom:20 }}>
         <Card title="Upcoming Events">
           {(today.upcomingEvents||[]).length === 0
             ? <Empty msg="No upcoming events" />
@@ -290,7 +290,7 @@ function FinancialTab() {
             </button>
           ))}
         </div>
-        <div style={{ display:'flex',gap:8,alignItems:'center' }}>
+        <div className="date-filter-container-responsive">
           <DateRange from={from} to={to} onChange={handleDate} />
           <button onClick={load} disabled={loading} style={{ padding:'7px 16px',borderRadius:8,background:'#7C3AED',color:'#fff',border:'none',cursor:'pointer',fontSize:12,fontWeight:700,opacity:loading?.7:1 }}>
             {loading?'…':'Apply'}
@@ -309,7 +309,7 @@ function FinancialTab() {
           <Card title="Revenue by Month" actions={<button onClick={()=>downloadCSV(rev.byPeriod,'revenue_by_month.csv')} style={{fontSize:11,padding:'5px 10px',borderRadius:7,border:'1.5px solid #E5E7EB',background:'#F9FAFB',cursor:'pointer',fontWeight:700,color:'#374151',display:'flex',alignItems:'center',gap:4}}><I.Download size={11}/>CSV</button>}>
             <BarChart data={(rev.byPeriod||[]).map(p=>({...p,value:p.total}))} color="#7C3AED" unit="$" />
           </Card>
-          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20 }}>
+          <div className="reports-grid-2">
             <Card title="By Practice Area">
               <BarChart data={(rev.byArea||[]).slice(0,8).map(a=>({...a,value:a.billed,label:a.area}))} color="#3B82F6" unit="$" />
             </Card>
@@ -341,7 +341,7 @@ function FinancialTab() {
 
       {sub === 'ar' && ar && (
         <>
-          <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:20 }}>
+          <div className="kpi-grid-responsive" style={{ marginBottom:20 }}>
             {(ar.summary||[]).map((b,i) => (
               <StatCard key={b.range} label={`${b.range} days`} value={fmt$(b.total)} sub={`${b.count} invoice${b.count!==1?'s':''}`} color={COLORS[i]} />
             ))}
@@ -439,7 +439,7 @@ function TimeTab() {
             <StatCard label="Unbilled Hours" value={fmtN(time.totals?.unbilledHours)+'h'} color="#EF4444" icon={I.Alert} />
             <StatCard label="Unbilled Value" value={fmt$(time.totals?.unbilledValue)}    color="#F59E0B" icon={I.DollarSign} />
           </div>
-          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20 }}>
+          <div className="reports-grid-2">
             <Card title="Hours by Month">
               <BarChart data={(time.byMonth||[]).map(p=>({...p,value:p.total,label:p.period?.slice(5)}))} color="#7C3AED" />
             </Card>
@@ -529,7 +529,7 @@ function MattersTab() {
 
   return (
     <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-      <div style={{ display:'flex',justifyContent:'flex-end',marginBottom:16,gap:8 }}>
+      <div className="date-filter-container-responsive" style={{ justifyContent:'flex-end',marginBottom:16 }}>
         <DateRange from={from} to={to} onChange={(f,v)=>f==='from'?setFrom(v):setTo(v)} />
         <button onClick={load} style={{ padding:'7px 16px',borderRadius:8,background:'#7C3AED',color:'#fff',border:'none',cursor:'pointer',fontSize:12,fontWeight:700 }}>Apply</button>
       </div>
@@ -539,7 +539,7 @@ function MattersTab() {
         <StatCard label="Closed"        value={data.closedMatters} color="#6B7280" icon={I.Check} />
         <StatCard label="Avg Days Open" value={data.avgDaysToClose+'d'} color="#F59E0B" icon={I.Clock} />
       </div>
-      <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:20 }}>
+      <div className="reports-grid-2" style={{ marginBottom:20 }}>
         <Card title="By Status"><PieRing data={statusPie} valueKey="count" /></Card>
         <Card title="By Practice Area"><PieRing data={areaPie} valueKey="count" /></Card>
       </div>
@@ -588,7 +588,7 @@ function PipelineTab() {
 
   return (
     <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-      <div style={{ display:'flex',justifyContent:'flex-end',marginBottom:16,gap:8 }}>
+      <div className="date-filter-container-responsive" style={{ justifyContent:'flex-end',marginBottom:16 }}>
         <DateRange from={from} to={to} onChange={(f,v)=>f==='from'?setFrom(v):setTo(v)} />
         <button onClick={load} style={{ padding:'7px 16px',borderRadius:8,background:'#7C3AED',color:'#fff',border:'none',cursor:'pointer',fontSize:12,fontWeight:700 }}>Apply</button>
       </div>
@@ -685,7 +685,7 @@ function CustomTab() {
       {showForm && (
         <div style={{ background:'#fff',borderRadius:16,border:'1.5px solid #E5E7EB',padding:20,marginBottom:20 }}>
           <div style={{ fontSize:14,fontWeight:800,color:'#111827',marginBottom:16 }}>Save Custom Report</div>
-          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12 }}>
+          <div className="modal-grid-2" style={{ marginBottom:12 }}>
             <div>
               <div style={{ fontSize:12,fontWeight:700,color:'#374151',marginBottom:5 }}>Report Name</div>
               <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="e.g. Monthly Revenue Summary" style={{ width:'100%',padding:'9px 12px',borderRadius:9,border:'1.5px solid #E5E7EB',fontSize:13,color:'#111827',outline:'none',boxSizing:'border-box' }} />
@@ -735,10 +735,10 @@ export default function Reports() {
 
   return (
     <div style={{ paddingTop:80, minHeight:'100vh', background:'#F8F9FC' }}>
-      <div style={{ maxWidth:1100, margin:'0 auto', padding:'32px 24px 80px' }}>
+      <div className="practice-padding-mobile" style={{ maxWidth:1100, margin:'0 auto', padding:'32px 24px 80px' }}>
 
         {/* Header */}
-        <motion.div initial={{opacity:0,y:-12}} animate={{opacity:1,y:0}} style={{marginBottom:28}}>
+        <motion.div initial={{opacity:0,y:-12}} animate={{opacity:1,y:0}} className="mobile-header-hide" style={{marginBottom:28}}>
           <div style={{display:'flex',alignItems:'center',gap:14}}>
             <div style={{width:44,height:44,borderRadius:12,background:'linear-gradient(135deg,#7C3AED,#4F46E5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
               <I.Chart size={22} style={{color:'#fff'}} />

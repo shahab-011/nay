@@ -117,10 +117,8 @@ function TimerRow({ timer, onPause, onResume, onStop }) {
   }, [timer]);
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
+    <div className="timer-row-responsive" style={{
       background: timer.isPaused ? 'var(--elevated)' : 'linear-gradient(90deg,rgba(124,58,237,0.06)0%,transparent 100%)',
-      borderRadius: 12, border: '1.5px solid var(--border)',
     }}>
       <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: timer.isPaused ? '#F59E0B' : '#10B981' }} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -261,7 +259,7 @@ function EntryModal({ entry, matters, onClose, onSave }) {
   return (
     <ModalWrap onClose={onClose} title={entry?._id ? 'Edit Time Entry' : 'Log Time'}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="modal-grid-2">
           <Field label="Date">
             <input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={inputStyle} />
           </Field>
@@ -281,7 +279,7 @@ function EntryModal({ entry, matters, onClose, onSave }) {
           <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
             placeholder="Work performed…" style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} />
         </Field>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="modal-grid-3">
           <Field label="Hours">
             <input type="number" min="0" step="0.25" value={form.hours} onChange={e => set('hours', e.target.value)} style={inputStyle} />
           </Field>
@@ -329,7 +327,7 @@ function ExpenseModal({ expense, matters, onClose, onSave }) {
   return (
     <ModalWrap onClose={onClose} title={expense?._id ? 'Edit Expense' : 'Add Expense'}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="modal-grid-2">
           <Field label="Date">
             <input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={inputStyle} />
           </Field>
@@ -540,7 +538,7 @@ export default function TimeTracking() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
+    <div className="practice-padding-mobile" style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
       {/* Ambient blobs */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-8%', right: '5%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
@@ -549,12 +547,12 @@ export default function TimeTracking() {
       <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-          <div>
+        <div className="page-header-responsive">
+          <div className="mobile-header-hide">
             <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--ink)' }}>Time & Expenses</h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>Track billable hours and client expenses</p>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div className="contacts-header-actions-responsive">
             <button onClick={() => setExpenseModal({})}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 12, background: 'none', color: 'var(--ink)', border: '1.5px solid var(--border)', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
               <I.Plus size={14} /> Add Expense
@@ -599,7 +597,7 @@ export default function TimeTracking() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
+        <div className="kpi-grid-responsive" style={{ marginBottom: 24 }}>
           {STAT_CARDS.map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', borderRadius: 14, padding: '18px 20px', border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
               <div style={{ fontSize: 24, fontWeight: 900, color: s.color }}>{s.value}</div>

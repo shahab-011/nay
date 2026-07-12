@@ -96,13 +96,13 @@ function LineItems({ items, onChange }) {
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 90px 32px', gap: 8, marginBottom: 6 }}>
+      <div className="line-items-header-responsive">
         {['Description', 'Qty', 'Rate', 'Amount', ''].map(h => (
           <div key={h} style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', padding: '0 4px' }}>{h}</div>
         ))}
       </div>
       {items.map((it, i) => (
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 90px 32px', gap: 8, marginBottom: 6 }}>
+        <div key={i} className="line-item-row-responsive">
           <input value={it.description || ''} onChange={e => update(i, 'description', e.target.value)} placeholder="Service description"
             style={{ padding: '8px 10px', borderRadius: 8, border: '1.5px solid var(--border)', fontSize: 13, background: 'var(--bg)' }} />
           <input type="number" min="0" step="0.25" value={it.quantity ?? ''} onChange={e => update(i, 'quantity', e.target.value)}
@@ -172,7 +172,7 @@ function InvoiceModal({ invoice, matters, contacts, onClose, onSave }) {
     <ModalWrap onClose={onClose} title={isEdit ? 'Edit Invoice' : 'New Invoice'} wide>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {/* Client + Matter */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="modal-grid-2">
           <Field label="Client">
             <select value={form.clientId} onChange={e => handleContactSelect(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
               <option value="">Select client</option>
@@ -191,7 +191,7 @@ function InvoiceModal({ invoice, matters, contacts, onClose, onSave }) {
           <input value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="Client / company name" style={inputStyle} />
         </Field>
         {/* Dates */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="modal-grid-2">
           <Field label="Issue Date">
             <input type="date" value={form.issueDate} onChange={e => set('issueDate', e.target.value)} style={inputStyle} />
           </Field>
@@ -204,7 +204,7 @@ function InvoiceModal({ invoice, matters, contacts, onClose, onSave }) {
           <LineItems items={form.lineItems} onChange={items => set('lineItems', items)} />
         </Field>
         {/* Discount */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="modal-grid-2">
           <Field label="Discount Type">
             <select value={form.discountType} onChange={e => set('discountType', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
               <option value="">None</option>
@@ -292,7 +292,7 @@ function MarkPaidModal({ invoice, onClose, onMark }) {
   return (
     <ModalWrap onClose={onClose} title="Record Payment" subtitle={`${invoice.invoiceNumber} — Outstanding: ${fmtMoney(invoice.amountOutstanding)}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="modal-grid-2">
           <Field label="Amount (₹)">
             <input type="number" min="0" step="0.01" value={form.amount} onChange={e => set('amount', e.target.value)} style={inputStyle} />
           </Field>
@@ -602,7 +602,7 @@ export default function Billing() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
+    <div className="practice-padding-mobile" style={{ minHeight: '100vh', padding: '28px 24px 60px', position: 'relative' }}>
       {/* Ambient blobs */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-8%', right: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', filter: 'blur(40px)' }} />
@@ -611,12 +611,12 @@ export default function Billing() {
       <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-          <div>
+        <div className="page-header-responsive">
+          <div className="mobile-header-hide">
             <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: 'var(--ink)' }}>Billing & Invoices</h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>Generate invoices, track payments, and manage trust accounts</p>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div className="contacts-header-actions-responsive">
             <button onClick={() => setGenerateModal(true)}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 12, background: 'none', color: 'var(--ink)', border: '1.5px solid var(--border)', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
               <I.Sparkle size={14} /> From Matter
@@ -629,7 +629,7 @@ export default function Billing() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
+        <div className="kpi-grid-responsive" style={{ marginBottom: 24 }}>
           {STAT_CARDS.map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', borderRadius: 14, padding: '18px 20px', border: '1.5px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
               <div style={{ fontSize: 22, fontWeight: 900, color: s.color }}>{s.value}</div>

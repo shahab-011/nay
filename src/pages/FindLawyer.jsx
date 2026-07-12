@@ -171,7 +171,7 @@ function ProgressBar({ step }) {
                   : <Ic size={15} style={{ color: active ? '#fff' : 'var(--text-muted)' }} />
                 }
               </motion.div>
-              <span style={{ marginTop: 8, fontSize: 11, fontWeight: active || done ? 700 : 500, color: active || done ? 'var(--purple)' : 'var(--text-muted)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+              <span className="find-lawyer-progress-text" style={{ marginTop: 8, fontSize: 11, fontWeight: active || done ? 700 : 500, color: active || done ? 'var(--purple)' : 'var(--text-muted)', textAlign: 'center', whiteSpace: 'nowrap' }}>
                 {s}
               </span>
             </div>
@@ -265,7 +265,7 @@ function StepDetails({ form, onChange }) {
       {/* Consultation */}
       <div>
         <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', display: 'block', marginBottom: 8 }}>Preferred consultation</label>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="consult-grid-responsive" style={{ display: 'flex', gap: 8 }}>
           {CONSULT.map(c => (
             <div
               key={c.id}
@@ -394,7 +394,7 @@ function StepMatches({ lawyers, loading, selected, onSelect }) {
           <p style={{ margin: '8px 0 0', fontSize: 13 }}>Try expanding your search criteria or contact us directly.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           {lawyers.map(l => (
             <LawyerCard
               key={l.id}
@@ -512,7 +512,7 @@ export default function FindLawyer() {
 
   return (
     <div style={{ paddingTop: 80, minHeight: '100vh', background: 'var(--bg)' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px 80px' }}>
+      <div className="find-lawyer-container-padding" style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px 80px' }}>
 
         {/* Page header */}
         <div style={{ marginBottom: 36 }}>
@@ -542,7 +542,7 @@ export default function FindLawyer() {
         {step < 3 && <ProgressBar step={step} />}
 
         {/* Step content */}
-        <div className="card" style={{ padding: 32 }}>
+        <div className="card find-lawyer-card-padding" style={{ padding: 32 }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={step}

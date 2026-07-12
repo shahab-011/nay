@@ -718,3 +718,100 @@ main [style*="background:linear-gradient"] .text-white { color: #fff; }
 
 /* ── Animate-pulse stays visible on dark ───────────────── */
 .dark-studio .animate-pulse { opacity: 0.8; }
+
+/* ══════════════════════════════════════════════════════
+   Mobile Responsiveness Overrides
+   ══════════════════════════════════════════════════════ */
+
+/* Document Studio Banner */
+.studio-banner-responsive {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+}
+@media (max-width: 768px) {
+  .studio-banner-responsive {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 20px 20px !important;
+  }
+  .studio-banner-responsive > div:last-child {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* Document Studio Tool Grid & Mobile Spacing */
+@media (max-width: 768px) {
+  .studio-padding-mobile {
+    padding: 24px 16px 48px !important;
+  }
+  .studio-stats-responsive {
+    justify-content: space-between !important;
+    gap: 16px !important;
+  }
+}
+
+/* Practice Hub KPIs & Info */
+.kpi-grid-responsive {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 18px !important;
+}
+@media (max-width: 1024px) {
+  .kpi-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+@media (max-width: 520px) {
+  .kpi-grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+.info-strip-responsive {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 14px !important;
+}
+@media (max-width: 900px) {
+  .info-strip-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .practice-padding-mobile {
+    padding: 20px 16px 60px !important;
+  }
+}
+
+/* Find a Lawyer Responsiveness */
+.consult-grid-responsive {
+  display: flex !important;
+  gap: 8px !important;
+}
+@media (max-width: 600px) {
+  .consult-grid-responsive {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .find-lawyer-progress-text {
+    display: none !important;
+  }
+  .find-lawyer-card-padding {
+    padding: 20px 16px !important;
+  }
+  .find-lawyer-container-padding {
+    padding: 16px 12px 60px !important;
+  }
+}
+

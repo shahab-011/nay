@@ -213,7 +213,7 @@ export default function PracticeHub() {
         <div style={{ position: 'absolute', bottom: -200, left: -150, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)' }} />
       </div>
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: '36px 32px 80px' }}>
+      <div className="practice-padding-mobile" style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: '36px 32px 80px' }}>
 
         {/* ── Page header ──────────────────────────────────────── */}
         <motion.div
@@ -289,7 +289,8 @@ export default function PracticeHub() {
           variants={staggerGrid(0.1)}
           initial="hidden"
           animate="show"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 18, marginBottom: 48 }}
+          className="kpi-grid-responsive"
+          style={{ marginBottom: 48 }}
         >
           <StatCard
             icon={<I.Briefcase size={20} />}
@@ -345,7 +346,7 @@ export default function PracticeHub() {
           variants={staggerGrid(0.15)}
           initial="hidden"
           animate="show"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18, marginBottom: 52 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 18, marginBottom: 52 }}
         >
           {FEATURES.map(f => (
             <FeatureCard key={f.label} f={f} onClick={() => navigate(f.path)} />
@@ -357,7 +358,7 @@ export default function PracticeHub() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}
+          className="info-strip-responsive"
         >
           {[
             { Ic: I.Zap,    color: '#7c3aed', title: 'AI-Powered',        desc: 'Every module enhanced with Gemini and Claude AI for smart automation.' },

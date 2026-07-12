@@ -72,7 +72,7 @@ export default function StudioHome() {
       <div style={{ position: 'fixed', top: 200, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,211,238,0.07) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: -100, left: -100, width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      <div style={{ maxWidth: 1140, margin: '0 auto', padding: '40px 24px 72px', position: 'relative', zIndex: 1 }}>
+      <div className="studio-padding-mobile" style={{ maxWidth: 1140, margin: '0 auto', padding: '40px 24px 72px', position: 'relative', zIndex: 1 }}>
 
         {/* ── Back button ─────────────────────────────────────────────── */}
         <motion.button
@@ -123,7 +123,7 @@ export default function StudioHome() {
           </p>
 
           {/* Stats row */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 36 }}>
+          <div className="studio-stats-responsive" style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginBottom: 36 }}>
             {STATS.map((s, i) => (
               <motion.div
                 key={s.label}
@@ -144,11 +144,11 @@ export default function StudioHome() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15 }}
           onClick={() => navigate('/upload')}
+          className="studio-banner-responsive"
           style={{
             background: `linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%)`,
             borderRadius: 20, padding: '28px 32px', marginBottom: 40,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            gap: 20, border: '1px solid rgba(99,102,241,0.4)',
+            cursor: 'pointer', border: '1px solid rgba(99,102,241,0.4)',
             boxShadow: '0 12px 40px rgba(99,102,241,0.2)',
             position: 'relative', overflow: 'hidden',
           }}
@@ -192,7 +192,7 @@ export default function StudioHome() {
         <motion.div
           initial="hidden"
           animate="show"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 16 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}
         >
           {TOOLS.map((t, i) => (
             <motion.div

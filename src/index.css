@@ -1180,6 +1180,19 @@ main [style*="background:linear-gradient"] .text-white { color: #fff; }
   }
 }
 
+.mobile-logo-show {
+  display: none !important;
+}
+@media (max-width: 768px) {
+  .mobile-logo-show {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 28px !important;
+  }
+}
+
+
 
 
 

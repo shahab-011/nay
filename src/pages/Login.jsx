@@ -237,6 +237,14 @@ export default function Login() {
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
           style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}
         >
+          {/* Mobile Logo */}
+          <div className="mobile-logo-show">
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)' }}>
+              <I.Logo size={18} />
+            </div>
+            <span style={{ fontSize: 17, fontWeight: 800, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI</span>
+          </div>
+
           {/* Heading */}
           <motion.div variants={sc} initial="initial" animate="animate" style={{ marginBottom: 32 }}>
             <motion.h2 variants={si} style={{ fontSize: 28, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.025em', marginBottom: 8 }}>

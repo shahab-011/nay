@@ -135,19 +135,14 @@ export default function Register() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#09071a' }}>
+    <div className="auth-container">
 
       {/* ══ LEFT PANEL ══ */}
       <motion.div
         initial={{ opacity: 0, x: -24 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          flex: '0 0 52%', position: 'relative', overflow: 'hidden',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          padding: '56px 56px',
-          background: 'linear-gradient(150deg, #0d0a22 0%, #1a0f40 55%, #0d0a22 100%)',
-        }}
+        className="auth-left-panel"
       >
         {/* Orbs */}
         <motion.div animate={{ y: [0, -28, 0], scale: [1, 1.07, 1] }} transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
@@ -212,14 +207,7 @@ export default function Register() {
       </motion.div>
 
       {/* ══ RIGHT PANEL (full height, no card) ══ */}
-      <div style={{
-        flex: '0 0 48%', minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', alignItems: 'center',
-        padding: '48px 64px',
-        background: '#0d0b1e',
-        borderLeft: '1px solid rgba(124,58,237,0.12)',
-        position: 'relative', overflowY: 'auto',
-      }}>
+      <div className="auth-right-panel">
         {/* Accent line */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.5) 50%, transparent 100%)' }} />
         <div style={{ position: 'absolute', bottom: -80, right: -80, width: 360, height: 360, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)' }} />
@@ -277,7 +265,7 @@ export default function Register() {
             style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
 
             {/* Name + Firm in a row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="auth-grid-2">
               <motion.div variants={si} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,238,255,0.38)', marginLeft: 2 }}>Full Name</label>
                 <GlassInput type="text" required autoComplete="name" value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" icon={<I.User size={15} />} />

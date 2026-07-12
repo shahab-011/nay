@@ -170,19 +170,14 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#09071a' }}>
+    <div className="auth-container">
 
       {/* ══ LEFT PANEL ══ */}
       <motion.div
         initial={{ opacity: 0, x: -24 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          flex: '0 0 52%', position: 'relative', overflow: 'hidden',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          padding: '56px 56px',
-          background: 'linear-gradient(150deg, #0d0a22 0%, #1a0f40 55%, #0d0a22 100%)',
-        }}
+        className="auth-left-panel"
       >
         {/* Orbs */}
         <motion.div animate={{ y: [0, -30, 0], scale: [1, 1.08, 1] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
@@ -230,14 +225,7 @@ export default function Login() {
       </motion.div>
 
       {/* ══ RIGHT PANEL (full height, no card) ══ */}
-      <div style={{
-        flex: '0 0 48%', minHeight: '100vh', display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', alignItems: 'center',
-        padding: '56px 64px',
-        background: '#0d0b1e',
-        borderLeft: '1px solid rgba(124,58,237,0.12)',
-        position: 'relative', overflowY: 'auto',
-      }}>
+      <div className="auth-right-panel">
         {/* Top accent line */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.5) 50%, transparent 100%)' }} />
         {/* Subtle corner glow */}

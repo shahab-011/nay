@@ -268,10 +268,10 @@ export default function OnboardingWizard() {
           },
           plan: data.plan,
         });
-        navigate('/practice');
+        navigate('/services');
       } catch (e) {
         console.error('Onboarding save failed:', e);
-        navigate('/practice');
+        navigate('/services');
       } finally {
         setSaving(false);
       }
@@ -361,7 +361,7 @@ export default function OnboardingWizard() {
 
         {/* Skip all */}
         <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <button onClick={() => navigate('/practice')}
+          <button onClick={() => navigate('/services')}
             style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', fontSize: 13 }}>
             Skip setup — I'll configure this later
           </button>

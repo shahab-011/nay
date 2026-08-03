@@ -89,7 +89,7 @@ function PageLoader() {
 const FIRM_ROLES = ['lawyer', 'admin', 'owner', 'attorney', 'paralegal', 'staff'];
 function homeFor(user) {
   if (!user) return '/landing';
-  return FIRM_ROLES.includes(user.role) ? '/practice' : '/studio';
+  return '/services';
 }
 
 /* ── Route guards ── */

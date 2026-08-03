@@ -267,7 +267,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(email, password, rememberMe);
-      navigate('/');
+      navigate('/services');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
     } finally {

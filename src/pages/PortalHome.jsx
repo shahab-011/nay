@@ -5,12 +5,12 @@ import { useAuth } from '../context/AuthContext';
 import { I } from '../components/Icons';
 
 /* ─── Animation Variants ─────────────────────────────────────── */
-const fadeUp   = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0 } };
+const fadeUp   = { hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0 } };
 const fadeIn   = { hidden: { opacity: 0 },         show: { opacity: 1 } };
-const scaleUp  = { hidden: { opacity: 0, scale: 0.93 }, show: { opacity: 1, scale: 1 } };
+const scaleUp  = { hidden: { opacity: 0, scale: 0.94 }, show: { opacity: 1, scale: 1 } };
 
 const stagger  = (delay = 0) => ({
-  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
+  transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay },
 });
 
 /* ─── Animated counter hook ──────────────────────────────────── */
@@ -30,107 +30,150 @@ function useCount(target, duration = 1400) {
   return val;
 }
 
-/* ─── Stats ──────────────────────────────────────────────────── */
+/* ─── Stats Data ─────────────────────────────────────────────── */
 const STATS = [
-  { value: 12000, suffix: '+', label: 'Documents Analyzed', icon: I.Doc },
-  { value: 850,   suffix: '+', label: 'Law Firms',          icon: I.Briefcase },
-  { value: 48,    suffix: '',  label: 'Countries',          icon: I.MapPin },
-  { value: 98,    suffix: '%', label: 'Satisfaction',       icon: I.Star },
+  { value: 12000, suffix: '+', label: 'Docs Analyzed', icon: I.Doc },
+  { value: 850,   suffix: '+', label: 'Active Law Firms', icon: I.Briefcase },
+  { value: 48,    suffix: '',  label: 'Jurisdictions', icon: I.Globe },
+  { value: 99.8,  suffix: '%', label: 'AI Accuracy', icon: I.Shield },
 ];
 
 function StatItem({ stat, index }) {
-  const count = useCount(stat.value, 1200 + index * 150);
+  const count = useCount(stat.value, 1200 + index * 120);
   return (
     <motion.div
       variants={fadeUp}
       initial="hidden"
       animate="show"
-      transition={{ ...stagger(0.5 + index * 0.08).transition }}
+      transition={{ ...stagger(0.4 + index * 0.07).transition }}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '18px 28px',
-        borderRight: index < STATS.length - 1 ? '1px solid rgba(124,58,237,0.12)' : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px 14px',
+        borderRadius: 18,
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.07)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
       }}
     >
       <div style={{
-        width: 36, height: 36, borderRadius: 10,
-        background: 'linear-gradient(135deg,rgba(124,58,237,0.12),rgba(124,58,237,0.06))',
+        width: 38, height: 38, borderRadius: 12,
+        background: 'rgba(124, 58, 237, 0.15)',
+        border: '1px solid rgba(167, 139, 250, 0.25)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginBottom: 8,
+        marginBottom: 8, color: '#c084fc',
       }}>
-        <stat.icon size={16} style={{ color: '#7C3AED' }} />
+        <stat.icon size={18} />
       </div>
-      <div style={{ fontSize: 26, fontWeight: 900, color: '#1E1B4B', lineHeight: 1 }}>
+      <div style={{ fontSize: 22, fontWeight: 900, color: '#f0eeff', lineHeight: 1, fontFamily: 'var(--font-headline)' }}>
         {count.toLocaleString()}{stat.suffix}
       </div>
-      <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+      <div style={{ fontSize: 10, color: 'rgba(240, 238, 255, 0.45)', fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
         {stat.label}
       </div>
     </motion.div>
   );
 }
 
-/* ─── Service Sections ───────────────────────────────────────── */
+/* ─── Services Catalog ───────────────────────────────────────── */
+const CATEGORIES = [
+  { id: 'all', label: 'All Services', icon: I.Layers },
+  { id: 'ai', label: 'AI Intelligence', icon: I.Sparkle },
+  { id: 'firm', label: 'Firm Management', icon: I.Building },
+  { id: 'help', label: 'Legal Consultation', icon: I.Scale },
+];
+
 const SECTIONS = [
   {
     id: 'studio',
+    category: 'ai',
     path: '/studio',
-    gradient: 'linear-gradient(145deg, #7C3AED 0%, #4C1D95 60%, #2D1260 100%)',
-    accentColor: '#7C3AED',
-    glowRgb: '124,58,237',
+    gradient: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #4c1d95 100%)',
+    accentColor: '#c084fc',
+    glowRgb: '124, 58, 237',
     icon: I.Doc,
     tag: 'AI Self-Help',
+    badge: 'Popular',
     title: 'Document Studio',
-    subtitle: 'Analyze, summarize & chat with your legal documents using AI',
+    subtitle: 'Analyze, summarize & chat with complex legal contracts using Gemini AI',
     features: [
-      { text: 'AI-powered contract summary & risk score' },
-      { text: 'Ask your document any question, instantly' },
-      { text: 'Side-by-side document comparison' },
-      { text: 'Deadline & obligation extraction' },
-      { text: 'Contract lifecycle tracking' },
+      { text: 'AI-powered contract summary & risk scoring' },
+      { text: 'Instant Q&A with full source references' },
+      { text: 'Side-by-side legal document comparison' },
+      { text: 'Automated obligation & deadline extraction' },
+      { text: 'Contract lifecycle tracking & alerts' },
     ],
-    cta: 'Open Document Studio',
-    metric: { value: '12k+', label: 'Docs Analyzed' },
+    cta: 'Launch Document Studio',
+    metric: { value: '12k+', label: 'Docs Processed' },
   },
   {
     id: 'practice',
+    category: 'firm',
     path: '/practice',
-    gradient: 'linear-gradient(145deg, #0EA5E9 0%, #0369A1 60%, #0C4A6E 100%)',
-    accentColor: '#0EA5E9',
-    glowRgb: '14,165,233',
+    gradient: 'linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%)',
+    accentColor: '#38bdf8',
+    glowRgb: '14, 165, 233',
     icon: I.Briefcase,
-    tag: 'For Law Firms',
+    tag: 'For Law Practice',
+    badge: 'Enterprise',
     title: 'Practice Management',
-    subtitle: 'Run your entire firm from one place — matters to invoices',
+    subtitle: 'Manage case lifecycle, billing, matters, and clients in one central hub',
     features: [
-      { text: 'Matter management & Kanban pipeline' },
-      { text: 'Client CRM with conflict detection' },
-      { text: 'Time tracking & smart invoicing' },
+      { text: 'Matter management with Kanban pipeline' },
+      { text: 'Client CRM & instant conflict checking' },
+      { text: 'Automated time tracking & LEDES invoicing' },
       { text: 'Trust accounting & IOLTA compliance' },
-      { text: 'AI assistant for every matter' },
+      { text: 'Dedicated AI assistant per active matter' },
     ],
-    cta: 'Open Practice Management',
+    cta: 'Open Practice Hub',
     metric: { value: '850+', label: 'Firms Onboarded' },
   },
   {
     id: 'marketplace',
+    category: 'help',
     path: '/find-lawyer',
-    gradient: 'linear-gradient(145deg, #10B981 0%, #047857 60%, #064E3B 100%)',
-    accentColor: '#10B981',
-    glowRgb: '16,185,129',
+    gradient: 'linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)',
+    accentColor: '#34d399',
+    glowRgb: '16, 185, 129',
     icon: I.Scale,
-    tag: 'Get Legal Help',
+    tag: 'Verified Network',
+    badge: '24/7 Access',
     title: 'Find a Lawyer',
-    subtitle: 'Describe your case and get matched with verified experts',
+    subtitle: 'Describe your case and get matched with top rated legal advocates',
     features: [
-      { text: 'Smart matching across 12 practice areas' },
-      { text: 'Lawyers from 8 countries worldwide' },
-      { text: 'Send case request to multiple lawyers' },
-      { text: 'Verified profiles with ratings & reviews' },
-      { text: 'Video, phone or in-person consultations' },
+      { text: 'Smart matching across 12 legal specializations' },
+      { text: 'Verified advocate profiles with ratings' },
+      { text: 'Direct case inquiry to multiple lawyers' },
+      { text: 'Secure video, phone & in-person consultations' },
+      { text: 'Transparent fee structures & retainer terms' },
     ],
-    cta: 'Find My Lawyer',
+    cta: 'Find Verified Lawyer',
     metric: { value: '480+', label: 'Verified Lawyers' },
+  },
+  {
+    id: 'ask-ai',
+    category: 'ai',
+    path: '/ask',
+    gradient: 'linear-gradient(135deg, #db2777 0%, #be185d 50%, #831843 100%)',
+    accentColor: '#f472b6',
+    glowRgb: '219, 39, 119',
+    icon: I.Sparkle,
+    tag: 'Instant Assistant',
+    badge: 'New AI',
+    title: 'Legal AI Chat Assistant',
+    subtitle: 'Get immediate legal research answers grounded in updated case law',
+    features: [
+      { text: 'Real-time citation of statute laws & precedent' },
+      { text: 'Draft notice responses & formal legal letters' },
+      { text: 'Multilingual support for national jurisdiction' },
+      { text: 'Context-aware conversational intelligence' },
+    ],
+    cta: 'Chat with Legal AI',
+    metric: { value: '99.4%', label: 'Query Precision' },
   },
 ];
 
@@ -149,65 +192,57 @@ function LoginPromptModal({ service, onClose, navigate }) {
             onClick={onClose}
             style={{
               position: 'fixed', inset: 0, zIndex: 900,
-              background: 'rgba(15,10,40,0.55)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              background: 'rgba(5, 3, 15, 0.75)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
             }}
           />
 
-          {/* Modal */}
+          {/* Modal Card */}
           <motion.div
             key="modal"
-            initial={{ opacity: 0, scale: 0.88, y: 24 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 16 }}
-            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, scale: 0.92, y: 15 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: 'fixed', inset: 0, zIndex: 910,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: 20, pointerEvents: 'none',
+              padding: 16, pointerEvents: 'none',
             }}
           >
             <div style={{
-              width: '100%', maxWidth: 420, borderRadius: 28,
-              background: '#fff',
-              boxShadow: `0 32px 80px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.06)`,
+              width: '100%', maxWidth: 440, borderRadius: 24,
+              background: 'rgba(18, 14, 42, 0.92)',
+              border: '1px solid rgba(255, 255, 255, 0.14)',
+              boxShadow: `0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15)`,
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
               overflow: 'hidden',
               pointerEvents: 'auto',
             }}>
-              {/* Gradient service header */}
+              {/* Header */}
               <div style={{
                 background: service.gradient,
-                padding: '28px 28px 24px',
+                padding: '24px 24px 20px',
                 position: 'relative', overflow: 'hidden',
               }}>
-                <motion.div style={{
-                  position: 'absolute', right: -30, top: -30,
-                  width: 160, height: 160, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.08)',
-                }} />
-                <motion.div style={{
-                  position: 'absolute', left: -20, bottom: -40,
-                  width: 100, height: 100, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.05)',
-                }} />
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
                   <div style={{
-                    width: 52, height: 52, borderRadius: 16,
-                    background: 'rgba(255,255,255,0.2)',
+                    width: 48, height: 48, borderRadius: 14,
+                    background: 'rgba(255, 255, 255, 0.2)',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.25)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                   }}>
-                    <service.icon size={24} style={{ color: '#fff' }} />
+                    <service.icon size={22} style={{ color: '#fff' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {service.tag}
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1.15 }}>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', lineHeight: 1.15, fontFamily: 'var(--font-headline)' }}>
                       {service.title}
                     </div>
                   </div>
@@ -215,70 +250,66 @@ function LoginPromptModal({ service, onClose, navigate }) {
               </div>
 
               {/* Body */}
-              <div style={{ padding: '28px 28px 24px' }}>
-                {/* Lock icon + message */}
-                <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div style={{ padding: '24px 24px 20px' }}>
+                <div style={{ textAlign: 'center', marginBottom: 20 }}>
                   <div style={{
-                    width: 52, height: 52, borderRadius: 16,
-                    background: `rgba(${service.glowRgb},0.1)`,
+                    width: 48, height: 48, borderRadius: 14,
+                    background: `rgba(${service.glowRgb}, 0.15)`,
+                    border: `1px solid rgba(${service.glowRgb}, 0.3)`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 14px',
+                    margin: '0 auto 12px', color: service.accentColor,
                   }}>
-                    <I.Shield size={22} style={{ color: `rgb(${service.glowRgb})` }} />
+                    <I.Shield size={22} />
                   </div>
-                  <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 800, color: '#1E1B4B' }}>
-                    Sign in to continue
+                  <h3 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)' }}>
+                    Authentication Required
                   </h3>
-                  <p style={{ margin: 0, fontSize: 13.5, color: '#6B7280', lineHeight: 1.55 }}>
-                    You need an account to access <strong style={{ color: '#1E1B4B' }}>{service.title}</strong>.
-                    It's free to get started.
+                  <p style={{ margin: 0, fontSize: 13.5, color: 'rgba(240,238,255,0.6)', lineHeight: 1.5 }}>
+                    Please sign in or create a workspace account to access <strong style={{ color: '#fff' }}>{service.title}</strong>.
                   </p>
                 </div>
 
-                {/* Buttons */}
+                {/* Actions */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
                     onClick={() => { onClose(); navigate('/login'); }}
                     style={{
-                      width: '100%', padding: '13px 20px', borderRadius: 14,
+                      width: '100%', height: 48, borderRadius: 13,
                       background: service.gradient,
                       border: 'none', cursor: 'pointer',
-                      fontSize: 14, fontWeight: 700, color: '#fff',
-                      boxShadow: `0 6px 24px rgba(${service.glowRgb},0.32)`,
+                      fontSize: 14, fontWeight: 800, color: '#fff',
+                      boxShadow: `0 6px 20px rgba(${service.glowRgb}, 0.4)`,
                     }}
                   >
-                    Sign In to My Account
+                    Sign In to Continue
                   </motion.button>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
                     onClick={() => { onClose(); navigate('/register'); }}
                     style={{
-                      width: '100%', padding: '13px 20px', borderRadius: 14,
-                      background: 'rgba(124,58,237,0.06)',
-                      border: `1.5px solid rgba(${service.glowRgb},0.2)`,
+                      width: '100%', height: 48, borderRadius: 13,
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: `1.5px solid rgba(${service.glowRgb}, 0.4)`,
                       cursor: 'pointer',
-                      fontSize: 14, fontWeight: 700, color: `rgb(${service.glowRgb})`,
+                      fontSize: 14, fontWeight: 800, color: service.accentColor,
                     }}
                   >
-                    Create Free Account
+                    Create Free Workspace
                   </motion.button>
                 </div>
 
-                {/* Dismiss */}
                 <button
                   onClick={onClose}
                   style={{
                     display: 'block', width: '100%', marginTop: 14,
                     background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 13, color: '#9CA3AF', fontWeight: 500,
+                    fontSize: 12.5, color: 'rgba(240,238,255,0.4)', fontWeight: 600,
                     textAlign: 'center',
                   }}
                 >
-                  Maybe later
+                  Dismiss
                 </button>
               </div>
             </div>
@@ -289,7 +320,7 @@ function LoginPromptModal({ service, onClose, navigate }) {
   );
 }
 
-/* ─── Service Card ───────────────────────────────────────────── */
+/* ─── Service Card Component ─────────────────────────────────── */
 function ServiceCard({ s, index, onCardClick }) {
   const [hovered, setHovered] = useState(false);
 
@@ -298,144 +329,123 @@ function ServiceCard({ s, index, onCardClick }) {
       variants={scaleUp}
       initial="hidden"
       animate="show"
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.3 + index * 0.12 }}
-      whileHover={{ y: -12 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.2 + index * 0.09 }}
+      whileHover={{ y: -8 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={() => onCardClick(s)}
       style={{
-        borderRadius: 24,
+        borderRadius: 22,
         overflow: 'hidden',
         cursor: 'pointer',
         display: 'flex', flexDirection: 'column',
-        background: '#fff',
-        border: `1.5px solid ${hovered ? `rgba(${s.glowRgb},0.4)` : 'rgba(0,0,0,0.07)'}`,
+        background: 'rgba(20, 16, 48, 0.65)',
+        border: `1.5px solid ${hovered ? `rgba(${s.glowRgb}, 0.55)` : 'rgba(255, 255, 255, 0.09)'}`,
         boxShadow: hovered
-          ? `0 24px 64px rgba(${s.glowRgb},0.22), 0 4px 16px rgba(0,0,0,0.08)`
-          : '0 4px 24px rgba(0,0,0,0.06)',
-        transition: 'border-color 300ms, box-shadow 300ms',
+          ? `0 20px 50px rgba(${s.glowRgb}, 0.28), 0 0 0 1px rgba(255,255,255,0.15)`
+          : '0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        position: 'relative',
       }}
     >
-      {/* ── Gradient header ── */}
+      {/* Specular top glow line */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 1,
+        background: `linear-gradient(90deg, transparent 0%, rgba(${s.glowRgb}, 0.6) 50%, transparent 100%)`,
+        opacity: hovered ? 1 : 0.4, transition: 'opacity 0.3s',
+      }} />
+
+      {/* Card Header */}
       <div style={{
         background: s.gradient,
-        padding: '32px 28px 28px',
+        padding: '24px 22px 20px',
         position: 'relative', overflow: 'hidden',
-        minHeight: 200,
+        minHeight: 170,
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
       }}>
-        {/* Animated orbs */}
-        <motion.div
-          animate={{ x: hovered ? 10 : 0, y: hovered ? -10 : 0, scale: hovered ? 1.15 : 1 }}
-          transition={{ duration: 1.2, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute', right: -40, top: -40,
-            width: 180, height: 180, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.07)',
-          }}
-        />
-        <motion.div
-          animate={{ x: hovered ? -8 : 0, y: hovered ? 8 : 0, scale: hovered ? 1.1 : 1 }}
-          transition={{ duration: 1.4, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute', right: 40, bottom: -60,
-            width: 130, height: 130, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.05)',
-          }}
-        />
-        <motion.div
-          animate={{ scale: hovered ? 1.08 : 1 }}
-          transition={{ duration: 1, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute', left: -20, bottom: 10,
-            width: 80, height: 80, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.04)',
-          }}
-        />
+        {/* Header Ambient Orbs */}
+        <motion.div animate={{ scale: hovered ? 1.15 : 1 }} transition={{ duration: 0.8 }}
+          style={{ position: 'absolute', right: -30, top: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
 
-        {/* Tag + Icon row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
-          <div style={{
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: 20, padding: '5px 14px',
-            fontSize: 11, fontWeight: 700, color: '#fff',
-            textTransform: 'uppercase', letterSpacing: '0.1em',
-            border: '1px solid rgba(255,255,255,0.2)',
-          }}>{s.tag}</div>
+        {/* Top Tag & Icon */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+              borderRadius: 20, padding: '4px 12px', fontSize: 10.5, fontWeight: 800, color: '#fff',
+              textTransform: 'uppercase', letterSpacing: '0.08em', border: '1px solid rgba(255,255,255,0.25)',
+            }}>{s.tag}</span>
+            {s.badge && (
+              <span style={{
+                background: 'rgba(255,255,255,0.9)', borderRadius: 20, padding: '3px 9px',
+                fontSize: 9.5, fontWeight: 900, color: '#120f26', textTransform: 'uppercase', letterSpacing: '0.06em',
+              }}>{s.badge}</span>
+            )}
+          </div>
 
-          <motion.div
-            animate={{ rotate: hovered ? 8 : 0, scale: hovered ? 1.12 : 1 }}
-            transition={{ duration: 0.4 }}
+          <motion.div animate={{ rotate: hovered ? 6 : 0, scale: hovered ? 1.08 : 1 }} transition={{ duration: 0.3 }}
             style={{
-              width: 52, height: 52, borderRadius: 16,
-              background: 'rgba(255,255,255,0.18)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)',
+              width: 44, height: 44, borderRadius: 14,
+              background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <s.icon size={24} style={{ color: '#fff' }} />
+            }}>
+            <s.icon size={22} style={{ color: '#fff' }} />
           </motion.div>
         </div>
 
-        {/* Title + subtitle */}
-        <div style={{ position: 'relative', marginTop: 20 }}>
-          <h2 style={{ margin: '0 0 8px', fontSize: 26, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+        {/* Title & Subtitle */}
+        <div style={{ position: 'relative', zIndex: 1, marginTop: 14 }}>
+          <h2 style={{ margin: '0 0 6px', fontSize: 23, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.15, fontFamily: 'var(--font-headline)' }}>
             {s.title}
           </h2>
-          <p style={{ margin: 0, fontSize: 13.5, color: 'rgba(255,255,255,0.78)', lineHeight: 1.55, maxWidth: 260 }}>
+          <p style={{ margin: 0, fontSize: 12.5, color: 'rgba(255,255,255,0.85)', lineHeight: 1.45, maxWidth: 280 }}>
             {s.subtitle}
           </p>
         </div>
-
       </div>
 
-      {/* ── Feature list ── */}
-      <div style={{ padding: '22px 24px 4px', flex: 1 }}>
+      {/* Feature List */}
+      <div style={{ padding: '20px 20px 8px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {s.features.map((f, fi) => (
-          <motion.div
-            key={fi}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 + index * 0.12 + fi * 0.06, duration: 0.4 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}
-          >
+          <div key={fi} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
-              width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-              background: `rgba(${s.glowRgb},0.1)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 18, height: 18, borderRadius: 6, flexShrink: 0,
+              background: `rgba(${s.glowRgb}, 0.18)`, border: `1px solid rgba(${s.glowRgb}, 0.35)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.accentColor,
             }}>
-              <svg width={11} height={11} viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke={s.accentColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <I.Check size={11} />
             </div>
-            <span style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.4, fontWeight: 500 }}>{f.text}</span>
-          </motion.div>
+            <span style={{ fontSize: 12.5, color: 'rgba(240, 238, 255, 0.75)', lineHeight: 1.35, fontWeight: 500 }}>{f.text}</span>
+          </div>
         ))}
       </div>
 
-      {/* ── CTA ── */}
-      <div style={{ padding: '16px 24px 24px' }}>
+      {/* Metric & CTA Footer */}
+      <div style={{ padding: '16px 20px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <motion.div
           animate={{
-            background: hovered ? s.gradient : '#F9FAFB',
+            background: hovered ? s.gradient : 'rgba(255, 255, 255, 0.04)',
+            boxShadow: hovered ? `0 6px 20px rgba(${s.glowRgb}, 0.4)` : 'none',
           }}
-          transition={{ duration: 0.35 }}
+          transition={{ duration: 0.25 }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '13px 18px', borderRadius: 14,
-            border: `1.5px solid ${hovered ? 'transparent' : 'rgba(0,0,0,0.08)'}`,
-            cursor: 'pointer',
+            padding: '12px 18px', borderRadius: 14,
+            border: `1.5px solid ${hovered ? 'transparent' : 'rgba(255, 255, 255, 0.1)'}`,
+            minHeight: 48,
           }}
         >
           <span style={{
-            fontSize: 14, fontWeight: 700,
-            color: hovered ? '#fff' : '#1E1B4B',
-            transition: 'color 0.35s',
+            fontSize: 13.5, fontWeight: 800,
+            color: '#fff',
+            fontFamily: 'var(--font-headline)',
+            letterSpacing: '-0.01em',
           }}>{s.cta}</span>
           <motion.div animate={{ x: hovered ? 4 : 0 }} transition={{ duration: 0.2 }}>
-            <I.ArrowRight size={16} style={{ color: hovered ? '#fff' : s.accentColor, transition: 'color 0.35s' }} />
+            <I.ArrowRight size={16} style={{ color: '#fff' }} />
           </motion.div>
         </motion.div>
       </div>
@@ -443,14 +453,17 @@ function ServiceCard({ s, index, onCardClick }) {
   );
 }
 
-/* ─── Main ───────────────────────────────────────────────────── */
+/* ─── Main PortalHome Page Component ─────────────────────────── */
 export default function PortalHome() {
   const navigate  = useNavigate();
   const { user, logout } = useAuth();
   const hour      = new Date().getHours();
   const greeting  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.name?.split(' ')[0] || 'there';
-  const [loginPrompt, setLoginPrompt] = useState(null);
+
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery]       = useState('');
+  const [loginPrompt, setLoginPrompt]       = useState(null);
 
   function handleCardClick(s) {
     if (!user) {
@@ -460,205 +473,282 @@ export default function PortalHome() {
     }
   }
 
+  /* Filter sections based on category and search query */
+  const filteredSections = SECTIONS.filter(s => {
+    const matchesCat = activeCategory === 'all' || s.category === activeCategory;
+    const matchesQuery = !searchQuery.trim() || 
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      s.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.features.some(f => f.text.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCat && matchesQuery;
+  });
+
   const QUICK = [
-    { label: 'My Documents', path: '/documents', ic: I.Folder },
-    { label: 'Alerts',       path: '/alerts',   ic: I.Bell },
-    { label: 'Profile',      path: '/profile',  ic: I.User },
-    { label: 'Help',         path: '/help',     ic: I.Info },
+    { label: 'Documents', path: '/documents', ic: I.Folder },
+    { label: 'Alerts',    path: '/alerts',    ic: I.Bell },
+    { label: 'Profile',   path: '/profile',   ic: I.User },
+    { label: 'Help',      path: '/help',      ic: I.Info },
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F6F4FB', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#070514', color: '#f0eeff', position: 'relative', overflowX: 'hidden' }}>
 
-      {/* ── Background decoration ── */}
+      {/* ── Ambient Floating Background Orbs ── */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        {/* Mesh gradient blobs */}
         <motion.div
-          animate={{ scale: [1, 1.08, 1], x: [0, 20, 0], y: [0, -15, 0] }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ scale: [1, 1.1, 1], x: [0, 25, 0], y: [0, -20, 0] }}
+          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
           style={{
-            position: 'absolute', top: -200, right: -150,
-            width: 600, height: 600, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
+            position: 'absolute', top: -180, right: -120,
+            width: 550, height: 550, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)',
+            filter: 'blur(40px)',
           }}
         />
         <motion.div
-          animate={{ scale: [1, 1.06, 1], x: [0, -15, 0], y: [0, 20, 0] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
+          animate={{ scale: [1, 1.08, 1], x: [0, -20, 0], y: [0, 25, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
           style={{
-            position: 'absolute', bottom: -150, left: -100,
-            width: 500, height: 500, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(14,165,233,0.09) 0%, transparent 70%)',
+            position: 'absolute', bottom: -120, left: -80,
+            width: 480, height: 480, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(14,165,233,0.14) 0%, transparent 70%)',
+            filter: 'blur(45px)',
           }}
         />
-        <motion.div
-          animate={{ scale: [1, 1.05, 1], y: [0, 25, 0] }}
-          transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut', delay: 8 }}
-          style={{
-            position: 'absolute', top: '40%', left: '35%',
-            width: 400, height: 400, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)',
-          }}
-        />
-        {/* Subtle dot grid */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(124,58,237,0.07) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(139,92,246,0.06) 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }} />
       </div>
 
-      {/* ── Content ── */}
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1180, margin: '0 auto', padding: '0 24px 80px' }}>
+      {/* ── Content Wrapper ── */}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '0 20px 100px' }}>
 
-        {/* ── Hero ── */}
-        <div style={{ textAlign: 'center', paddingTop: 72, paddingBottom: 52 }}>
+        {/* ── Responsive Top Header Bar ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          paddingTop: 24, paddingBottom: 24,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(167, 139, 250, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)' }}>
+              <I.Logo size={19} />
+            </div>
+            <span style={{ fontSize: 18, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI Services</span>
+          </div>
 
-          {/* Badge */}
-          <motion.div
-            variants={fadeIn} initial="hidden" animate="show"
-            transition={{ duration: 0.5 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}
-          >
+          {/* User badge or Auth controls */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255, 255, 255, 0.05)', padding: '5px 12px 5px 8px', borderRadius: 20, border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, #7c3aed, #c084fc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                  {firstName[0]?.toUpperCase()}
+                </div>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#f0eeff' }}>{firstName}</span>
+              </div>
+              <button
+                onClick={async () => { await logout(); navigate('/login'); }}
+                style={{ background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', cursor: 'pointer', padding: 6, display: 'flex', alignItems: 'center' }}
+                title="Sign Out"
+              >
+                <I.LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={() => navigate('/login')}
+                style={{ padding: '8px 16px', borderRadius: 10, background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.12)', color: '#f0eeff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigate('/register')}
+                style={{ padding: '8px 16px', borderRadius: 10, background: 'linear-gradient(135deg, #7c3aed, #5b21b6)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 15px rgba(124,58,237,0.4)' }}
+              >
+                Get Started
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Hero Section ── */}
+        <div style={{ textAlign: 'center', paddingTop: 48, paddingBottom: 40 }}>
+          {/* Platform Status Pill */}
+          <motion.div variants={fadeIn} initial="hidden" animate="show" transition={{ duration: 0.4 }} style={{ display: 'inline-flex', marginBottom: 20 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'rgba(124,58,237,0.07)',
-              border: '1.5px solid rgba(124,58,237,0.18)',
-              borderRadius: 40, padding: '6px 16px 6px 10px',
+              background: 'rgba(124, 58, 237, 0.12)', border: '1px solid rgba(167, 139, 250, 0.25)',
+              borderRadius: 30, padding: '5px 14px',
             }}>
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C3AED' }}
-              />
-              <I.Logo size={16} style={{ color: '#7C3AED' }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED', letterSpacing: '0.04em' }}>
-                Nyaya Legal Platform
-              </span>
-              <div style={{
-                background: 'linear-gradient(90deg, #7C3AED, #5B21B6)',
-                borderRadius: 20, padding: '2px 8px',
-                fontSize: 9, fontWeight: 800, color: '#fff',
-                textTransform: 'uppercase', letterSpacing: '0.08em',
-              }}>Live</div>
+              <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity }} style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: '#c084fc', letterSpacing: '0.04em' }}>Legal Intelligence Platform</span>
             </div>
           </motion.div>
 
-          {/* Greeting */}
+          {/* Heading */}
           <motion.h1
             variants={fadeUp} initial="hidden" animate="show"
             transition={{ ...stagger(0.1).transition }}
             style={{
-              margin: '0 0 16px',
-              fontSize: 'clamp(34px, 5.5vw, 58px)',
-              fontWeight: 900, lineHeight: 1.1,
-              letterSpacing: '-0.03em',
-              background: 'linear-gradient(135deg, #1E1B4B 0%, #4C1D95 50%, #1E1B4B 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              margin: '0 0 14px',
+              fontSize: 'clamp(30px, 5.2vw, 54px)',
+              fontWeight: 900, lineHeight: 1.12,
+              letterSpacing: '-0.035em',
+              fontFamily: 'var(--font-headline)',
+              color: '#f0eeff',
             }}
           >
-            {user ? `${greeting}, ${firstName}` : 'Your Legal Workspace'}
+            {user ? `${greeting}, ${firstName}` : 'Legal Workspace & Services'}
           </motion.h1>
 
           <motion.p
             variants={fadeUp} initial="hidden" animate="show"
-            transition={{ ...stagger(0.2).transition }}
+            transition={{ ...stagger(0.18).transition }}
             style={{
-              margin: '0 auto 14px',
-              fontSize: 18, color: '#6B7280',
-              maxWidth: 480, lineHeight: 1.6, fontWeight: 400,
+              margin: '0 auto 28px',
+              fontSize: 'clamp(14px, 2vw, 17px)',
+              color: 'rgba(240, 238, 255, 0.55)',
+              maxWidth: 520, lineHeight: 1.6, fontWeight: 400,
             }}
           >
-            {user
-              ? 'Your complete legal workspace. Choose a service to get started.'
-              : 'AI-powered legal tools for everyone. Sign in to get started.'}
+            Empowering legal professionals, clients, and law firms with AI contract analysis, practice management, and verified legal advocates.
           </motion.p>
 
-          <motion.p
-            variants={fadeUp} initial="hidden" animate="show"
-            transition={{ ...stagger(0.28).transition }}
-            style={{ margin: 0, fontSize: 13, color: '#9CA3AF', fontWeight: 500 }}
-          >
-            AI-powered · Enterprise-grade · Trusted by legal professionals worldwide
-          </motion.p>
+          {/* Search Bar & Category Segmented Tabs */}
+          <motion.div variants={fadeUp} initial="hidden" animate="show" transition={{ ...stagger(0.25).transition }}
+            style={{ maxWidth: 580, margin: '0 auto' }}>
+            
+            {/* Search Input */}
+            <div style={{ position: 'relative', marginBottom: 20 }}>
+              <I.Search size={18} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,238,255,0.4)' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search services (e.g., contract analysis, practice hub, lawyer...)"
+                style={{
+                  width: '100%', height: 48, paddingLeft: 46, paddingRight: 40,
+                  borderRadius: 14, border: '1.5px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.04)', color: '#f0eeff',
+                  fontSize: 14, outline: 'none', backdropFilter: 'blur(16px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                  boxSizing: 'border-box', transition: 'all 0.2s ease',
+                }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(240,238,255,0.4)', cursor: 'pointer' }}>
+                  <I.X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Category Segmented Tabs */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, overflowX: 'auto', paddingBottom: 6,
+              justifyContent: 'center', scrollbarWidth: 'none',
+            }}>
+              {CATEGORIES.map(cat => {
+                const active = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    style={{
+                      padding: '8px 16px', borderRadius: 12, border: 'none',
+                      background: active ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'rgba(255, 255, 255, 0.04)',
+                      color: active ? '#fff' : 'rgba(240, 238, 255, 0.55)',
+                      fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      boxShadow: active ? '0 4px 15px rgba(124, 58, 237, 0.4)' : 'none',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <cat.icon size={14} />
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
         </div>
 
-
-        {/* ── Service cards ── */}
+        {/* ── Stats Strip Grid (2x2 Mobile, 4x1 Desktop) ── */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: 24,
-          marginBottom: 52,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: 12,
+          marginBottom: 44,
         }}>
-          {SECTIONS.map((s, i) => (
-            <ServiceCard key={s.id} s={s} index={i} onCardClick={handleCardClick} />
+          {STATS.map((s, i) => (
+            <StatItem key={s.label} stat={s} index={i} />
           ))}
         </div>
 
-        {/* ── Quick links dock ── */}
-        <motion.div
-          variants={fadeUp} initial="hidden" animate="show"
-          transition={{ ...stagger(0.9).transition }}
-          style={{ display: 'flex', justifyContent: 'center' }}
-        >
+        {/* ── Services Cards Grid ── */}
+        {filteredSections.length > 0 ? (
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            background: '#fff',
-            border: '1.5px solid rgba(0,0,0,0.07)',
-            borderRadius: 50, padding: '6px 8px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.07)',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+            gap: 20,
+            marginBottom: 52,
           }}>
-            {QUICK.map((q, qi) => (
-              <QuickLink key={q.path} q={q} qi={qi} navigate={navigate} />
+            {filteredSections.map((s, i) => (
+              <ServiceCard key={s.id} s={s} index={i} onCardClick={handleCardClick} />
             ))}
           </div>
-        </motion.div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '48px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 20, border: '1px dashed rgba(255,255,255,0.1)', marginBottom: 52 }}>
+            <I.Search size={32} style={{ color: 'rgba(240,238,255,0.3)', marginBottom: 12 }} />
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f0eeff', marginBottom: 4 }}>No matching services found</h3>
+            <p style={{ fontSize: 13, color: 'rgba(240,238,255,0.4)', margin: 0 }}>Try clearing your search query or switching categories</p>
+          </div>
+        )}
 
-        {/* ── Sign Out ── */}
+        {/* ── Mobile Quick Navigation Dock ── */}
         {user && (
           <motion.div
-            variants={fadeIn} initial="hidden" animate="show"
-            transition={{ ...stagger(1.0).transition }}
-            style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}
+            variants={fadeUp} initial="hidden" animate="show"
+            transition={{ ...stagger(0.8).transition }}
+            style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}
           >
-            <motion.button
-              whileHover={{ scale: 1.03, background: 'rgba(239,68,68,0.08)' }}
-              whileTap={{ scale: 0.97 }}
-              onClick={async () => {
-                await logout();
-                navigate('/');
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 24px',
-                borderRadius: 40,
-                border: '1.5px solid rgba(239,68,68,0.3)',
-                background: 'transparent',
-                color: '#EF4444',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 200ms',
-              }}
-            >
-              <I.LogOut size={14} /> Sign Out
-            </motion.button>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'rgba(18, 14, 42, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 50, padding: '6px 10px',
+              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+              maxWidth: '100%', overflowX: 'auto',
+            }}>
+              {QUICK.map((q) => (
+                <button
+                  key={q.path}
+                  onClick={() => navigate(q.path)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '8px 14px', borderRadius: 30, border: 'none',
+                    background: 'transparent', color: 'rgba(240, 238, 255, 0.7)',
+                    fontSize: 12.5, fontWeight: 700, cursor: 'pointer',
+                    whiteSpace: 'nowrap', transition: 'all 0.2s',
+                  }}
+                >
+                  <q.ic size={14} style={{ color: '#c084fc' }} />
+                  {q.label}
+                </button>
+              ))}
+            </div>
           </motion.div>
         )}
 
-        {/* ── Footer note ── */}
-        <motion.p
-          variants={fadeIn} initial="hidden" animate="show"
-          transition={{ ...stagger(1.1).transition }}
-          style={{ textAlign: 'center', marginTop: 32, fontSize: 12, color: '#C4B5FD', fontWeight: 500 }}
-        >
-          © {new Date().getFullYear()} NyayaAI · Built for legal professionals · All data encrypted
-        </motion.p>
+        {/* ── Footer ── */}
+        <div style={{ textAlign: 'center', marginTop: 44, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
+          <p style={{ fontSize: 12, color: 'rgba(240, 238, 255, 0.35)', fontWeight: 600 }}>
+            © {new Date().getFullYear()} NyayaAI · Encrypted Legal Platform · SOC 2 Compliant
+          </p>
+        </div>
       </div>
 
       {/* ── Login prompt modal ── */}
@@ -668,37 +758,5 @@ export default function PortalHome() {
         navigate={navigate}
       />
     </div>
-  );
-}
-
-/* ─── Quick Link Button ──────────────────────────────────────── */
-function QuickLink({ q, qi, navigate }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <motion.button
-      key={qi}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.95 + qi * 0.06, duration: 0.35 }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.97 }}
-      onHoverStart={() => setHov(true)}
-      onHoverEnd={() => setHov(false)}
-      onClick={() => navigate(q.path)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 7,
-        padding: '9px 16px', borderRadius: 40,
-        border: 'none',
-        background: hov ? 'rgba(124,58,237,0.08)' : 'transparent',
-        cursor: 'pointer',
-        fontSize: 13, fontWeight: 600,
-        color: hov ? '#7C3AED' : '#6B7280',
-        transition: 'all 200ms',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <q.ic size={14} />
-      {q.label}
-    </motion.button>
   );
 }

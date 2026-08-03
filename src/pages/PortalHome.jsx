@@ -30,10 +30,9 @@ function useCount(target, duration = 1400) {
   return val;
 }
 
-/* ─── Stats Data ─────────────────────────────────────────────── */
+/* ─── Stats Data (3 Clean Items) ─────────────────────────────── */
 const STATS = [
   { value: 12000, suffix: '+', label: 'Docs Processed', icon: I.Doc },
-  { value: 500,   suffix: '+', label: 'Cases Managed',  icon: I.Briefcase },
   { value: 48,    suffix: '',  label: 'Jurisdictions', icon: I.Globe },
   { value: 99.8,  suffix: '%', label: 'AI Precision',   icon: I.Shield },
 ];
@@ -133,7 +132,7 @@ const SECTIONS = [
       { text: 'Dedicated AI assistant per active matter' },
     ],
     cta: 'Open Practice Hub',
-    metric: { value: '500+', label: 'Cases Managed' },
+    metric: { value: '850+', label: 'Firms Onboarded' },
   },
   {
     id: 'marketplace',
@@ -601,7 +600,7 @@ export default function PortalHome() {
 
           {/* Search Bar & Category Segmented Tabs */}
           <motion.div variants={fadeUp} initial="hidden" animate="show" transition={{ ...stagger(0.25).transition }}
-            style={{ maxWidth: 580, margin: '0 auto' }}>
+            style={{ width: '100%', maxWidth: 580, margin: '0 auto' }}>
             
             {/* Search Input */}
             <div style={{ position: 'relative', marginBottom: 20 }}>
@@ -627,13 +626,22 @@ export default function PortalHome() {
               )}
             </div>
 
-            {/* Category Segmented Tabs */}
+            {/* Category Segmented Tabs (Clean Mobile-First Layout) */}
             <div
               className="no-scrollbar"
               style={{
-                display: 'flex', alignItems: 'center', gap: 6, overflowX: 'auto', padding: '4px 6px',
-                justifyContent: 'center', msOverflowStyle: 'none', scrollbarWidth: 'none',
-                background: 'rgba(255, 255, 255, 0.03)', borderRadius: 16, border: '1px solid rgba(255, 255, 255, 0.07)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '4px',
+                width: '100%',
+                boxSizing: 'border-box',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: 16,
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                overflowX: 'auto',
+                flexWrap: 'wrap',
               }}
             >
               {CATEGORIES.map(cat => {
@@ -644,11 +652,21 @@ export default function PortalHome() {
                     onClick={() => setActiveCategory(cat.id)}
                     style={{
                       position: 'relative',
-                      padding: '8px 16px', borderRadius: 12, border: 'none',
+                      flex: '1 1 auto',
+                      padding: '8px 14px',
+                      borderRadius: 12,
+                      border: 'none',
                       background: 'transparent',
                       color: active ? '#ffffff' : 'rgba(240, 238, 255, 0.55)',
-                      fontSize: 12.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
-                      display: 'flex', alignItems: 'center', gap: 6, zIndex: 1,
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      zIndex: 1,
                       transition: 'color 0.2s ease',
                     }}
                   >
@@ -665,7 +683,7 @@ export default function PortalHome() {
                       />
                     )}
                     <cat.icon size={14} />
-                    {cat.label}
+                    <span>{cat.label}</span>
                   </button>
                 );
               })}
@@ -673,11 +691,11 @@ export default function PortalHome() {
           </motion.div>
         </div>
 
-        {/* ── Stats Strip Grid (2x2 Mobile, 4x1 Desktop) ── */}
+        {/* ── Stats Strip Grid (3 Equal Columns) ── */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: 12,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: 14,
           marginBottom: 44,
         }}>
           {STATS.map((s, i) => (
@@ -705,7 +723,7 @@ export default function PortalHome() {
           </div>
         )}
 
-        {/* ── Centered Bottom Quick Dock (Documents, Alerts, Profile, Help, Sign Out) ── */}
+        {/* ── Centered Bottom Quick Dock ── */}
         <motion.div
           variants={fadeUp} initial="hidden" animate="show"
           transition={{ ...stagger(0.6).transition }}

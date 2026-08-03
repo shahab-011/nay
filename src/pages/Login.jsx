@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 
 const si = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 18 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
 };
-const sc = { animate: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
+const sc = { animate: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } };
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -19,32 +19,141 @@ const GoogleIcon = () => (
   </svg>
 );
 
+/* ── Segmented Switcher for Login / Register ── */
+function AuthSegmentedNav({ activeTab = 'login' }) {
+  const navigate = useNavigate();
+  return (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      background: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      padding: '4px',
+      borderRadius: '14px',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+      width: '100%',
+      maxWidth: '320px',
+      margin: '0 auto 24px auto',
+    }}>
+      <button
+        type="button"
+        onClick={() => navigate('/login')}
+        style={{
+          flex: 1,
+          position: 'relative',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: 'none',
+          background: 'transparent',
+          color: activeTab === 'login' ? '#ffffff' : 'rgba(240, 238, 255, 0.5)',
+          fontSize: '13px',
+          fontWeight: 700,
+          cursor: 'pointer',
+          transition: 'color 0.2s ease',
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+        }}
+      >
+        {activeTab === 'login' && (
+          <motion.div
+            layoutId="authTabPill"
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.85) 0%, rgba(139, 92, 246, 0.85) 100%)',
+              borderRadius: '10px',
+              boxShadow: '0 4px 15px rgba(124, 58, 237, 0.4)',
+              zIndex: -1,
+            }}
+          />
+        )}
+        <I.Lock size={13} /> Sign In
+      </button>
+
+      <button
+        type="button"
+        onClick={() => navigate('/register')}
+        style={{
+          flex: 1,
+          position: 'relative',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          border: 'none',
+          background: 'transparent',
+          color: activeTab === 'register' ? '#ffffff' : 'rgba(240, 238, 255, 0.5)',
+          fontSize: '13px',
+          fontWeight: 700,
+          cursor: 'pointer',
+          transition: 'color 0.2s ease',
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+        }}
+      >
+        {activeTab === 'register' && (
+          <motion.div
+            layoutId="authTabPill"
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.85) 0%, rgba(139, 92, 246, 0.85) 100%)',
+              borderRadius: '10px',
+              boxShadow: '0 4px 15px rgba(124, 58, 237, 0.4)',
+              zIndex: -1,
+            }}
+          />
+        )}
+        <I.Zap size={13} /> Create Account
+      </button>
+    </div>
+  );
+}
+
 function GlassInput({ icon, rightAction, style: exStyle, onFocus, onBlur, ...props }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%' }}>
       <div style={{
-        position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-        color: focused ? '#a78bfa' : 'rgba(255,255,255,0.25)', transition: 'color 0.2s',
-        zIndex: 1, display: 'flex', alignItems: 'center', pointerEvents: 'none',
+        position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+        color: focused ? '#c084fc' : 'rgba(240, 238, 255, 0.35)', transition: 'color 0.25s ease',
+        zIndex: 2, display: 'flex', alignItems: 'center', pointerEvents: 'none',
       }}>{icon}</div>
       <input
         {...props}
+        className="auth-input-field"
         onFocus={e => { setFocused(true); onFocus?.(e); }}
         onBlur={e  => { setFocused(false); onBlur?.(e); }}
         style={{
-          width: '100%', height: 48, paddingLeft: 44, paddingRight: rightAction ? 46 : 16,
-          borderRadius: 12, fontSize: 14, outline: 'none', boxSizing: 'border-box',
-          background:   focused ? 'rgba(124,58,237,0.1)' : 'rgba(255,255,255,0.05)',
-          border:       `1.5px solid ${focused ? 'rgba(124,58,237,0.55)' : 'rgba(255,255,255,0.09)'}`,
-          color: '#f0eeff', backdropFilter: 'blur(8px)',
-          boxShadow: focused ? '0 0 0 4px rgba(124,58,237,0.1)' : 'none',
-          transition: 'all 0.2s ease',
+          width: '100%',
+          height: 50,
+          paddingLeft: 46,
+          paddingRight: rightAction ? 48 : 16,
+          borderRadius: 14,
+          outline: 'none',
+          boxSizing: 'border-box',
+          background: focused ? 'rgba(124, 58, 237, 0.12)' : 'rgba(255, 255, 255, 0.04)',
+          border: `1.5px solid ${focused ? 'rgba(167, 139, 250, 0.7)' : 'rgba(255, 255, 255, 0.09)'}`,
+          color: '#f0eeff',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: focused
+            ? '0 0 0 4px rgba(124, 58, 237, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+            : 'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           ...exStyle,
         }}
       />
       {rightAction && (
-        <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', zIndex: 2 }}>
           {rightAction}
         </div>
       )}
@@ -52,7 +161,7 @@ function GlassInput({ icon, rightAction, style: exStyle, onFocus, onBlur, ...pro
   );
 }
 
-/* ── Mock dashboard preview for left panel ── */
+/* ── Mock dashboard preview for desktop panel ── */
 const MOCK_MATTERS = [
   { title: 'Smith Corp — Contract',   type: 'Litigation',  badge: 'URGENT', badgeColor: '#ef4444' },
   { title: 'Gupta IP Filing 2025',    type: 'Trademark',   badge: 'REVIEW', badgeColor: '#f59e0b' },
@@ -64,39 +173,40 @@ function DashboardPreview() {
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
       style={{
-        background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.14)',
-        borderRadius: 20, padding: '20px 22px', backdropFilter: 'blur(16px)',
-        marginTop: 40,
+        background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(167, 139, 250, 0.18)',
+        borderRadius: 22, padding: '22px 24px', backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)', marginTop: 36,
+        boxShadow: '0 20px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
       }}
     >
       {/* Card header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.7)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: 'rgba(240,238,255,0.7)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Today's Workspace
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(34, 197, 94, 0.12)', padding: '3px 10px', borderRadius: 20, border: '1px solid rgba(34, 197, 94, 0.25)' }}>
           <motion.div
             animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }}
           />
-          <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 600 }}>Live</span>
+          <span style={{ fontSize: 10, color: '#4ade80', fontWeight: 700 }}>Live AI Sync</span>
         </div>
       </div>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
         {[
-          { icon: <I.Briefcase size={13} />, value: '12', label: 'Matters' },
-          { icon: <I.CheckSquare size={13} />, value: '4', label: 'Due Today' },
-          { icon: <I.Timer size={13} />, value: '3.5h', label: 'Logged' },
+          { icon: <I.Briefcase size={14} />, value: '12', label: 'Matters' },
+          { icon: <I.CheckSquare size={14} />, value: '4', label: 'Due Today' },
+          { icon: <I.Timer size={14} />, value: '3.5h', label: 'Logged' },
         ].map(s => (
-          <div key={s.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 10px', textAlign: 'center' }}>
-            <div style={{ color: '#a78bfa', display: 'flex', justifyContent: 'center', marginBottom: 5 }}>{s.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#f0eeff', lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 9, color: 'rgba(240,238,255,0.4)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
+          <div key={s.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: '10px 8px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ color: '#c084fc', display: 'flex', justifyContent: 'center', marginBottom: 4 }}>{s.icon}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#f0eeff', lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 9, color: 'rgba(240,238,255,0.45)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -108,14 +218,14 @@ function DashboardPreview() {
             key={m.title}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.7 + i * 0.12, duration: 0.4 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
+            transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(240,238,255,0.85)', lineHeight: 1.2 }}>{m.title}</div>
-              <div style={{ fontSize: 10, color: 'rgba(240,238,255,0.35)', marginTop: 2 }}>{m.type}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(240,238,255,0.9)', lineHeight: 1.2 }}>{m.title}</div>
+              <div style={{ fontSize: 10, color: 'rgba(240,238,255,0.4)', marginTop: 2 }}>{m.type}</div>
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: m.badgeColor, background: `${m.badgeColor}18`, padding: '3px 8px', borderRadius: 6, border: `1px solid ${m.badgeColor}30`, letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, color: m.badgeColor, background: `${m.badgeColor}1c`, padding: '3px 9px', borderRadius: 8, border: `1px solid ${m.badgeColor}35`, letterSpacing: '0.05em' }}>
               {m.badge}
             </span>
           </motion.div>
@@ -124,15 +234,15 @@ function DashboardPreview() {
 
       {/* Progress bar */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'rgba(240,238,255,0.4)', marginBottom: 6 }}>
-          <span>Retainer utilization</span><span style={{ color: '#a78bfa', fontWeight: 700 }}>73%</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(240,238,255,0.5)', marginBottom: 6 }}>
+          <span>Retainer utilization</span><span style={{ color: '#c084fc', fontWeight: 800 }}>73%</span>
         </div>
-        <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 5, overflow: 'hidden' }}>
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: '73%' }}
-            transition={{ duration: 1.6, delay: 1, ease: [0.22, 1, 0.36, 1] }}
-            style={{ height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: 4 }}
+            transition={{ duration: 1.5, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            style={{ height: '100%', background: 'linear-gradient(90deg, #7c3aed, #c084fc)', borderRadius: 5 }}
           />
         </div>
       </div>
@@ -146,6 +256,7 @@ export default function Login() {
 
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPass,   setShowPass]   = useState(false);
   const [error,      setError]      = useState('');
   const [isLoading,  setIsLoading]  = useState(false);
@@ -155,10 +266,10 @@ export default function Login() {
     setError('');
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials');
+      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -171,51 +282,48 @@ export default function Login() {
 
   return (
     <div className="auth-container">
+      {/* ══ Ambient Animated Orbs ══ */}
+      <motion.div animate={{ y: [0, -35, 0], scale: [1, 1.1, 1] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ position: 'absolute', top: '-10%', right: '25%', width: 500, height: 500, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+      <motion.div animate={{ y: [0, 30, 0], scale: [1, 1.08, 1] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        style={{ position: 'absolute', bottom: '-15%', left: '10%', width: 450, height: 450, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)', filter: 'blur(40px)' }} />
 
-      {/* ══ LEFT PANEL ══ */}
+      {/* ══ LEFT PANEL (Desktop Showcase) ══ */}
       <motion.div
         initial={{ opacity: 0, x: -24 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         className="auth-left-panel"
       >
-        {/* Orbs */}
-        <motion.div animate={{ y: [0, -30, 0], scale: [1, 1.08, 1] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ position: 'absolute', top: '-5%', right: '-8%', width: 440, height: 440, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 68%)' }} />
-        <motion.div animate={{ y: [0, 22, 0] }} transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-          style={{ position: 'absolute', bottom: '0%', left: '-12%', width: 380, height: 380, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(139,92,246,0.13) 0%, transparent 68%)' }} />
-        <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
-          style={{ position: 'absolute', top: '55%', right: '20%', width: 200, height: 200, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 70%)' }} />
-        {/* Dot grid */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(124,58,237,0.07) 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(139,92,246,0.08) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           {/* Logo */}
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 48 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)' }}>
-              <I.Logo size={21} />
+            style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 44 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(14px)', boxShadow: '0 8px 20px rgba(124,58,237,0.3)' }}>
+              <I.Logo size={22} />
             </div>
-            <span style={{ fontSize: 19, fontWeight: 800, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI</span>
+            <span style={{ fontSize: 21, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI</span>
           </motion.div>
 
           {/* Headline */}
           <motion.div variants={sc} initial="initial" animate="animate">
-            <motion.div variants={si} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 100, padding: '5px 14px', marginBottom: 20 }}>
-              <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <motion.div variants={si} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.14)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 100, padding: '6px 14px', marginBottom: 20 }}>
+              <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
               </motion.div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(240,238,255,0.7)', letterSpacing: '0.04em' }}>850+ Law Firms Active</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.8)', letterSpacing: '0.04em' }}>850+ Law Firms Active</span>
             </motion.div>
 
-            <motion.h1 variants={si} style={{ fontSize: 38, fontWeight: 900, lineHeight: 1.1, marginBottom: 14, fontFamily: 'var(--font-headline)', letterSpacing: '-0.03em', color: '#f0eeff' }}>
+            <motion.h1 variants={si} style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.12, marginBottom: 14, fontFamily: 'var(--font-headline)', letterSpacing: '-0.035em', color: '#f0eeff' }}>
               Your legal workspace{' '}
-              <span style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 60%, #c084fc 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ background: 'linear-gradient(135deg, #c084fc 0%, #7c3aed 60%, #e879f9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 awaits.
               </span>
             </motion.h1>
 
-            <motion.p variants={si} style={{ fontSize: 14, color: 'rgba(240,238,255,0.48)', lineHeight: 1.75, maxWidth: 380 }}>
+            <motion.p variants={si} style={{ fontSize: 15, color: 'rgba(240,238,255,0.55)', lineHeight: 1.7, maxWidth: 400 }}>
               Matters, clients, documents, billing — everything you need to run a modern legal practice, powered by AI.
             </motion.p>
           </motion.div>
@@ -224,44 +332,52 @@ export default function Login() {
         </div>
       </motion.div>
 
-      {/* ══ RIGHT PANEL (full height, no card) ══ */}
+      {/* ══ RIGHT PANEL (Glass Form Container) ══ */}
       <div className="auth-right-panel">
-        {/* Top accent line */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.5) 50%, transparent 100%)' }} />
-        {/* Subtle corner glow */}
-        <div style={{ position: 'absolute', bottom: -80, right: -80, width: 360, height: 360, borderRadius: '50%', pointerEvents: 'none', background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.5) 50%, transparent 100%)' }} />
 
-        <motion.div
-          initial={{ opacity: 0, x: 28 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}
-        >
-          {/* Mobile Logo */}
+        <div className="auth-mobile-card">
+          {/* Mobile Header with Logo & Segmented Switcher */}
           <div className="mobile-logo-show">
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)' }}>
-              <I.Logo size={18} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)' }}>
+                <I.Logo size={19} />
+              </div>
+              <span style={{ fontSize: 18, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI</span>
             </div>
-            <span style={{ fontSize: 17, fontWeight: 800, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.02em' }}>NyayaAI</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(124,58,237,0.15)', padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(167,139,250,0.25)' }}>
+              <I.Shield size={12} style={{ color: '#c084fc' }} />
+              <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(240,238,255,0.8)', letterSpacing: '0.04em' }}>SECURE</span>
+            </div>
           </div>
 
-          {/* Heading */}
-          <motion.div variants={sc} initial="initial" animate="animate" style={{ marginBottom: 32 }}>
-            <motion.h2 variants={si} style={{ fontSize: 28, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.025em', marginBottom: 8 }}>
+          {/* Segmented Tab Bar (Sign In / Register) */}
+          <AuthSegmentedNav activeTab="login" />
+
+          {/* Main Heading */}
+          <motion.div variants={sc} initial="initial" animate="animate" style={{ textAlign: 'center', marginBottom: 26 }}>
+            <motion.h2 variants={si} style={{ fontSize: 26, fontWeight: 900, color: '#f0eeff', fontFamily: 'var(--font-headline)', letterSpacing: '-0.025em', marginBottom: 6 }}>
               Welcome back
             </motion.h2>
-            <motion.p variants={si} style={{ fontSize: 14, color: 'rgba(240,238,255,0.42)', lineHeight: 1.6 }}>
-              Sign in to your legal intelligence workspace
+            <motion.p variants={si} style={{ fontSize: 13.5, color: 'rgba(240,238,255,0.5)', lineHeight: 1.5 }}>
+              Sign in to access your legal intelligence workspace
             </motion.p>
           </motion.div>
 
-          {/* Google button */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} style={{ marginBottom: 4 }}>
+          {/* Google Button */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.4 }} style={{ marginBottom: 18 }}>
             <motion.button
+              type="button"
               onClick={handleGoogle}
-              whileHover={{ scale: 1.015, background: '#f8f8f8' }}
-              whileTap={{ scale: 0.98 }}
-              style={{ width: '100%', height: 48, borderRadius: 12, background: '#fff', border: '1.5px solid rgba(255,255,255,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 600, color: '#1a1a2e', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', transition: 'background 0.2s' }}
+              whileHover={{ scale: 1.015, boxShadow: '0 8px 25px rgba(255,255,255,0.15)' }}
+              whileTap={{ scale: 0.985 }}
+              style={{
+                width: '100%', height: 50, borderRadius: 14, background: '#ffffff',
+                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                fontSize: 14, fontWeight: 700, color: '#120f26',
+                boxShadow: '0 4px 18px rgba(0,0,0,0.35)', transition: 'all 0.2s ease',
+              }}
             >
               <GoogleIcon />
               Continue with Google
@@ -269,76 +385,110 @@ export default function Login() {
           </motion.div>
 
           {/* Divider */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            <span style={{ fontSize: 11, color: 'rgba(240,238,255,0.3)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>or continue with email</span>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '18px 0 20px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(240,238,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>or sign in with email</span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
           </motion.div>
 
-          {/* Error */}
-          <AnimatePresence>
+          {/* Error Message */}
+          <AnimatePresence mode="wait">
             {error && (
-              <motion.div initial={{ opacity: 0, y: -10, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                style={{ background: 'rgba(220,38,96,0.1)', border: '1px solid rgba(220,38,96,0.25)', color: '#f87171', padding: '10px 14px', borderRadius: 10, marginBottom: 16, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
-                <I.Alert size={14} style={{ flexShrink: 0 }} />
-                {error}
+              <motion.div initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1.5px solid rgba(239, 68, 68, 0.3)', color: '#fca5a5', padding: '12px 14px', borderRadius: 12, marginBottom: 18, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', backdropFilter: 'blur(8px)' }}>
+                <I.Alert size={16} style={{ flexShrink: 0, color: '#ef4444' }} />
+                <span>{error}</span>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Form */}
-          <motion.form onSubmit={handleSubmit} variants={{ animate: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } } }} initial="initial" animate="animate" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <motion.form onSubmit={handleSubmit} variants={{ animate: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } } }} initial="initial" animate="animate" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Email Field */}
             <motion.div variants={si} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,238,255,0.38)', marginLeft: 2 }}>Email Address</label>
-              <GlassInput type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" icon={<I.Mail size={16} />} />
+              <label style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,238,255,0.5)', marginLeft: 2 }}>Email Address</label>
+              <GlassInput type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@firm.com" icon={<I.Mail size={17} />} />
             </motion.div>
 
+            {/* Password Field */}
             <motion.div variants={si} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginLeft: 2 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,238,255,0.38)' }}>Password</label>
-                <Link to="/forgot-password" style={{ fontSize: 12, color: '#a78bfa', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</Link>
+                <label style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(240,238,255,0.5)' }}>Password</label>
+                <Link to="/forgot-password" style={{ fontSize: 12, color: '#c084fc', fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s' }}>Forgot password?</Link>
               </div>
               <GlassInput
                 type={showPass ? 'text' : 'password'} required autoComplete="current-password"
                 value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-                icon={<I.Lock size={16} />}
+                icon={<I.Lock size={17} />}
                 rightAction={
                   <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.28)', display: 'flex', alignItems: 'center', padding: 0 }}>
-                    {showPass ? <I.EyeOff size={16} /> : <I.Eye size={16} />}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(240,238,255,0.4)', display: 'flex', alignItems: 'center', padding: 4 }}>
+                    {showPass ? <I.EyeOff size={17} /> : <I.Eye size={17} />}
                   </button>
                 }
               />
             </motion.div>
 
+            {/* Remember Me Checkbox */}
+            <motion.div variants={si} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2, paddingLeft: 2 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={e => setRememberMe(e.target.checked)}
+                  style={{ display: 'none' }}
+                />
+                <div style={{
+                  width: 18, height: 18, borderRadius: 5,
+                  background: rememberMe ? 'rgba(124, 58, 237, 0.8)' : 'rgba(255, 255, 255, 0.05)',
+                  border: `1.5px solid ${rememberMe ? '#a78bfa' : 'rgba(255, 255, 255, 0.2)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: rememberMe ? '0 0 10px rgba(124, 58, 237, 0.4)' : 'none',
+                }}>
+                  {rememberMe && <I.Check size={12} style={{ color: '#fff' }} />}
+                </div>
+                <span style={{ fontSize: 13, color: 'rgba(240, 238, 255, 0.65)', fontWeight: 500 }}>Remember me on this device</span>
+              </label>
+            </motion.div>
+
+            {/* Submit Button */}
             <motion.button variants={si} type="submit" disabled={isLoading}
-              whileHover={{ scale: isLoading ? 1 : 1.02, boxShadow: '0 8px 32px rgba(124,58,237,0.5)' }}
-              whileTap={{ scale: isLoading ? 1 : 0.98 }}
-              style={{ width: '100%', height: 50, marginTop: 4, borderRadius: 13, background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-headline)', border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 22px rgba(124,58,237,0.4)', letterSpacing: '-0.01em' }}>
+              whileHover={{ scale: isLoading ? 1 : 1.015, boxShadow: '0 8px 30px rgba(124,58,237,0.55)' }}
+              whileTap={{ scale: isLoading ? 1 : 0.985 }}
+              style={{
+                width: '100%', height: 52, marginTop: 8, borderRadius: 14,
+                background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #4c1d95 100%)',
+                color: '#fff', fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-headline)',
+                border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.75 : 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                boxShadow: '0 4px 24px rgba(124,58,237,0.45), inset 0 1px 0 rgba(255,255,255,0.2)',
+                letterSpacing: '-0.01em', position: 'relative', overflow: 'hidden',
+              }}>
               {isLoading ? (
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  style={{ width: 16, height: 16, border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%' }} />
-              ) : <I.Lock size={15} />}
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+                  style={{ width: 18, height: 18, border: '2.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%' }} />
+              ) : <I.Lock size={16} />}
               {isLoading ? 'Signing in…' : 'Sign In Securely'}
             </motion.button>
           </motion.form>
 
-          {/* Footer */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }} style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 16 }}>
-              {['AI-Powered', 'Encrypted', 'Indian Law'].map(f => (
-                <span key={f} style={{ fontSize: 10, color: 'rgba(240,238,255,0.3)', display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  <I.Check size={9} style={{ color: '#7c3aed' }} />{f}
+          {/* Footer Features & Link */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
+              {['AI Analysis', 'End-to-End Encrypted', 'Indian Law'].map(f => (
+                <span key={f} style={{ fontSize: 10.5, color: 'rgba(240,238,255,0.4)', display: 'flex', alignItems: 'center', gap: 5, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                  <I.Check size={10} style={{ color: '#a78bfa' }} />{f}
                 </span>
               ))}
             </div>
-            <p style={{ textAlign: 'center', fontSize: 13, color: 'rgba(240,238,255,0.38)' }}>
-              No account?{' '}
-              <Link to="/register" style={{ color: '#a78bfa', fontWeight: 700, textDecoration: 'none' }}>Create workspace →</Link>
+            <p style={{ textAlign: 'center', fontSize: 13.5, color: 'rgba(240,238,255,0.5)' }}>
+              Don't have an account?{' '}
+              <Link to="/register" style={{ color: '#c084fc', fontWeight: 800, textDecoration: 'none' }}>Create workspace →</Link>
             </p>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

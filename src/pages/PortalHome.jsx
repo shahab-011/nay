@@ -33,9 +33,9 @@ function useCount(target, duration = 1400) {
 /* ─── Stats Data ─────────────────────────────────────────────── */
 const STATS = [
   { value: 12000, suffix: '+', label: 'Docs Processed', icon: I.Doc },
-  { value: 850,   suffix: '+', label: 'Active Law Firms', icon: I.Briefcase },
+  { value: 500,   suffix: '+', label: 'Cases Managed',  icon: I.Briefcase },
   { value: 48,    suffix: '',  label: 'Jurisdictions', icon: I.Globe },
-  { value: 99.8,  suffix: '%', label: 'AI Precision', icon: I.Shield },
+  { value: 99.8,  suffix: '%', label: 'AI Precision',   icon: I.Shield },
 ];
 
 function StatItem({ stat, index }) {
@@ -133,7 +133,7 @@ const SECTIONS = [
       { text: 'Dedicated AI assistant per active matter' },
     ],
     cta: 'Open Practice Hub',
-    metric: { value: '850+', label: 'Firms Onboarded' },
+    metric: { value: '500+', label: 'Cases Managed' },
   },
   {
     id: 'marketplace',
@@ -156,27 +156,6 @@ const SECTIONS = [
     ],
     cta: 'Find Verified Lawyer',
     metric: { value: '480+', label: 'Verified Lawyers' },
-  },
-  {
-    id: 'ask-ai',
-    category: 'ai',
-    path: '/ask',
-    gradient: 'linear-gradient(135deg, #db2777 0%, #be185d 50%, #831843 100%)',
-    accentColor: '#f472b6',
-    glowRgb: '219, 39, 119',
-    icon: I.Sparkle,
-    tag: 'Instant Assistant',
-    badge: 'New AI',
-    title: 'Legal AI Chat Assistant',
-    subtitle: 'Get immediate legal research answers grounded in updated case law',
-    features: [
-      { text: 'Real-time citation of statute laws & precedent' },
-      { text: 'Draft notice responses & formal legal letters' },
-      { text: 'Multilingual support for national jurisdiction' },
-      { text: 'Context-aware conversational intelligence' },
-    ],
-    cta: 'Chat with Legal AI',
-    metric: { value: '99.4%', label: 'Query Precision' },
   },
 ];
 
@@ -526,7 +505,7 @@ export default function PortalHome() {
       </div>
 
       {/* ── Content Wrapper ── */}
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '0 20px 140px' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '0 20px 80px' }}>
 
         {/* ── Responsive Top Header Bar ── */}
         <div style={{
@@ -648,7 +627,7 @@ export default function PortalHome() {
               )}
             </div>
 
-            {/* Category Segmented Tabs (No Scrollbars) */}
+            {/* Category Segmented Tabs */}
             <div
               className="no-scrollbar"
               style={{
@@ -712,69 +691,49 @@ export default function PortalHome() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
             gap: 22,
-            marginBottom: 52,
+            marginBottom: 44,
           }}>
             {filteredSections.map((s, i) => (
               <ServiceCard key={s.id} s={s} index={i} onCardClick={handleCardClick} />
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '48px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 20, border: '1px dashed rgba(255,255,255,0.1)', marginBottom: 52 }}>
+          <div style={{ textAlign: 'center', padding: '48px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 20, border: '1px dashed rgba(255,255,255,0.1)', marginBottom: 44 }}>
             <I.Search size={32} style={{ color: 'rgba(240,238,255,0.3)', marginBottom: 12 }} />
             <h3 style={{ fontSize: 17, fontWeight: 700, color: '#f0eeff', marginBottom: 4 }}>No matching services found</h3>
             <p style={{ fontSize: 13, color: 'rgba(240,238,255,0.4)', margin: 0 }}>Try clearing your search query or switching categories</p>
           </div>
         )}
-      </div>
 
-      {/* ── Ultra-Cool Floating Mobile & Desktop Glass Dock (FIXED AT BOTTOM, NO SCROLLBAR) ── */}
-      {user && (
+        {/* ── Centered Bottom Quick Dock (Documents, Alerts, Profile, Help, Sign Out) ── */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 800,
-            maxWidth: '92vw',
-          }}
+          variants={fadeUp} initial="hidden" animate="show"
+          transition={{ ...stagger(0.6).transition }}
+          style={{ display: 'flex', justifyContent: 'center', marginTop: 32, marginBottom: 24 }}
         >
-          <motion.div
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          <div
             className="no-scrollbar"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 4,
-              padding: '6px 8px',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '8px 14px',
               borderRadius: 40,
-              background: 'rgba(16, 12, 40, 0.82)',
-              border: '1px solid rgba(255, 255, 255, 0.16)',
-              backdropFilter: 'blur(28px) saturate(190%)',
-              WebkitBackdropFilter: 'blur(28px) saturate(190%)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-              overflowX: 'auto',
-              msOverflowStyle: 'none',
-              scrollbarWidth: 'none',
-              position: 'relative',
+              background: 'rgba(18, 14, 42, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.14)',
+              backdropFilter: 'blur(24px) saturate(190%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(190%)',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+              maxWidth: '100%',
+              flexWrap: 'wrap',
             }}
           >
-            {/* Top specular glow line */}
-            <div style={{
-              position: 'absolute', top: 0, left: 20, right: 20, height: 1,
-              background: 'linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.6), transparent)',
-              pointerEvents: 'none',
-            }} />
-
             {QUICK.map((q) => (
               <motion.button
                 key={q.path}
-                whileHover={{ scale: 1.05, background: 'rgba(124, 58, 237, 0.2)' }}
-                whileTap={{ scale: 0.94 }}
+                whileHover={{ scale: 1.04, background: 'rgba(124, 58, 237, 0.2)' }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(q.path)}
                 style={{
                   display: 'flex',
@@ -782,7 +741,7 @@ export default function PortalHome() {
                   gap: 7,
                   padding: '9px 16px',
                   borderRadius: 30,
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   background: 'rgba(255, 255, 255, 0.04)',
                   color: '#f0eeff',
                   fontSize: 13,
@@ -797,33 +756,44 @@ export default function PortalHome() {
               </motion.button>
             ))}
 
-            <div style={{ width: 1, height: 20, background: 'rgba(255, 255, 255, 0.12)', margin: '0 4px' }} />
+            {user && (
+              <>
+                <div style={{ width: 1, height: 22, background: 'rgba(255, 255, 255, 0.12)', margin: '0 2px' }} />
 
-            <motion.button
-              whileHover={{ scale: 1.05, background: 'rgba(239, 68, 68, 0.2)' }}
-              whileTap={{ scale: 0.94 }}
-              onClick={async () => { await logout(); navigate('/login'); }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '9px 14px',
-                borderRadius: 30,
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                background: 'rgba(239, 68, 68, 0.1)',
-                color: '#f87171',
-                fontSize: 12.5,
-                fontWeight: 700,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <I.LogOut size={14} />
-              <span>Out</span>
-            </motion.button>
-          </motion.div>
+                <motion.button
+                  whileHover={{ scale: 1.04, background: 'rgba(239, 68, 68, 0.22)' }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={async () => { await logout(); navigate('/login'); }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '9px 16px',
+                    borderRadius: 30,
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    color: '#f87171',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <I.LogOut size={14} />
+                  <span>Sign Out</span>
+                </motion.button>
+              </>
+            )}
+          </div>
         </motion.div>
-      )}
+
+        {/* ── Footer ── */}
+        <div style={{ textAlign: 'center', marginTop: 36, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24 }}>
+          <p style={{ fontSize: 12, color: 'rgba(240, 238, 255, 0.35)', fontWeight: 600 }}>
+            © {new Date().getFullYear()} NyayaAI · Encrypted Legal Platform · SOC 2 Compliant
+          </p>
+        </div>
+      </div>
 
       {/* ── Login prompt modal ── */}
       <LoginPromptModal

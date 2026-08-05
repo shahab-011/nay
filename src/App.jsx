@@ -1,8 +1,9 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-/* ── Layout ── */
+/* ── Layout & Error Handling ── */
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 /* ── Contexts ── */
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -128,91 +129,93 @@ function App() {
         <AlertProvider>
           <PrivacyProvider>
             <Router>
-              <Layout>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+              <ErrorBoundary>
+                <Layout>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
 
-                    {/* ── Root ── */}
-                    <Route path="/" element={<RootRoute />} />
+                      {/* ── Root ── */}
+                      <Route path="/" element={<RootRoute />} />
 
-                    {/* ── Public ── */}
-                    <Route path="/landing"         element={<Landing />} />
-                    <Route path="/services"        element={<PortalHome />} />
-                    <Route path="/intake"          element={<Intake />} />
-                    <Route path="/marketplace"     element={<MarketDiscovery />} />
-                    <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />
+                      {/* ── Public ── */}
+                      <Route path="/landing"         element={<Landing />} />
+                      <Route path="/services"        element={<PortalHome />} />
+                      <Route path="/intake"          element={<Intake />} />
+                      <Route path="/marketplace"     element={<MarketDiscovery />} />
+                      <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />
 
-                    {/* ── Auth ── */}
-                    <Route path="/login"           element={<GuestRoute><Login /></GuestRoute>} />
-                    <Route path="/register"        element={<GuestRoute><Register /></GuestRoute>} />
-                    <Route path="/verify-email"    element={<VerifyEmail />} />
-                    <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-                    <Route path="/reset-password"        element={<GuestRoute><ResetPassword /></GuestRoute>} />
-                    <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-                    <Route path="/onboarding"           element={<PrivateRoute><OnboardingWizard /></PrivateRoute>} />
+                      {/* ── Auth ── */}
+                      <Route path="/login"           element={<GuestRoute><Login /></GuestRoute>} />
+                      <Route path="/register"        element={<GuestRoute><Register /></GuestRoute>} />
+                      <Route path="/verify-email"    element={<VerifyEmail />} />
+                      <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+                      <Route path="/reset-password"        element={<GuestRoute><ResetPassword /></GuestRoute>} />
+                      <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+                      <Route path="/onboarding"           element={<PrivateRoute><OnboardingWizard /></PrivateRoute>} />
 
-                    {/* ── Section 1: Document Studio ── */}
-                    <Route path="/studio"          element={<PrivateRoute><StudioHome /></PrivateRoute>} />
-                    <Route path="/upload"          element={<PrivateRoute><UploadDocument /></PrivateRoute>} />
-                    <Route path="/documents"       element={<PrivateRoute><MyDocuments /></PrivateRoute>} />
-                    <Route path="/analysis/:docId" element={<PrivateRoute><Analysis /></PrivateRoute>} />
-                    <Route path="/ask"             element={<PrivateRoute><AskAI /></PrivateRoute>} />
-                    <Route path="/compare"         element={<PrivateRoute><CompareDocuments /></PrivateRoute>} />
-                    <Route path="/lifecycle"       element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
-                    <Route path="/alerts"          element={<PrivateRoute><Alerts /></PrivateRoute>} />
-                    <Route path="/profile"         element={<PrivateRoute><Profile /></PrivateRoute>} />
-                    <Route path="/obligation-web"  element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
-                    <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
-                    <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
-                    <Route path="/client-links"    element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
+                      {/* ── Section 1: Document Studio ── */}
+                      <Route path="/studio"          element={<PrivateRoute><StudioHome /></PrivateRoute>} />
+                      <Route path="/upload"          element={<PrivateRoute><UploadDocument /></PrivateRoute>} />
+                      <Route path="/documents"       element={<PrivateRoute><MyDocuments /></PrivateRoute>} />
+                      <Route path="/analysis/:docId" element={<PrivateRoute><Analysis /></PrivateRoute>} />
+                      <Route path="/ask"             element={<PrivateRoute><AskAI /></PrivateRoute>} />
+                      <Route path="/compare"         element={<PrivateRoute><CompareDocuments /></PrivateRoute>} />
+                      <Route path="/lifecycle"       element={<PrivateRoute><ContractLifecycle /></PrivateRoute>} />
+                      <Route path="/alerts"          element={<PrivateRoute><Alerts /></PrivateRoute>} />
+                      <Route path="/profile"         element={<PrivateRoute><Profile /></PrivateRoute>} />
+                      <Route path="/obligation-web"  element={<PrivateRoute><ObligationWeb /></PrivateRoute>} />
+                      <Route path="/help"            element={<PrivateRoute><HelpCenter /></PrivateRoute>} />
+                      <Route path="/about"           element={<PrivateRoute><About /></PrivateRoute>} />
+                      <Route path="/client-links"    element={<PrivateRoute><ClientLinks /></PrivateRoute>} />
 
-                    {/* ── Section 2: Practice Management ── */}
-                    <Route path="/practice"     element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><PracticeHub /></RoleRoute>} />
-                    <Route path="/matters"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Matters /></RoleRoute>} />
-                    <Route path="/matters/:id"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Matters /></RoleRoute>} />
-                    <Route path="/contacts"     element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Contacts /></RoleRoute>} />
-                    <Route path="/contacts/:id" element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Contacts /></RoleRoute>} />
-                    <Route path="/tasks"        element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Tasks /></RoleRoute>} />
-                    <Route path="/cal"          element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><CalendarPage /></RoleRoute>} />
-                    <Route path="/time"         element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><TimeTracking /></RoleRoute>} />
-                    <Route path="/billing"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Billing /></RoleRoute>} />
-                    <Route path="/reports"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Reports /></RoleRoute>} />
+                      {/* ── Section 2: Practice Management ── */}
+                      <Route path="/practice"     element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><PracticeHub /></RoleRoute>} />
+                      <Route path="/matters"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Matters /></RoleRoute>} />
+                      <Route path="/matters/:id"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Matters /></RoleRoute>} />
+                      <Route path="/contacts"     element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Contacts /></RoleRoute>} />
+                      <Route path="/contacts/:id" element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Contacts /></RoleRoute>} />
+                      <Route path="/tasks"        element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Tasks /></RoleRoute>} />
+                      <Route path="/cal"          element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><CalendarPage /></RoleRoute>} />
+                      <Route path="/time"         element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><TimeTracking /></RoleRoute>} />
+                      <Route path="/billing"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Billing /></RoleRoute>} />
+                      <Route path="/reports"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Reports /></RoleRoute>} />
 
-                    {/* ── Phase 3: Remaining Clio features ── */}
-                    <Route path="/doc-automation"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><DocAutomation /></RoleRoute>} />
-                    <Route path="/leads"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LeadPipeline /></RoleRoute>} />
-                    <Route path="/conflicts"       element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ConflictChecker /></RoleRoute>} />
-                    <Route path="/firm-settings"   element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><FirmSettings /></RoleRoute>} />
-                    <Route path="/manage-ai"       element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><ManageAI /></RoleRoute>} />
-                    <Route path="/notifications"   element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><Notifications /></RoleRoute>} />
-                    <Route path="/accounting"      element={<RoleRoute roles={['owner','admin']}><Accounting /></RoleRoute>} />
-                    <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
-                    <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
-                    <Route path="/practice-profile" element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><PracticeProfile /></RoleRoute>} />
+                      {/* ── Phase 3: Remaining Clio features ── */}
+                      <Route path="/doc-automation"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><DocAutomation /></RoleRoute>} />
+                      <Route path="/leads"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LeadPipeline /></RoleRoute>} />
+                      <Route path="/conflicts"       element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ConflictChecker /></RoleRoute>} />
+                      <Route path="/firm-settings"   element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><FirmSettings /></RoleRoute>} />
+                      <Route path="/manage-ai"       element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><ManageAI /></RoleRoute>} />
+                      <Route path="/notifications"   element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><Notifications /></RoleRoute>} />
+                      <Route path="/accounting"      element={<RoleRoute roles={['owner','admin']}><Accounting /></RoleRoute>} />
+                      <Route path="/esign"           element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><ESign /></RoleRoute>} />
+                      <Route path="/communications"  element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><Communications /></RoleRoute>} />
+                      <Route path="/practice-profile" element={<RoleRoute roles={['lawyer','admin','owner','attorney','paralegal','staff']}><PracticeProfile /></RoleRoute>} />
 
-                    {/* ── Client Portal (public, token-based) ── */}
-                    <Route path="/client-portal/:token" element={<ClientPortal />} />
-                    <Route path="/client-portal"        element={<ClientPortal />} />
+                      {/* ── Client Portal (public, token-based) ── */}
+                      <Route path="/client-portal/:token" element={<ClientPortal />} />
+                      <Route path="/client-portal"        element={<ClientPortal />} />
 
-                    {/* ── Public token-based portals (no auth) ── */}
-                    <Route path="/trust-pay/:token"  element={<TrustPayPage />} />
-                    <Route path="/pay/:token"         element={<InvoicePayPage />} />
-                    <Route path="/esign/sign/:token"  element={<ESignSignPage />} />
+                      {/* ── Public token-based portals (no auth) ── */}
+                      <Route path="/trust-pay/:token"  element={<TrustPayPage />} />
+                      <Route path="/pay/:token"         element={<InvoicePayPage />} />
+                      <Route path="/esign/sign/:token"  element={<ESignSignPage />} />
 
-                    {/* ── Section 3: Legal Marketplace ── */}
-                    <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />
-                    <Route path="/lawyer"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerDashboard /></RoleRoute>} />
-                    <Route path="/lawyer/client/:linkId"
-                      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerClientView /></RoleRoute>} />
-                    <Route path="/lawyer/client/:linkId/document/:docId"
-                      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerDocView /></RoleRoute>} />
+                      {/* ── Section 3: Legal Marketplace ── */}
+                      <Route path="/find-lawyer" element={<PrivateRoute><FindLawyer /></PrivateRoute>} />
+                      <Route path="/lawyer"      element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerDashboard /></RoleRoute>} />
+                      <Route path="/lawyer/client/:linkId"
+                        element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerClientView /></RoleRoute>} />
+                      <Route path="/lawyer/client/:linkId/document/:docId"
+                        element={<RoleRoute roles={['lawyer','admin','owner','attorney']}><LawyerDocView /></RoleRoute>} />
 
-                    {/* ── Fallback ── */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                      {/* ── Fallback ── */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
 
-                  </Routes>
-                </Suspense>
-              </Layout>
+                    </Routes>
+                  </Suspense>
+                </Layout>
+              </ErrorBoundary>
             </Router>
           </PrivacyProvider>
         </AlertProvider>

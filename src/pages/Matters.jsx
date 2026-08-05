@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { mattersApi }  from '../api/matters.api';
@@ -825,9 +825,9 @@ function MatterDetail({ matter, onEdit, onBack, onMatterChange }) {
               </div>
               <div className="h-title" style={{ fontSize: 20, marginBottom: 8 }}>Matter Documents</div>
               <p className="t-secondary" style={{ fontSize: 14, marginBottom: 20 }}>Upload and manage documents related to this matter from the Document Studio.</p>
-              <a href="/documents" className="btn btn-purple" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Link to="/documents" className="btn btn-purple" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <I.Upload size={15} /> Go to Documents
-              </a>
+              </Link>
             </div>
           )}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { I } from '../components/Icons';
 import { portalApi } from '../api/portal.api';
@@ -529,9 +529,9 @@ export default function ClientPortal() {
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{f.title}</div>
                     <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2, textTransform: 'capitalize' }}>{f.type} · Signature required</div>
                   </div>
-                  <a href={`/esign/sign/${f.token}`} style={{ padding: '8px 16px', borderRadius: 9, background: '#7C3AED', color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>
+                  <Link to={`/esign/sign/${f.token}`} style={{ padding: '8px 16px', borderRadius: 9, background: '#7C3AED', color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700 }}>
                     Sign Now
-                  </a>
+                  </Link>
                 </div>
               ))}
             </div>

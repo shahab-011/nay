@@ -313,7 +313,7 @@ export default function Login() {
               <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
               </motion.div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.8)', letterSpacing: '0.04em' }}>850+ Law Firms Active</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(240,238,255,0.8)', letterSpacing: '0.04em' }}>Legal Intelligence Platform</span>
             </motion.div>
 
             <motion.h1 variants={si} style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.12, marginBottom: 14, fontFamily: 'var(--font-headline)', letterSpacing: '-0.035em', color: '#f0eeff' }}>

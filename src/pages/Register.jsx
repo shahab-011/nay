@@ -233,11 +233,7 @@ const FEATURES = [
   { icon: <I.Shield size={20} />,   title: 'Bank-Grade Security',  desc: 'End-to-end encrypted, SOC 2 compliant' },
 ];
 
-const TRUST = [
-  { value: '850+', label: 'Law Firms' },
-  { value: '12k+', label: 'Documents' },
-  { value: '99.9%', label: 'Uptime' },
-];
+
 
 export default function Register() {
   const { register } = useAuth();
@@ -333,18 +329,7 @@ export default function Register() {
               ))}
             </motion.div>
 
-            {/* Trust strip */}
-            <motion.div variants={si} style={{ display: 'flex', alignItems: 'center', gap: 24, background: 'rgba(255,255,255,0.03)', padding: '14px 22px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.06)' }}>
-              {TRUST.map((t, i) => (
-                <React.Fragment key={t.label}>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: '#c084fc', fontFamily: 'var(--font-headline)', lineHeight: 1 }}>{t.value}</div>
-                    <div style={{ fontSize: 9.5, color: 'rgba(240,238,255,0.4)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{t.label}</div>
-                  </div>
-                  {i < TRUST.length - 1 && <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.08)' }} />}
-                </React.Fragment>
-              ))}
-            </motion.div>
+
           </motion.div>
         </div>
       </motion.div>

@@ -19,10 +19,11 @@ import Intake     from './pages/Intake';
 import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
 
 /* ── Primary section hubs (eager for instant single-click opening) ── */
-import PortalHome   from './pages/PortalHome';
-import StudioHome   from './pages/StudioHome';
-import PracticeHub  from './pages/PracticeHub';
-import MyDocuments  from './pages/MyDocuments';
+import PortalHome     from './pages/PortalHome';
+import StudioHome     from './pages/StudioHome';
+import PracticeHub    from './pages/PracticeHub';
+import MyDocuments    from './pages/MyDocuments';
+import ForIndividuals from './pages/ForIndividuals';
 
 /* ── Auth pages ── */
 import Login               from './pages/Login';
@@ -140,6 +141,8 @@ function App() {
                       {/* ── Public ── */}
                       <Route path="/landing"         element={<Landing />} />
                       <Route path="/services"        element={<PortalHome />} />
+                      <Route path="/for-individuals" element={<ForIndividuals />} />
+                      <Route path="/individuals"     element={<ForIndividuals />} />
                       <Route path="/intake"          element={<Intake />} />
                       <Route path="/marketplace"     element={<MarketDiscovery />} />
                       <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />

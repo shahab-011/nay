@@ -42,11 +42,11 @@ function isPracticePath(pathname) {
   );
 }
 
-/* ─── Content with page transition ───────────────────────────── */
+/* ─── Content with instant page transition ─────────────────────── */
 function PageContent({ children }) {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <motion.div
         key={location.pathname}
         variants={pageVariants}

@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Nyaya — AI-powered legal intelligence platform. Understand documents, find lawyers, manage cases." />
 
-    <!-- Critical inline styles: prevent black flash before CSS loads -->
+    <!-- Critical inline styles: prevent white flash before CSS loads -->
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { background: #F6F4F8; min-height: 100vh; }
+      html, body { background: #070514; color: #f0eeff; min-height: 100vh; }
       #root { min-height: 100vh; }
 
       /* Loading spinner shown while JS bundle downloads */
@@ -17,34 +17,34 @@
         position: fixed; inset: 0;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
-        background: #F6F4F8; z-index: 9999;
-        gap: 16px; transition: opacity 0.3s ease;
+        background: #070514; z-index: 9999;
+        gap: 14px; transition: opacity 0.3s ease;
       }
       #app-loading.hidden { opacity: 0; pointer-events: none; }
 
       #app-loading .logo {
-        width: 52px; height: 52px;
-        background: #F0EAFC; border-radius: 14px;
-        border: 1px solid #E4D9F9;
+        width: 46px; height: 46px;
+        background: rgba(124, 58, 237, 0.25); border-radius: 14px;
+        border: 1px solid rgba(167, 139, 250, 0.35);
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
       }
       #app-loading .wordmark {
-        font-family: system-ui, sans-serif;
-        font-size: 22px; font-weight: 800;
-        color: #0B0B14; letter-spacing: -0.04em;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 21px; font-weight: 900;
+        color: #f0eeff; letter-spacing: -0.03em;
       }
-      #app-loading .wordmark span { color: #7C3AED; }
+      #app-loading .wordmark span { color: #c084fc; }
       #app-loading .spinner {
         width: 28px; height: 28px;
-        border: 3px solid #E4D9F9;
-        border-top-color: #7C3AED;
+        border: 3px solid rgba(192, 132, 252, 0.2);
+        border-top-color: #c084fc;
         border-radius: 50%;
         animation: nyaya-spin 0.75s linear infinite;
       }
       #app-loading .sub {
-        font-family: system-ui, sans-serif;
-        font-size: 12px; color: #8A8A9E; font-weight: 500;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 12px; color: rgba(240, 238, 255, 0.45); font-weight: 500;
         letter-spacing: 0.04em;
       }
       @keyframes nyaya-spin { to { transform: rotate(360deg); } }

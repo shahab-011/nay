@@ -17,6 +17,12 @@ import Landing    from './pages/Landing';
 import Intake     from './pages/Intake';
 import { MarketDiscovery, LawyerPublicProfile } from './pages/Marketplace';
 
+/* ── Primary section hubs (eager for instant single-click opening) ── */
+import PortalHome   from './pages/PortalHome';
+import StudioHome   from './pages/StudioHome';
+import PracticeHub  from './pages/PracticeHub';
+import MyDocuments  from './pages/MyDocuments';
+
 /* ── Auth pages ── */
 import Login               from './pages/Login';
 import Register            from './pages/Register';
@@ -26,11 +32,8 @@ import ResetPassword       from './pages/ResetPassword';
 import GoogleAuthCallback  from './pages/GoogleAuthCallback';
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 
-/* ── Portal home + section entries ── */
-const PortalHome       = lazy(() => import('./pages/PortalHome'));
-const StudioHome       = lazy(() => import('./pages/StudioHome'));
+/* ── Document Studio section entries ── */
 const UploadDocument   = lazy(() => import('./pages/UploadDocument'));
-const MyDocuments      = lazy(() => import('./pages/MyDocuments'));
 const Analysis         = lazy(() => import('./pages/Analysis'));
 const CompareDocuments = lazy(() => import('./pages/CompareDocuments'));
 const ContractLifecycle = lazy(() => import('./pages/ContractLifecycle'));
@@ -43,7 +46,6 @@ const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
 const About            = lazy(() => import('./pages/About'));
 
 /* ── Section 2: Practice Management (lawyer/admin) ── */
-const PracticeHub   = lazy(() => import('./pages/PracticeHub'));
 const Matters       = lazy(() => import('./pages/Matters'));
 const Contacts      = lazy(() => import('./pages/Contacts'));
 const Tasks         = lazy(() => import('./pages/Tasks'));
@@ -76,11 +78,12 @@ const Notifications   = lazy(() => import('./pages/Notifications'));
 const Accounting        = lazy(() => import('./pages/Accounting'));
 const PracticeProfile   = lazy(() => import('./pages/PracticeProfile'));
 
-/* ── Loading spinner ── */
+/* ── Fast Loading Spinner ── */
 function PageLoader() {
   return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 28, height: 28, border: '3px solid var(--purple-mist)', borderTopColor: 'var(--purple)', borderRadius: '50%', animation: 'nyaya-spin 0.75s linear infinite' }} />
+    <div style={{ minHeight: '65vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <div style={{ width: 30, height: 30, border: '3px solid rgba(167,139,250,0.2)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'nyaya-spin 0.6s linear infinite' }} />
+      <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(240, 238, 255, 0.45)', letterSpacing: '0.04em' }}>Loading workspace...</span>
     </div>
   );
 }

@@ -38,23 +38,46 @@ export const AuthProvider = ({ children }) => {
 
   /* ─── Restore session on mount ───────────────────────────────── */
   useEffect(() => {
+    let mounted = true;
+
     const restore = async () => {
       const stored = localStorage.getItem(TOKEN_KEY);
-      if (!stored) { setLoading(false); return; }
+      if (!stored) {
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      // Add a 3-second safety timeout cap so backend cold-starts don't hang UI forever
+      const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 3000, 'TIMEOUT'));
+
       try {
-        const { data } = await getMe();
-        setUser(data.data.user);
+        const result = await Promise.race([getMe(), timeoutPromise]);
+        if (!mounted) return;
+
+        if (result === 'TIMEOUT') {
+          console.warn('Auth check timed out, proceeding as guest');
+          setLoading(false);
+          return;
+        }
+
+        setUser(result.data.data.user);
         setToken(stored);
       } catch {
-        // Try refreshing with stored refresh token
+        if (!mounted) return;
         const refresh = localStorage.getItem(REFRESH_KEY);
         if (refresh) {
           try {
-            const { data } = await refreshTokenApi(refresh);
-            localStorage.setItem(TOKEN_KEY, data.data.token);
-            setToken(data.data.token);
-            const { data: me } = await getMe();
-            setUser(me.data.user);
+            const refreshRes = await Promise.race([refreshTokenApi(refresh), timeoutPromise]);
+            if (refreshRes && refreshRes !== 'TIMEOUT') {
+              localStorage.setItem(TOKEN_KEY, refreshRes.data.data.token);
+              setToken(refreshRes.data.data.token);
+              const meRes = await Promise.race([getMe(), timeoutPromise]);
+              if (meRes && meRes !== 'TIMEOUT') {
+                setUser(meRes.data.data.user);
+              }
+            } else {
+              clearSession();
+            }
           } catch {
             clearSession();
           }
@@ -62,10 +85,12 @@ export const AuthProvider = ({ children }) => {
           clearSession();
         }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
+
     restore();
+    return () => { mounted = false; };
   }, [clearSession]);
 
   /* ─── loginWithToken (Google OAuth callback) ─────────────────── */
@@ -142,7 +167,30 @@ export const AuthProvider = ({ children }) => {
       completeOnboarding,
       logout, updateUser,
     }}>
-      {!loading && children}
+      {loading ? (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: '#070514', color: '#f0eeff',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 14, zIndex: 99999
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 14,
+            background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(167, 139, 250, 0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+              <path d="M16 3l11 5.5v7c0 7-4.5 12.5-11 14.5C9.5 28 5 22.5 5 15.5v-7L16 3z" stroke="#c084fc" strokeWidth="2"/>
+              <path d="M12 14h8M12 18h5" stroke="#c084fc" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 900, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>
+            Nyaya<span style={{ color: '#c084fc' }}>AI</span>
+          </div>
+          <div style={{ width: 28, height: 28, border: '3px solid rgba(192, 132, 252, 0.2)', borderTopColor: '#c084fc', borderRadius: '50%', animation: 'nyaya-auth-spin 0.75s linear infinite' }} />
+          <style>{`@keyframes nyaya-auth-spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 };

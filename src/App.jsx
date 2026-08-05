@@ -24,6 +24,7 @@ import StudioHome     from './pages/StudioHome';
 import PracticeHub    from './pages/PracticeHub';
 import MyDocuments    from './pages/MyDocuments';
 import ForIndividuals from './pages/ForIndividuals';
+import ForLawFirms    from './pages/ForLawFirms';
 
 /* ── Auth pages ── */
 import Login               from './pages/Login';
@@ -143,6 +144,8 @@ function App() {
                       <Route path="/services"        element={<PortalHome />} />
                       <Route path="/for-individuals" element={<ForIndividuals />} />
                       <Route path="/individuals"     element={<ForIndividuals />} />
+                      <Route path="/for-law-firms"   element={<ForLawFirms />} />
+                      <Route path="/law-firms"       element={<ForLawFirms />} />
                       <Route path="/intake"          element={<Intake />} />
                       <Route path="/marketplace"     element={<MarketDiscovery />} />
                       <Route path="/marketplace/:id" element={<LawyerPublicProfile />} />

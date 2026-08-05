@@ -268,7 +268,7 @@ function PublicNav({ navigate }) {
 
             {/* For Law Firms */}
             <motion.button
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/for-law-firms')}
               whileHover={{ background: 'rgba(14,165,233,0.08)', color: '#0EA5E9' }}
               style={navBtnStyle(false)}
               initial={{ opacity: 0, y: -6 }}
@@ -422,7 +422,7 @@ function PublicNav({ navigate }) {
             {/* For Individuals */}
             {[
               { label: 'For Individuals', to: '/for-individuals',  icon: I.User },
-              { label: 'For Law Firms',   to: '/register',  icon: I.Briefcase },
+              { label: 'For Law Firms',   to: '/for-law-firms',    icon: I.Briefcase },
             ].map((link, i) => (
               <motion.div
                 key={link.label}

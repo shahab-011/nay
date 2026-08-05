@@ -198,21 +198,21 @@ function PublicNav({ navigate }) {
               </AnimatePresence>
             </div>
 
-            {/* Active For Individuals Pill */}
+            {/* For Individuals */}
             <motion.button
               onClick={() => navigate('/for-individuals')}
-              style={navBtnStyle(true)}
+              whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
+              style={navBtnStyle(false)}
             >
               For Individuals
             </motion.button>
 
-            {/* For Law Firms */}
+            {/* Active For Law Firms Pill */}
             <motion.button
               onClick={() => navigate('/for-law-firms')}
-              whileHover={{ background: 'rgba(14,165,233,0.08)', color: '#0EA5E9' }}
-              style={navBtnStyle(false)}
+              style={navBtnStyle(true)}
             >
-              <I.Briefcase size={13} style={{ opacity: 0.7 }} />
+              <I.Briefcase size={13} style={{ color: 'var(--purple)' }} />
               For Law Firms
             </motion.button>
           </motion.div>
@@ -244,22 +244,22 @@ function PublicNav({ navigate }) {
   );
 }
 
-/* ── Interactive Silence Detector Card Demo ── */
-function SilenceDetectorDemo() {
-  const [activeTab, setActiveTab] = useState('missing');
+/* ── Interactive SaaS Workstation Demo Component ── */
+function SaaSWorkstationDemo() {
+  const [activeModule, setActiveModule] = useState('matters');
 
   return (
     <div style={{
       background: '#ffffff',
       borderRadius: 24,
-      border: '1px solid rgba(124, 58, 237, 0.16)',
-      boxShadow: '0 24px 60px rgba(11, 11, 20, 0.08), 0 4px 20px rgba(124, 58, 237, 0.06)',
+      border: '1px solid rgba(14, 165, 233, 0.2)',
+      boxShadow: '0 24px 60px rgba(14, 165, 233, 0.08), 0 4px 20px rgba(11, 11, 20, 0.05)',
       overflow: 'hidden',
       textAlign: 'left',
     }}>
-      {/* Header bar */}
+      {/* SaaS Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+        background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
         padding: '18px 24px',
         color: '#ffffff',
         display: 'flex',
@@ -268,40 +268,43 @@ function SilenceDetectorDemo() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <I.Search size={18} style={{ color: '#fff' }} />
+            <I.Briefcase size={18} style={{ color: '#fff' }} />
           </div>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 900, fontFamily: 'var(--font-headline)' }}>"Silence Detector" Engine</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>Proactive Missing Clause & Trap Detector</div>
+            <div style={{ fontSize: 15, fontWeight: 900, fontFamily: 'var(--font-headline)' }}>Enterprise Practice Management SaaS</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)' }}>15 Integrated BCI-Compliant Law Practice Modules</div>
           </div>
         </div>
         <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          DPDP 2023 Compliant
+          BCI & GST Compliant
         </span>
       </div>
 
-      {/* Selector Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #F3F4F6', background: '#FAFAFC', padding: '6px 12px' }}>
+      {/* Module Selector Tabs */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #F3F4F6', background: '#FAFAFC', padding: '6px 12px', overflowX: 'auto' }}>
         {[
-          { id: 'missing', label: '🕵️ Missing Clauses (Silence)', count: 2 },
-          { id: 'predatory', label: '⚠️ Predatory Terms', count: 3 },
-          { id: 'counter', label: '✍️ Counter Offer Draft', count: 1 },
+          { id: 'matters', label: '⚖️ Matter Kanban Pipeline' },
+          { id: 'limitation', label: '⏱️ Limitation Act 1963 Alerts' },
+          { id: 'conflict', label: '🛡️ Conflict Checker (BCI Rule 33)' },
+          { id: 'billing', label: '💳 Native INR & 18% GST Invoicing' },
+          { id: 'trust', label: '🔒 Append-Only Trust Ledgers' },
         ].map(t => (
           <button
             key={t.id}
-            onClick={() => setActiveTab(t.id)}
+            onClick={() => setActiveModule(t.id)}
             style={{
               padding: '10px 14px',
               borderRadius: 10,
               border: 'none',
-              background: activeTab === t.id ? '#ffffff' : 'transparent',
-              color: activeTab === t.id ? '#7c3aed' : '#6B7280',
+              background: activeModule === t.id ? '#ffffff' : 'transparent',
+              color: activeModule === t.id ? '#0284c7' : '#6B7280',
               fontWeight: 700,
               fontSize: 12.5,
               cursor: 'pointer',
-              boxShadow: activeTab === t.id ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: activeModule === t.id ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.15s ease',
               marginRight: 6,
+              whiteSpace: 'nowrap',
             }}
           >
             {t.label}
@@ -309,55 +312,88 @@ function SilenceDetectorDemo() {
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* Module View */}
       <div style={{ padding: 24 }}>
-        {activeTab === 'missing' && (
+        {activeModule === 'matters' && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-            <div style={{ background: '#FFF5F5', border: '1px solid #FECDD3', borderRadius: 14, padding: 16, marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#E11D48' }}>CRITICAL OMISSION DETECTED</span>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#E11D48', padding: '2px 8px', background: '#FFE4E6', borderRadius: 12 }}>HIGH RISK</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: 14, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#0369A1', marginBottom: 8, textTransform: 'uppercase' }}>INTAKE (3)</div>
+                <div style={{ background: '#fff', padding: 10, borderRadius: 8, border: '1px solid #E0F2FE', marginBottom: 8 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1E1B4B' }}>Sharma Property Dispute</div>
+                  <div style={{ fontSize: 10.5, color: '#64748B', marginTop: 4 }}>Delhi High Court · civil</div>
+                </div>
               </div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1E1B4B', marginBottom: 4 }}>No Mutual Termination Rights</div>
-              <p style={{ fontSize: 12.5, color: '#4B5563', margin: 0, lineHeight: 1.5 }}>
-                The contract allows the employer to terminate with 0 days notice, but omits your right to exit or resign without a 90-day penalty.
-              </p>
+              <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 14, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#B45309', marginBottom: 8, textTransform: 'uppercase' }}>DISCOVERY (2)</div>
+                <div style={{ background: '#fff', padding: 10, borderRadius: 8, border: '1px solid #FEF3C7', marginBottom: 8 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1E1B4B' }}>TechCorp Employment Audit</div>
+                  <div style={{ fontSize: 10.5, color: '#64748B', marginTop: 4 }}>Silence Detector Audit Done</div>
+                </div>
+              </div>
+              <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 14, padding: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#047857', marginBottom: 8, textTransform: 'uppercase' }}>ACTIVE COURT HEARING (4)</div>
+                <div style={{ background: '#fff', padding: 10, borderRadius: 8, border: '1px solid #D1FAE5' }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1E1B4B' }}>Apex Infra Arbitration</div>
+                  <div style={{ fontSize: 10.5, color: '#64748B', marginTop: 4 }}>Hearing Date: Aug 12, 2026</div>
+                </div>
+              </div>
             </div>
+          </motion.div>
+        )}
 
-            <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 14, padding: 16 }}>
+        {activeModule === 'limitation' && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+            <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 14, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#D97706' }}>MISSING STATUTORY PROTECTION</span>
-                <span style={{ fontSize: 10, fontWeight: 800, color: '#D97706', padding: '2px 8px', background: '#FEF3C7', borderRadius: 12 }}>MEDIUM RISK</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#E11D48' }}>LIMITATION ACT 1963 STATUTORY DEADLINE</span>
+                <span style={{ fontSize: 10, fontWeight: 800, color: '#E11D48', padding: '2px 8px', background: '#FFE4E6', borderRadius: 12 }}>3 DAYS REMAINING</span>
               </div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1E1B4B', marginBottom: 4 }}>Limitation of Liability Cap Missing</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1E1B4B', marginBottom: 4 }}>Article 54 — Suit for Specific Performance</div>
               <p style={{ fontSize: 12.5, color: '#4B5563', margin: 0, lineHeight: 1.5 }}>
-                No ceiling is defined on your personal financial indemnity. Under Indian contract law, this exposes you to unlimited damages.
+                Statutory limitation period of 3 years expires on August 9, 2026. Cron engine automatically notified lead counsel & paralegal team.
               </p>
             </div>
           </motion.div>
         )}
 
-        {activeTab === 'predatory' && (
+        {activeModule === 'conflict' && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <div style={{ background: '#F5F3FF', border: '1px solid #DDD6FE', borderRadius: 14, padding: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#7C3AED', marginBottom: 6 }}>Clause 14.2 — Unreasonable Non-Compete</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#7C3AED', marginBottom: 6 }}>BCI Rule 33 — Conflict of Interest Engine</div>
               <p style={{ fontSize: 12.5, color: '#4B5563', margin: '0 0 10px', lineHeight: 1.5 }}>
-                "Employee shall not work for any competitor worldwide for 24 months post-employment."
+                Automated cryptographic scan across historical firm matters flagged a prior representation of opposing party "Nexus Retail Private Limited" in 2024.
               </p>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '8px 12px', borderRadius: 8, border: '1px solid #A7F3D0' }}>
-                💡 <strong>Legal Context (Section 27 Indian Contract Act):</strong> Post-employment non-compete clauses are unenforceable in India.
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#B45309', background: '#FEF3C7', padding: '8px 12px', borderRadius: 8, border: '1px solid #FDE68A' }}>
+                ⚠️ <strong>Advocate Action Required:</strong> Ethical wall required or decline representation to maintain Bar Council of India compliance.
               </div>
             </div>
           </motion.div>
         )}
 
-        {activeTab === 'counter' && (
+        {activeModule === 'billing' && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 14, padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#64748B', textTransform: 'uppercase', marginBottom: 8 }}>Generated Counter Proposal Email</div>
-              <div style={{ fontSize: 12.5, color: '#334155', fontFamily: 'monospace', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                {`Subject: Proposed Revisions to Service Agreement - Clause 14.2 & Termination Terms\n\nDear [Hiring Manager],\n\nThank you for sharing the agreement. I am eager to join. Upon review, I would like to request two standard amendments:\n\n1. Clause 14.2 (Non-compete): Limit duration to active employment term as per Indian Contract Act Sec 27.\n2. Clause 8 (Termination): Make 30-day notice period mutual for both parties.\n\nLooking forward to the updated draft.`}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#0284C7' }}>INVOICE #INV-2026-089</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#059669' }}>PAID (UPI)</span>
               </div>
+              <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
+                <div>Legal Research & Drafting: ₹25,000.00</div>
+                <div>Automated GST (18%): ₹4,500.00</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', marginTop: 6 }}>Total Billed: ₹29,500.00</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeModule === 'trust' && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+            <div style={{ background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 14, padding: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#047857', marginBottom: 6 }}>BCI Double-Ledger Append-Only Trust Accounting</div>
+              <p style={{ fontSize: 12.5, color: '#065F46', margin: 0, lineHeight: 1.5 }}>
+                Cryptographic immutable audit trail for client retainers. Funds isolated from firm operating accounts with zero co-mingling.
+              </p>
             </div>
           </motion.div>
         )}
@@ -366,8 +402,8 @@ function SilenceDetectorDemo() {
   );
 }
 
-/* ── Main ForIndividuals Page ── */
-export default function ForIndividuals() {
+/* ── Main ForLawFirms Page Component ── */
+export default function ForLawFirms() {
   const navigate = useNavigate();
 
   return (
@@ -379,13 +415,13 @@ export default function ForIndividuals() {
           className="blob"
           animate={{ x: [0, 28, -18, 0], y: [0, -44, 22, 0], scale: [1, 1.08, 0.96, 1] }}
           transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ width: 580, height: 580, background: '#C4B5FD', top: -100, left: -140, opacity: 0.35 }}
+          style={{ width: 580, height: 580, background: '#BAE6FD', top: -100, left: -140, opacity: 0.35 }}
         />
         <motion.div
           className="blob"
           animate={{ x: [0, -24, 18, 0], y: [0, 38, -28, 0], scale: [1, 0.94, 1.06, 1] }}
           transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-          style={{ width: 500, height: 500, background: '#DDD6FE', top: 320, right: -120, opacity: 0.4 }}
+          style={{ width: 500, height: 500, background: '#E0F2FE', top: 320, right: -120, opacity: 0.4 }}
         />
       </div>
 
@@ -394,16 +430,16 @@ export default function ForIndividuals() {
 
         {/* ══ HERO SECTION ══════════════════════════════════════════ */}
         <section style={{ padding: '120px 24px 80px', textAlign: 'center', maxWidth: 1280, margin: '0 auto' }}>
-          {/* Section 1 Badge */}
+          {/* Section 3 Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.88, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6, ease, delay: 0.2 }}
             style={{ display: 'inline-block', marginBottom: 28 }}
           >
-            <span className="pill" style={{ fontSize: 13, padding: '8px 18px', background: 'rgba(124,58,237,0.12)', borderColor: 'rgba(124,58,237,0.25)' }}>
-              <span className="pill-dot" style={{ animation: 'pulse-purple 2s infinite' }} />
-              Section 1 · Pre-Connection AI Document Intelligence
+            <span className="pill" style={{ fontSize: 13, padding: '8px 18px', background: 'rgba(14,165,233,0.12)', borderColor: 'rgba(14,165,233,0.25)', color: '#0369A1' }}>
+              <span className="pill-dot" style={{ background: '#0EA5E9', animation: 'pulse-blue 2s infinite' }} />
+              Section 3 · BCI-Compliant Enterprise Practice Management SaaS
             </span>
           </motion.div>
 
@@ -419,15 +455,15 @@ export default function ForIndividuals() {
                 transition={{ duration: 0.75, ease, delay: 0.35 }}
                 style={{ display: 'block', color: 'var(--ink)' }}
               >
-                Understand contracts before you sign.
+                Modern operations for solo advocates & law firms.
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.75, ease, delay: 0.5 }}
-                style={{ display: 'block', color: 'var(--purple)' }}
+                style={{ display: 'block', color: '#0284C7' }}
               >
-                Zero traps. 100% Private.
+                15 Modules. BCI & GST Ready.
               </motion.span>
             </motion.h1>
           </div>
@@ -440,7 +476,7 @@ export default function ForIndividuals() {
             transition={{ duration: 0.65, ease, delay: 0.65 }}
             style={{ fontSize: 19, maxWidth: 680, margin: '30px auto 44px', lineHeight: 1.6 }}
           >
-            Protecting citizens & SMEs from predatory terms. Powered by zero-trust local WebAssembly (WASM) browser memory parsing and Gemini AI contract intelligence.
+            Eliminate administrative overload. Automated Limitation Act 1963 deadline tracking, append-only trust accounting, native INR/18% GST invoicing, and dedicated AI per active matter.
           </motion.p>
 
           {/* Hero CTAs */}
@@ -452,20 +488,21 @@ export default function ForIndividuals() {
           >
             <motion.button
               className="btn btn-purple btn-lg"
-              onClick={() => navigate('/studio')}
-              whileHover={{ scale: 1.04, y: -2, boxShadow: '0 14px 38px rgba(124,58,237,0.38)' }}
+              onClick={() => navigate('/register')}
+              style={{ background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', boxShadow: '0 14px 38px rgba(14,165,233,0.35)' }}
+              whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
             >
-              Analyze Document Now <I.ArrowRight size={17} />
+              Start Law Firm Free Trial <I.ArrowRight size={17} />
             </motion.button>
 
             <motion.button
               className="btn btn-secondary btn-lg"
-              onClick={() => navigate('/intake')}
+              onClick={() => navigate('/practice')}
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
             >
-              Take Guided Legal Quiz
+              Explore Practice Hub
             </motion.button>
           </motion.div>
 
@@ -477,13 +514,13 @@ export default function ForIndividuals() {
             style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}
           >
             {[
-              { icon: <I.Lock size={14} />, label: 'DPDP Act 2023 Compliant' },
-              { icon: <I.Shield size={14} />, label: 'Client-Side WASM Memory' },
-              { icon: <I.Search size={14} />, label: 'Proactive Silence Detector' },
-              { icon: <I.Sparkle size={14} />, label: 'Instant Risk Scoring' },
+              { icon: <I.Briefcase size={14} />, label: '15 Integrated SaaS Modules' },
+              { icon: <I.Clock size={14} />, label: 'Limitation Act 1963 Cron Engine' },
+              { icon: <I.Shield size={14} />, label: 'BCI Rule 33 Conflict Checker' },
+              { icon: <I.Lock size={14} />, label: 'Multi-Tenant RBAC Cryptographic Isolation' },
             ].map(({ icon, label }) => (
-              <span key={label} className="pill" style={{ fontSize: 12.5, padding: '7px 15px', background: '#fff' }}>
-                <span style={{ color: 'var(--purple)', display: 'flex' }}>{icon}</span>
+              <span key={label} className="pill" style={{ fontSize: 12.5, padding: '7px 15px', background: '#fff', color: '#0369A1' }}>
+                <span style={{ color: '#0284C7', display: 'flex' }}>{icon}</span>
                 {label}
               </span>
             ))}
@@ -493,63 +530,87 @@ export default function ForIndividuals() {
         {/* ══ INTERACTIVE DEMO SHOWCASE ═════════════════════════════ */}
         <section style={{ maxWidth: 1100, margin: '0 auto 120px', padding: '0 24px' }}>
           <Reveal>
-            <SilenceDetectorDemo />
+            <SaaSWorkstationDemo />
           </Reveal>
         </section>
 
-        {/* ══ 4 CORE ENGINES OF SECTION 1 ═══════════════════════════ */}
+        {/* ══ 15 MODULES & ENTERPRISE CAPABILITIES ══════════════════ */}
         <section style={{ maxWidth: 1240, margin: '0 auto 140px', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <span className="pill" style={{ marginBottom: 14, fontSize: 12 }}>
-              <span className="pill-dot" /> Engineered Capabilities
+            <span className="pill" style={{ marginBottom: 14, fontSize: 12, color: '#0369A1' }}>
+              <span className="pill-dot" style={{ background: '#0284C7' }} /> Built For Indian Jurisdictions
             </span>
             <h2 className="h-display" style={{ fontSize: 'clamp(32px, 5vw, 54px)', color: 'var(--ink)' }}>
-              How Nyaya AI Protects Your Contracts
+              15 SaaS Modules for End-to-End Practice Operations
             </h2>
-            <p className="t-secondary" style={{ fontSize: 17, maxWidth: 580, margin: '14px auto 0' }}>
-              Four specialized sub-engines operating together to decode, audit, and negotiate legal contracts.
+            <p className="t-secondary" style={{ fontSize: 17, maxWidth: 640, margin: '14px auto 0' }}>
+              Designed to replace fragmented tools (WhatsApp, Excel, disconnected billing) with a unified BCI-compliant workstation.
             </p>
           </div>
 
           <Reveal variants={containerV(0.12)} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 20 }}>
             {[
               {
+                icon: <I.Briefcase size={22} />,
+                tag: 'Core SaaS Module',
+                title: 'Kanban Matter Management',
+                desc: 'Track case lifecycles from intake to verdict. Manage client parties, court dates, and matter documents in one central view.',
+              },
+              {
+                icon: <I.Clock size={22} />,
+                tag: 'Statutory Engine',
+                title: 'Limitation Act 1963 Tracker',
+                desc: 'Automated statutory limitation period calculations and court deadline cron alerts to prevent missed filing dates.',
+              },
+              {
+                icon: <I.Shield size={22} />,
+                tag: 'BCI Compliance',
+                title: 'Conflict of Interest Checker',
+                desc: 'Scans firm records and opposing parties to flag ethical representation conflicts before onboarding new clients (BCI Rule 33).',
+              },
+              {
+                icon: <I.Receipt size={22} />,
+                tag: 'Financial Compliance',
+                title: 'Native INR & 18% GST Invoicing',
+                desc: 'Generate automated Rupee invoices with LEDES activity coding, automated GST calculations, and instant UPI/bank payment links.',
+              },
+              {
                 icon: <I.Lock size={22} />,
-                tag: 'DPDP 2023 Compliant',
-                title: 'Zero-Trust Private Mode',
-                desc: 'PDF.js & WebAssembly (WASM) parse document text strictly inside your local browser memory heap. 0 bytes uploaded to servers.',
+                tag: 'Double-Ledger',
+                title: 'Append-Only Trust Accounting',
+                desc: 'Separate client retainer trust ledgers ensuring strict compliance with Bar Council of India client money rules.',
               },
               {
-                icon: <I.Search size={22} />,
-                tag: 'Patent-Pending Engine',
-                title: 'The "Silence Detector"',
-                desc: 'Proactively identifies critical legal protections, indemnity caps, and termination rights strategically omitted from contracts.',
+                icon: <I.Zap size={22} />,
+                tag: 'Contextual AI',
+                title: 'Matter-Specific AI Assistant',
+                desc: 'Dedicated Gemini AI instance trained on your matter documents for Q&A, clause drafting, and document comparisons.',
               },
               {
-                icon: <I.Sparkle size={22} />,
-                tag: 'Gemini RAG Pipeline',
-                title: 'Plain-Language Translation',
-                desc: 'Translates dense legal jargon into conversational English, highlighting high, medium, and low risk clauses with exact page references.',
+                icon: <I.MessageSquare size={22} />,
+                tag: 'Real-Time WebSockets',
+                title: 'Encrypted Client Portal & Chat',
+                desc: 'Bi-directional real-time messaging, document requests, and e-signatures handled via secure Socket.io channels.',
               },
               {
-                icon: <I.Edit size={22} />,
-                tag: 'Automated Negotiations',
-                title: 'Counter Offer Generator',
-                desc: 'Instantly drafts professional, legally sound negotiation emails and counter-proposals based on contract risks found.',
+                icon: <I.Users size={22} />,
+                tag: 'Cryptographic RBAC',
+                title: 'Multi-Tenant Firm Security',
+                desc: 'JWT-authenticated Role-Based Access Control ensuring strict cryptographic data isolation between competing law firms.',
               },
             ].map(f => (
               <motion.div
                 key={f.title}
                 variants={cardV}
-                whileHover={{ y: -7, boxShadow: '0 20px 48px rgba(11,11,20,0.10)' }}
+                whileHover={{ y: -7, boxShadow: '0 20px 48px rgba(14,165,233,0.12)' }}
                 className="card"
                 style={{ padding: 32, background: 'var(--surface)', cursor: 'default' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <div className="icon-tile" style={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}>
+                  <div className="icon-tile" style={{ background: 'rgba(14,165,233,0.1)', color: '#0284C7' }}>
                     {f.icon}
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 20, background: 'var(--purple-soft)', color: 'var(--purple)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 20, background: 'rgba(14,165,233,0.1)', color: '#0369A1', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {f.tag}
                   </span>
                 </div>
@@ -560,11 +621,11 @@ export default function ForIndividuals() {
           </Reveal>
         </section>
 
-        {/* ══ STEP-BY-STEP PROCESS ═══════════════════════════════════ */}
+        {/* ══ STEP-BY-STEP ONBOARDING ═══════════════════════════════ */}
         <section style={{ maxWidth: 1240, margin: '0 auto 140px', padding: '0 24px' }}>
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
             <h2 className="h-display" style={{ fontSize: 'clamp(32px, 5vw, 54px)' }}>
-              3 Simple Steps to Contract Safety
+              Onboard Your Law Firm in 3 Minutes
             </h2>
           </div>
 
@@ -572,20 +633,20 @@ export default function ForIndividuals() {
             {[
               {
                 n: 1,
-                title: 'Upload Any Contract',
-                desc: 'Drag & drop your employment offer, rent agreement, NDA, or service contract (PDF/Docx). Processing happens locally in WASM memory.',
-                ic: <I.Upload size={22} />,
+                title: 'Create Your Cryptographic Firm Vault',
+                desc: 'Set up your multi-tenant firm workspace with custom user roles (Lawyer, Paralegal, Partner, Staff).',
+                ic: <I.Building size={22} />,
               },
               {
                 n: 2,
-                title: 'Review Risk Audit & Missing Clauses',
-                desc: 'View your contract health score (0-100), flagged predatory terms, and missing legal protections detected by the Silence Engine.',
-                ic: <I.Shield size={22} />,
+                title: 'Import Matters & Active Clients',
+                desc: 'Migrate active court cases, set statutory limitation dates, and run instant BCI Rule 33 conflict checks.',
+                ic: <I.Briefcase size={22} />,
               },
               {
                 n: 3,
-                title: 'Export Counter Offer or Connect Lawyer',
-                desc: 'Generate negotiation emails with one click. If complex disputes arise, seamlessly route full context to BCI-verified lawyers.',
+                title: 'Automate Invoicing & AI Research',
+                desc: 'Generate GST-compliant Rupee invoices, track billable hours, and utilize matter-specific Gemini AI.',
                 ic: <I.ArrowRight size={22} />,
               },
             ].map(s => (
@@ -596,7 +657,7 @@ export default function ForIndividuals() {
                 className="card"
                 style={{ padding: 32, position: 'relative' }}
               >
-                <div style={{ fontSize: 12, fontWeight: 900, color: 'var(--purple)', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 900, color: '#0284C7', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>
                   STEP 0{s.n}
                 </div>
                 <h3 className="h-title" style={{ fontSize: 22, marginBottom: 12 }}>{s.title}</h3>
@@ -606,47 +667,48 @@ export default function ForIndividuals() {
           </Reveal>
         </section>
 
-        {/* ══ BRIDGE TO SECTION 2 (SMART MATCHMAKING) ═══════════════ */}
+        {/* ══ FINAL CTA ═════════════════════════════════════════════ */}
         <section style={{ maxWidth: 1100, margin: '0 auto 120px', padding: '0 24px' }}>
           <Reveal>
             <div style={{
-              background: 'linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%)',
+              background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
               borderRadius: 28,
               padding: '52px 40px',
               color: '#ffffff',
               textAlign: 'center',
-              boxShadow: '0 30px 80px rgba(15, 23, 42, 0.35)',
+              boxShadow: '0 30px 80px rgba(2, 132, 199, 0.35)',
               position: 'relative',
               overflow: 'hidden',
             }}>
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <span className="pill" style={{ background: 'rgba(255,255,255,0.12)', color: '#c084fc', border: '1px solid rgba(255,255,255,0.2)', marginBottom: 20 }}>
-                  <I.Scale size={13} /> Seamless Transition to Section 2
+                <span className="pill" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', marginBottom: 20 }}>
+                  <I.Briefcase size={13} /> Elevate Your Legal Practice
                 </span>
                 <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, fontFamily: 'var(--font-headline)', marginBottom: 16, lineHeight: 1.15 }}>
-                  Need Professional Advocate Assistance?
+                  Ready to Transform Your Law Practice?
                 </h2>
-                <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', maxWidth: 620, margin: '0 auto 36px', lineHeight: 1.6 }}>
-                  If your contract audit reveals high-risk disputes, our Algorithmic Contextual Matchmaking instantly routes your case details & AI risk findings to BCI-verified legal advocates.
+                <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.85)', maxWidth: 620, margin: '0 auto 36px', lineHeight: 1.6 }}>
+                  Join top solo advocates and law firms managing their matters, clients, GST invoicing, and BCI compliance on NyayaAI.
                 </p>
 
                 <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <motion.button
                     className="btn btn-purple btn-lg"
-                    onClick={() => navigate('/find-lawyer')}
+                    onClick={() => navigate('/register')}
+                    style={{ background: '#fff', color: '#0369A1', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Find Verified Advocate <I.ArrowRight size={17} />
+                    Create Free Law Firm Account <I.ArrowRight size={17} />
                   </motion.button>
                   <motion.button
                     className="btn btn-secondary btn-lg"
-                    onClick={() => navigate('/studio')}
-                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
+                    onClick={() => navigate('/practice')}
+                    style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Launch Document Studio
+                    Open Practice Hub Demo
                   </motion.button>
                 </div>
               </div>

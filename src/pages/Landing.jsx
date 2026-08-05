@@ -149,9 +149,21 @@ function PublicNav({ navigate }) {
               background: scrolled ? 'rgba(246,244,251,0.8)' : 'rgba(255,255,255,0.55)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(124,58,237,0.10)',
-              borderRadius: 14, padding: '5px 6px',
             }}
           >
+            {/* Home */}
+            <motion.button
+              onClick={() => navigate('/')}
+              whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
+              style={navBtnStyle(true)}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.4 }}
+            >
+              <I.Home size={13} style={{ opacity: 0.8 }} />
+              Home
+            </motion.button>
+
             {/* Products dropdown trigger */}
             <div data-products-menu style={{ position: 'relative' }}>
               <motion.button
@@ -419,10 +431,11 @@ function PublicNav({ navigate }) {
               )}
             </AnimatePresence>
 
-            {/* For Individuals */}
+            {/* Nav links */}
             {[
-              { label: 'For Individuals', to: '/for-individuals',  icon: I.User },
-              { label: 'For Law Firms',   to: '/for-law-firms',    icon: I.Briefcase },
+              { label: 'Home',            to: '/',                icon: I.Home },
+              { label: 'For Individuals', to: '/for-individuals', icon: I.User },
+              { label: 'For Law Firms',   to: '/for-law-firms',   icon: I.Briefcase },
             ].map((link, i) => (
               <motion.div
                 key={link.label}

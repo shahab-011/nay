@@ -145,9 +145,18 @@ function PublicNav({ navigate }) {
               background: scrolled ? 'rgba(246,244,251,0.8)' : 'rgba(255,255,255,0.55)',
               backdropFilter: 'blur(12px)',
               border: '1px solid rgba(124,58,237,0.10)',
-              borderRadius: 14, padding: '5px 6px',
             }}
           >
+            {/* Home */}
+            <motion.button
+              onClick={() => navigate('/')}
+              whileHover={{ background: 'var(--purple-soft)', color: 'var(--purple)' }}
+              style={navBtnStyle(false)}
+            >
+              <I.Home size={13} style={{ opacity: 0.8 }} />
+              Home
+            </motion.button>
+
             {/* Products dropdown */}
             <div data-products-menu style={{ position: 'relative' }}>
               <motion.button
